@@ -398,6 +398,7 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
                   <table className="min-w-full divide-y divide-default-200">
                     <thead className="bg-default-150">
                       <tr className="text-sm font-normal text-default-700">
+                        <th className="px-3.5 py-3 text-start">Image</th>
                         <th className="px-3.5 py-3 text-start">Nom</th>
                         <th className="px-3.5 py-3 text-start">Marque</th>
                         <th className="px-3.5 py-3 text-start">Couleur</th>
@@ -410,7 +411,7 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
                     <tbody className="divide-y divide-default-200">
                       {currentMontures.length === 0 ? (
                         <tr>
-                          <td colSpan="7" className="px-3.5 py-8 text-center text-default-500">
+                          <td colSpan="8" className="px-3.5 py-8 text-center text-default-500">
                             {searchTerm ? 'Aucune monture trouvée pour cette recherche' : 'Aucune monture trouvée'}
                           </td>
                         </tr>
@@ -423,6 +424,14 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
 
                           return (
                             <tr key={`monture-${monture.id}-${index}`} className="text-default-800 font-normal">
+                              <td className="px-3.5 py-2.5 whitespace-nowrap text-sm">
+                                <img
+                                  src={monture.imageUrl || '/images/default-monture.jpg'}
+                                  alt={monture.name}
+                                  className="w-12 h-12 object-cover rounded"
+                                />
+                              </td>
+
                               <td className="px-3.5 py-2.5 whitespace-nowrap text-sm">
                                 <h6 className="text-default-800 font-semibold">
                                   {monture.name}

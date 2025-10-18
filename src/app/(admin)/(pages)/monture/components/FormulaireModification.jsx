@@ -3,7 +3,7 @@ import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
 
 const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
-    Id: '',
+    id: '',
     name: '',
     description: '',
     price: '',
@@ -23,6 +23,11 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
     largeurPont: '',
     longueurBranche: ''
   });
+
+  // États pour la gestion des images
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagesPreviews, setImagesPreviews] = useState([]);
+  const [existingImages, setExistingImages] = useState([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
@@ -69,25 +74,27 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
       // Améliorer la récupération de l'ID avec plus de robustesse
       const getId = () => {
         const possibleIds = [monture.realId, monture.id, monture.Id];
-        console.log('DEBUG: Monture reçue:', monture);
-        console.log('DEBUG: possibleIds:', possibleIds);
+        console.log('🔍 DEBUG: Monture reçue:', monture);
+        console.log('🔍 DEBUG: possibleIds:', possibleIds);
+        console.log('🔍 DEBUG: Type de monture:', typeof monture);
+        console.log('🔍 DEBUG: Clés de la monture:', Object.keys(monture));
 
         for (const id of possibleIds) {
-          console.log('DEBUG: Vérification ID:', id, 'Type:', typeof id);
+          console.log('🔍 DEBUG: Vérification ID:', id, 'Type:', typeof id, 'isNaN:', isNaN(id));
           if (id !== undefined && id !== null && id !== '' && !isNaN(parseInt(id))) {
-            console.log('DEBUG: ID valide trouvé:', id);
+            console.log('✅ DEBUG: ID valide trouvé:', id);
             return id.toString();
           }
         }
-        console.warn('Aucun ID valide trouvé pour la monture:', monture);
+        console.warn('❌ DEBUG: Aucun ID valide trouvé pour la monture:', monture);
         return '';
       };
 
       const finalId = getId();
-      console.log('DEBUG: ID final assigné:', finalId);
+      console.log('🎯 DEBUG: ID final assigné:', finalId, 'Type:', typeof finalId);
 
       setFormData({
-        Id: finalId,
+        id: finalId,
         name: monture.name || '',
         description: monture.description || '',
         price: monture.price?.toString() || '',
@@ -107,6 +114,22 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
         largeurPont: monture.largeurPont?.toString() || '',
         longueurBranche: monture.longueurBranche?.toString() || ''
       });
+
+      // Initialiser les images existantes
+      if (monture.imageUrl && Array.isArray(monture.imageUrl)) {
+        setExistingImages(monture.imageUrl);
+        console.log('🖼️ DEBUG: Images existantes trouvées:', monture.imageUrl);
+      } else {
+        setExistingImages([]);
+        console.log('🖼️ DEBUG: Aucune image existante');
+      }
+
+      console.log('💾 FormData qui va être assigné:', {
+        id: finalId,
+        name: monture.name || '',
+        // autres champs...
+      });
+      console.log('🔍 ID dans formData:', finalId, 'Type:', typeof finalId);
     }
   }, [monture]);
 
@@ -172,12 +195,54 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
     }
   };
 
+  // Gérer la sélection des fichiers image
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedImages(files);
+
+    // Créer des aperçus d'image
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagesPreviews(previews);
+
+    // Réinitialiser les erreurs d'image
+    setErrors(prev => ({
+      ...prev,
+      images: ''
+    }));
+  };
+
+  // Supprimer une image sélectionnée
+  const handleImageRemove = (index) => {
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    setSelectedImages(newImages);
+
+    // Mettre à jour les aperçus
+    const newPreviews = imagesPreviews.filter((_, i) => i !== index);
+    setImagesPreviews(newPreviews);
+  };
+
+  // Supprimer une image existante
+  const handleExistingImageRemove = (index) => {
+    const newExistingImages = existingImages.filter((_, i) => i !== index);
+    setExistingImages(newExistingImages);
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
+    console.log('🔍 VALIDATION - FormData actuel:', formData);
+    console.log('🔍 VALIDATION - ID à valider:', formData.id, 'Type:', typeof formData.id);
+    console.log('🔍 VALIDATION - ID vide?:', !formData.id);
+    console.log('🔍 VALIDATION - ID === ""?:', formData.id === '');
+    console.log('🔍 VALIDATION - parseInt(ID):', parseInt(formData.id));
+    console.log('🔍 VALIDATION - isNaN(parseInt(ID)):', isNaN(parseInt(formData.id)));
+
     // Validation de l'ID
-    if (!formData.Id || formData.Id === '' || isNaN(parseInt(formData.Id))) {
-      newErrors.Id = 'ID de la monture manquant ou invalide';
+    if (!formData.id || formData.id === '' || isNaN(parseInt(formData.id))) {
+      newErrors.id = 'ID de la monture manquant ou invalide';
+      console.log('❌ VALIDATION ÉCHOUÉE - ID invalide:', formData.id);
+    } else {
+      console.log('✅ VALIDATION RÉUSSIE - ID valide:', formData.id);
     }
 
     if (!formData.name.trim()) {
@@ -229,8 +294,30 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
     }
   };
 
+  // javascript
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const normalizeNumberString = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v).trim();
+      if (s === '') return '';
+      // Remplacer la virgule par un point si l'utilisateur a saisi une virgule
+      const normalized = s.replace(',', '.');
+      const n = Number(normalized);
+      return Number.isFinite(n) ? String(n) : '';
+    };
+
+    const normalizeIntString = (v) => {
+      if (v === null || v === undefined) return '';
+      const s = String(v).trim();
+      if (s === '') return '';
+      const normalized = s.replace(',', '.');
+      const n = parseInt(Number(normalized));
+      return Number.isFinite(n) ? String(n) : '';
+    };
+
+    console.log('🚀 SUBMIT - FormData avant validation:', formData);
 
     if (!validateForm()) {
       return;
@@ -240,66 +327,165 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
     setSuccessMessage('');
 
     try {
-      const dataToSend = {
-        Id: parseInt(formData.Id),
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity),
-        marque: formData.marque || null,
-        couleur: formData.couleur || null,
-        isAvailable: formData.isAvailable,
-        categorie: formData.categorie,
-        gender: formData.gender || null,
-        taille: formData.taille || null,
-        typeMonture: formData.typeMonture || null,
-        materiauProduit: formData.materiauProduit || null,
-        formeProduit: formData.formeProduit || null,
-        largeurTotale: formData.largeurTotale ? parseFloat(formData.largeurTotale) : null,
-        largeurVerre: formData.largeurVerre ? parseFloat(formData.largeurVerre) : null,
-        hauteurVerre: formData.hauteurVerre ? parseFloat(formData.hauteurVerre) : null,
-        largeurPont: formData.largeurPont ? parseFloat(formData.largeurPont) : null,
-        longueurBranche: formData.longueurBranche ? parseFloat(formData.longueurBranche) : null
-      };
+      if (selectedImages.length > 0) {
+        const formDataToSend = new FormData();
 
-      const response = await fetch('http://localhost:8089/api/v1/produit/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-      });
+        // Champs obligatoires — convertir explicitement et vérifier
+        const idStr = normalizeIntString(formData.id);
+        const priceStr = normalizeNumberString(formData.price);
+        const quantityStr = normalizeIntString(formData.quantity);
 
-      if (response.ok) {
-        setSuccessMessage('Monture modifiée avec succès !');
+        if (!idStr) {
+          setErrors({ id: 'ID invalide' });
+          setIsLoading(false);
+          return;
+        }
+        if (!priceStr) {
+          setErrors({ price: 'Prix invalide' });
+          setIsLoading(false);
+          return;
+        }
+        if (quantityStr === '') {
+          setErrors({ quantity: 'Quantité invalide' });
+          setIsLoading(false);
+          return;
+        }
 
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
+        formDataToSend.append('id', idStr);
+        formDataToSend.append('name', formData.name);
+        formDataToSend.append('description', formData.description);
+        formDataToSend.append('price', priceStr);
+        formDataToSend.append('quantity', quantityStr);
+        formDataToSend.append('isAvailable', String(!!formData.isAvailable));
+        formDataToSend.append('categorie', formData.categorie);
+
+        // Optionnels — n'ajouter que si valides
+        if (formData.marque) formDataToSend.append('marque', formData.marque);
+        if (formData.couleur) formDataToSend.append('couleur', formData.couleur);
+        if (formData.gender) formDataToSend.append('gender', formData.gender);
+        if (formData.taille) formDataToSend.append('taille', formData.taille);
+        if (formData.typeMonture) formDataToSend.append('typeMonture', formData.typeMonture);
+        if (formData.materiauProduit) formDataToSend.append('materiauProduit', formData.materiauProduit);
+        if (formData.formeProduit) formDataToSend.append('formeProduit', formData.formeProduit);
+
+        // Dimensions (float) — n'ajouter que si valides
+        const largeurTotale = normalizeNumberString(formData.largeurTotale);
+        if (largeurTotale) formDataToSend.append('largeurTotale', largeurTotale);
+
+        const largeurVerre = normalizeNumberString(formData.largeurVerre);
+        if (largeurVerre) formDataToSend.append('largeurVerre', largeurVerre);
+
+        const hauteurVerre = normalizeNumberString(formData.hauteurVerre);
+        if (hauteurVerre) formDataToSend.append('hauteurVerre', hauteurVerre);
+
+        const largeurPont = normalizeNumberString(formData.largeurPont);
+        if (largeurPont) formDataToSend.append('largeurPont', largeurPont);
+
+        const longueurBranche = normalizeNumberString(formData.longueurBranche);
+        if (longueurBranche) formDataToSend.append('longueurBranche', longueurBranche);
+
+        // Images nouvelles
+        selectedImages.forEach((image) => {
+          formDataToSend.append('images', image);
+        });
+
+        // Images existantes à conserver
+        existingImages.forEach((imageUrl) => {
+          formDataToSend.append('existingImages', imageUrl);
+        });
+
+        // Laisser le browser définir Content-Type (boundary) ; préciser Accept
+        const response = await fetch('http://localhost:8089/api/v1/produit/update', {
+          method: 'PUT',
+          headers: {
+            'Accept': 'application/json'
+          },
+          body: formDataToSend
+        });
+
+        if (response.ok) {
+          setSuccessMessage('Monture modifiée avec succès !');
+          setSelectedImages([]);
+          setImagesPreviews([]);
+          if (onSuccess) setTimeout(() => onSuccess(), 1500);
+        } else {
+          let errorMessage = 'Une erreur est survenue lors de la modification.';
+          try {
+            const errorData = await response.json();
+            if (errorData.message) errorMessage = errorData.message;
+            else if (errorData.errors) {
+              setErrors(errorData.errors);
+              setIsLoading(false);
+              return;
+            }
+          } catch (e) {
+            errorMessage = `Erreur HTTP: ${response.status}`;
+          }
+          setErrors({ general: errorMessage });
         }
       } else {
-        let errorMessage = 'Une erreur est survenue lors de la modification.';
-        try {
-          const errorData = await response.json();
-          if (errorData.message) {
-            errorMessage = errorData.message;
-          } else if (errorData.errors) {
-            setErrors(errorData.errors);
-            return;
+        // JSON path — garder la logique existante mais normaliser les nombres
+        const dataToSend = {
+          id: Number(normalizeIntString(formData.id)),
+          name: formData.name,
+          description: formData.description,
+          price: Number(normalizeNumberString(formData.price)),
+          quantity: Number(normalizeIntString(formData.quantity)),
+          marque: formData.marque || null,
+          couleur: formData.couleur || null,
+          isAvailable: !!formData.isAvailable,
+          categorie: formData.categorie,
+          gender: formData.gender || null,
+          taille: formData.taille || null,
+          typeMonture: formData.typeMonture || null,
+          materiauProduit: formData.materiauProduit || null,
+          formeProduit: formData.formeProduit || null,
+          largeurTotale: normalizeNumberString(formData.largeurTotale) ? Number(normalizeNumberString(formData.largeurTotale)) : null,
+          largeurVerre: normalizeNumberString(formData.largeurVerre) ? Number(normalizeNumberString(formData.largeurVerre)) : null,
+          hauteurVerre: normalizeNumberString(formData.hauteurVerre) ? Number(normalizeNumberString(formData.hauteurVerre)) : null,
+          largeurPont: normalizeNumberString(formData.largeurPont) ? Number(normalizeNumberString(formData.largeurPont)) : null,
+          longueurBranche: normalizeNumberString(formData.longueurBranche) ? Number(normalizeNumberString(formData.longueurBranche)) : null,
+          imageUrl: existingImages
+        };
+
+        console.log('📤 SUBMIT - Données à envoyer (JSON):', dataToSend);
+
+        const response = await fetch('http://localhost:8089/api/v1/produit/update', {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify(dataToSend)
+        });
+
+        if (response.ok) {
+          setSuccessMessage('Monture modifiée avec succès !');
+          if (onSuccess) setTimeout(() => onSuccess(), 1500);
+        } else {
+          let errorMessage = 'Une erreur est survenue lors de la modification.';
+          try {
+            const errorData = await response.json();
+            if (errorData.message) errorMessage = errorData.message;
+            else if (errorData.errors) {
+              setErrors(errorData.errors);
+              setIsLoading(false);
+              return;
+            }
+          } catch (e) {
+            errorMessage = `Erreur HTTP: ${response.status}`;
           }
-        } catch (e) {
-          errorMessage = `Erreur HTTP: ${response.status}`;
+          setErrors({ general: errorMessage });
         }
-        setErrors({ general: errorMessage });
       }
     } catch (error) {
-      console.error('Erreur lors de la modification:', error);
+      console.error('❌ SUBMIT - Erreur lors de la modification:', error);
       setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
     }
   };
+
 
   if (!monture) {
     return (
@@ -343,11 +529,11 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
           </div>
         )}
 
-        {errors.Id && (
+        {errors.id && (
           <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
             <div className="flex items-center">
               <IconifyIcon icon="mdi:alert-circle" className="mr-2" />
-              {errors.Id}
+              {errors.id}
             </div>
           </div>
         )}
@@ -734,6 +920,89 @@ const FormulaireModification = ({ monture, onSuccess, onCancel }) => {
                 Monture disponible
               </span>
             </label>
+          </div>
+
+          {/* Gestion des images */}
+          <div className="mb-6">
+            <h5 className="text-lg font-semibold text-gray-700 mb-4">Images de la monture</h5>
+
+            {/* Images existantes */}
+            {existingImages.length > 0 && (
+              <div className="mb-4">
+                <h6 className="text-md font-medium text-gray-600 mb-2">Images actuelles</h6>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {existingImages.map((imageUrl, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={imageUrl}
+                        alt={`Image existante ${index + 1}`}
+                        className="w-full h-auto rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleExistingImageRemove(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition"
+                        title="Supprimer l'image"
+                      >
+                        <IconifyIcon icon="mdi:close" className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sélection de nouvelles images */}
+            <div className="mb-4">
+              <label htmlFor="images" className="block font-medium text-default-900 text-sm mb-2">
+                Ajouter de nouvelles images
+              </label>
+              <input
+                type="file"
+                id="images"
+                name="images"
+                accept="image/*"
+                onChange={handleImageChange}
+                multiple
+                className="form-input"
+                disabled={isLoading}
+              />
+              {errors.images && (
+                <p className="text-red-500 text-sm mt-1">{errors.images}</p>
+              )}
+            </div>
+
+            {/* Aperçu des nouvelles images */}
+            {imagesPreviews.length > 0 && (
+              <div className="mb-4">
+                <h6 className="text-md font-medium text-gray-600 mb-2">Nouvelles images à ajouter</h6>
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {imagesPreviews.map((preview, index) => (
+                    <div key={index} className="relative group">
+                      <img
+                        src={preview}
+                        alt={`Aperçu ${index + 1}`}
+                        className="w-full h-auto rounded-lg border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleImageRemove(index)}
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition"
+                        title="Supprimer l'image"
+                      >
+                        <IconifyIcon icon="mdi:close" className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {existingImages.length === 0 && imagesPreviews.length === 0 && (
+              <p className="text-center text-gray-500 text-sm">
+                Aucune image disponible
+              </p>
+            )}
           </div>
 
           {/* Aperçu de la monture modifiée */}

@@ -22,6 +22,10 @@ const Formulaire = ({ onSuccess }) => {
     formeProduit: ''
   });
 
+  // État pour les images
+  const [selectedImages, setSelectedImages] = useState([]);
+  const [imagesPreviews, setImagesPreviews] = useState([]);
+
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [successMessage, setSuccessMessage] = useState('');
@@ -187,32 +191,40 @@ const Formulaire = ({ onSuccess }) => {
     setSuccessMessage('');
 
     try {
-      const dataToSend = {
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        quantity: parseInt(formData.quantity),
-        couleur: formData.couleur || null,
-        Marque: formData.Marque || null,
-        largeurTotale: formData.largeurTotale ? parseFloat(formData.largeurTotale) : null,
-        largeurVerre: formData.largeurVerre ? parseFloat(formData.largeurVerre) : null,
-        hauteurVerre: formData.hauteurVerre ? parseFloat(formData.hauteurVerre) : null,
-        largeurPont: formData.largeurPont ? parseFloat(formData.largeurPont) : null,
-        longueurBranche: formData.longueurBranche ? parseFloat(formData.longueurBranche) : null,
-        categorie: formData.categorie,
-        gender: formData.gender || null,
-        taille: formData.taille || null,
-        typeMonture: formData.typeMonture || null,
-        materiauProduit: formData.materiauProduit || null,
-        formeProduit: formData.formeProduit || null
-      };
+      // Créer FormData pour envoyer les fichiers
+      const formDataToSend = new FormData();
+
+      // Ajouter les données de base
+      formDataToSend.append('name', formData.name);
+      formDataToSend.append('description', formData.description);
+      formDataToSend.append('price', parseFloat(formData.price));
+      formDataToSend.append('quantity', parseInt(formData.quantity));
+      formDataToSend.append('categorie', formData.categorie);
+
+      // Ajouter les données optionnelles seulement si elles existent
+      if (formData.couleur) formDataToSend.append('couleur', formData.couleur);
+      if (formData.Marque) formDataToSend.append('Marque', formData.Marque);
+      if (formData.gender) formDataToSend.append('gender', formData.gender);
+      if (formData.taille) formDataToSend.append('taille', formData.taille);
+      if (formData.typeMonture) formDataToSend.append('typeMonture', formData.typeMonture);
+      if (formData.materiauProduit) formDataToSend.append('materiauProduit', formData.materiauProduit);
+      if (formData.formeProduit) formDataToSend.append('formeProduit', formData.formeProduit);
+
+      // Ajouter les dimensions seulement si elles existent
+      if (formData.largeurTotale) formDataToSend.append('largeurTotale', parseFloat(formData.largeurTotale));
+      if (formData.largeurVerre) formDataToSend.append('largeurVerre', parseFloat(formData.largeurVerre));
+      if (formData.hauteurVerre) formDataToSend.append('hauteurVerre', parseFloat(formData.hauteurVerre));
+      if (formData.largeurPont) formDataToSend.append('largeurPont', parseFloat(formData.largeurPont));
+      if (formData.longueurBranche) formDataToSend.append('longueurBranche', parseFloat(formData.longueurBranche));
+
+      // Ajouter les images
+      selectedImages.forEach((image, index) => {
+        formDataToSend.append('images', image);
+      });
 
       const response = await fetch('http://localhost:8089/api/v1/produit/add', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
+        body: formDataToSend // Ne pas spécifier Content-Type, le browser le fera automatiquement avec boundary
       });
 
       if (response.ok) {
@@ -238,6 +250,10 @@ const Formulaire = ({ onSuccess }) => {
           materiauProduit: '',
           formeProduit: ''
         });
+
+        // Reset des images
+        setSelectedImages([]);
+        setImagesPreviews([]);
 
         // Appeler onSuccess après un délai
         if (onSuccess) {
@@ -266,6 +282,32 @@ const Formulaire = ({ onSuccess }) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  // Gérer la sélection des fichiers image
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setSelectedImages(files);
+
+    // Créer des aperçus d'image
+    const previews = files.map(file => URL.createObjectURL(file));
+    setImagesPreviews(previews);
+
+    // Réinitialiser les erreurs d'image
+    setErrors(prev => ({
+      ...prev,
+      images: ''
+    }));
+  };
+
+  // Supprimer une image sélectionnée
+  const handleImageRemove = (index) => {
+    const newImages = selectedImages.filter((_, i) => i !== index);
+    setSelectedImages(newImages);
+
+    // Mettre à jour les aperçus
+    const newPreviews = imagesPreviews.filter((_, i) => i !== index);
+    setImagesPreviews(newPreviews);
   };
 
   if (loadingRefs) {
@@ -699,6 +741,51 @@ const Formulaire = ({ onSuccess }) => {
               </div>
             </div>
           )}
+
+          {/* Gestion des images */}
+          <div className="mb-6">
+            <h5 className="text-lg font-semibold text-gray-700 mb-4">Images de la monture</h5>
+            <div className="mb-4">
+              <input
+                type="file"
+                id="images"
+                name="images"
+                accept="image/*"
+                onChange={handleImageChange}
+                multiple
+                className="form-input"
+                disabled={isLoading}
+              />
+              {errors.images && (
+                <p className="text-red-500 text-sm mt-1">{errors.images}</p>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+              {imagesPreviews.length === 0 && (
+                <p className="text-center text-gray-500 text-sm col-span-full">
+                  Aucune image sélectionnée
+                </p>
+              )}
+              {imagesPreviews.map((preview, index) => (
+                <div key={index} className="relative group">
+                  <img
+                    src={preview}
+                    alt={`Aperçu ${index + 1}`}
+                    className="w-full h-auto rounded-lg border"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleImageRemove(index)}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 shadow-md hover:bg-red-600 transition"
+                    title="Supprimer l'image"
+                  >
+                    <IconifyIcon icon="mdi:close" className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
 
           <div className="mt-6">
             <button
