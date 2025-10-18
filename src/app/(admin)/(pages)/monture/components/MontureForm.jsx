@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { ChevronLeft, ChevronRight, Check, X, Plus, Trash2, Upload, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -9,6 +9,9 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
+  // Garde anti-submit temporaire (booléenne) + timer
+  const [submitGuardActive, setSubmitGuardActive] = useState(false);
+  const submitGuardTimerRef = useRef(null);
 
   // Données de référence
   const [marques, setMarques] = useState([]);
@@ -25,7 +28,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
     { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '' }
   ]);
 
-  const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm({
+  const { register, handleSubmit, watch } = useForm({
     defaultValues: monture ? {
       name: monture.name,
       description: monture.description,
@@ -126,9 +129,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
   // Navigation
   const nextStep = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(currentStep + 1);
-    }
+    setCurrentStep(prev => {
+      const next = Math.min(prev + 1, totalSteps);
+      if (next === totalSteps) {
+        // activer une garde très courte pour empêcher un clic fantôme
+        setSubmitGuardActive(true);
+      }
+      return next;
+    });
   };
 
   const prevStep = () => {
@@ -159,7 +167,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         }
         break;
       case 4:
-        if (variations.length === 0 || variations.some(v => !v.couleur || !v.materiauProduit || v.quantity < 0)) {
+        if (variations.length === 0 || variations.some(v => !v.couleur || !v.materiauProduit || Number(v.quantity) < 0)) {
           toast.error('Veuillez remplir toutes les variations correctement');
           return false;
         }
@@ -168,14 +176,38 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
     return true;
   };
 
-  const handleNext = () => {
+  const handleNext = (e) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
     if (validateStep()) {
-      nextStep();
+      // Important: retarder le changement d'étape pour éviter que le clic courant n'active le nouveau bouton "submit"
+      setTimeout(() => {
+        nextStep();
+      }, 0);
+    }
+  };
+
+  // Empêcher Enter de soumettre avant la dernière étape
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter' && currentStep < totalSteps) {
+      e.preventDefault();
+      handleNext();
     }
   };
 
   // Soumission du formulaire
   const onSubmit = async (data) => {
+    // Bloque un éventuel submit déclenché pendant la fenêtre de garde
+    if (submitGuardActive) return;
+
+    // Empêcher la soumission si on n'est pas à la dernière étape
+    if (currentStep < totalSteps) {
+      handleNext();
+      return;
+    }
+
     if (!validateStep()) return;
 
     try {
@@ -211,6 +243,23 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
       setLoading(false);
     }
   };
+
+  // Empêche le double-submit en cas de clic rapide
+  useEffect(() => {
+    if (submitGuardActive) {
+      if (submitGuardTimerRef.current) clearTimeout(submitGuardTimerRef.current);
+      submitGuardTimerRef.current = setTimeout(() => {
+        setSubmitGuardActive(false);
+        submitGuardTimerRef.current = null;
+      }, 120); // délai réduit ~120ms
+    }
+    return () => {
+      if (submitGuardTimerRef.current) {
+        clearTimeout(submitGuardTimerRef.current);
+        submitGuardTimerRef.current = null;
+      }
+    };
+  }, [submitGuardActive]);
 
   if (loadingData) {
     return (
@@ -252,7 +301,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
       </div>
 
       {/* Form content */}
-      <form onSubmit={handleSubmit(onSubmit)} className="p-6">
+      <form onSubmit={handleSubmit(onSubmit)} onKeyDown={handleKeyDown} className="p-6">
         {/* Étape 1 - Informations générales */}
         {currentStep === 1 && (
           <div className="space-y-6">
@@ -700,7 +749,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
           ) : (
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || submitGuardActive}
               className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
