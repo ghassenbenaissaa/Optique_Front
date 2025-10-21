@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuPlus, LuSearch, LuSquarePen, LuTrash2 } from 'react-icons/lu';
 import Swal from 'sweetalert2';
+import { materiauxService } from '../services/materiauxService';
+
+/**
+ * @typedef {import('../types').Materiau} Materiau
+ */
 
 const MateriauList = ({ onAddMateriau, onEditMateriau }) => {
   const [materiaux, setMateriaux] = useState([]);
@@ -15,17 +20,12 @@ const MateriauList = ({ onAddMateriau, onEditMateriau }) => {
   const fetchMateriaux = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8089/api/v1/materiauProduit/admin');
-
-      if (!response.ok) {
-        throw new Error(`Erreur: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await materiauxService.getAllMateriaux();
       setMateriaux(data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      const message = err?.response?.data?.message || err.message || 'Erreur réseau';
+      setError(message);
       console.error('Erreur lors du chargement des matériaux:', err);
     } finally {
       setLoading(false);
@@ -80,52 +80,43 @@ const MateriauList = ({ onAddMateriau, onEditMateriau }) => {
         }
       });
 
-      const response = await fetch(`http://localhost:8089/api/v1/materiauProduit/delete/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
+      await materiauxService.deleteMateriau(id);
+
+      // Supprimer le matériau de la liste locale
+      setMateriaux(prevMateriaux => prevMateriaux.filter(materiau => materiau.id !== id));
+      setError(null);
+
+      // Afficher un message de succès
+      Swal.fire({
+        title: 'Suppression réussie !',
+        html: `
+          <div class="text-center">
+            <div class="flex items-center justify-center mb-3">
+              <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg font-semibold">${name}</div>
+            </div>
+            <p class="text-gray-600">Le matériau a été supprimé avec succès.</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Parfait !',
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+          popup: 'rounded-lg',
+          title: 'text-xl font-semibold text-gray-800',
+          confirmButton: 'px-6 py-2 rounded-lg font-medium'
         }
       });
-
-      if (response.ok) {
-        // Supprimer le matériau de la liste locale
-        setMateriaux(prevMateriaux => prevMateriaux.filter(materiau => materiau.id !== id));
-        setError(null);
-
-        // Afficher un message de succès
-        Swal.fire({
-          title: 'Suppression réussie !',
-          html: `
-            <div class="text-center">
-              <div class="flex items-center justify-center mb-3">
-                <div class="bg-blue-100 text-blue-600 px-3 py-1 rounded-lg font-semibold">${name}</div>
-              </div>
-              <p class="text-gray-600">Le matériau a été supprimé avec succès.</p>
-            </div>
-          `,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          confirmButtonText: 'Parfait !',
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: 'rounded-lg',
-            title: 'text-xl font-semibold text-gray-800',
-            confirmButton: 'px-6 py-2 rounded-lg font-medium'
-          }
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la suppression');
-      }
     } catch (err) {
-      setError(`Erreur lors de la suppression: ${err.message}`);
+      const message = err?.response?.data?.message || err.message || 'Erreur lors de la suppression';
+      setError(`Erreur lors de la suppression: ${message}`);
       console.error('Erreur lors de la suppression:', err);
 
       // Afficher un message d'erreur
       Swal.fire({
         title: 'Erreur de suppression',
-        text: `Impossible de supprimer le matériau "${name}". ${err.message}`,
+        text: `Impossible de supprimer le matériau "${name}". ${message}`,
         icon: 'error',
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'Compris',

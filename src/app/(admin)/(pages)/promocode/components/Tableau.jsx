@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuPlus, LuSearch, LuSquarePen, LuTrash2 } from 'react-icons/lu';
 import Swal from 'sweetalert2';
+import { promoCodeService } from '../services/promocodeService';
 
 const PromoCodeList = ({ onAddPromoCode, onEditPromoCode }) => {
   const [promoCodes, setPromoCodes] = useState([]);
@@ -15,17 +16,12 @@ const PromoCodeList = ({ onAddPromoCode, onEditPromoCode }) => {
   const fetchPromoCodes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8089/api/v1/codePromo/admin');
-
-      if (!response.ok) {
-        throw new Error(`Erreur: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await promoCodeService.getAllPromoCodes();
       setPromoCodes(data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      const message = err?.response?.data?.message || err.message || 'Erreur inconnue';
+      setError(message);
       console.error('Erreur lors du chargement des codes promo:', err);
     } finally {
       setLoading(false);
@@ -81,53 +77,44 @@ const PromoCodeList = ({ onAddPromoCode, onEditPromoCode }) => {
         }
       });
 
-      const response = await fetch(`http://localhost:8089/api/v1/codePromo/delete/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
+      await promoCodeService.deletePromoCode(id);
+
+      // Supprimer le code promo de la liste locale
+      setPromoCodes(prevCodes => prevCodes.filter(promoCode => promoCode.id !== id));
+      setError(null);
+
+      // Afficher un message de succès
+      Swal.fire({
+        title: 'Suppression réussie !',
+        html: `
+          <div class="text-center">
+            <div class="flex items-center justify-center mb-3">
+              <div class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-mono font-bold mr-3">${code}</div>
+              <span class="text-green-600 font-semibold">${remisePourcentage}% de remise</span>
+            </div>
+            <p class="text-gray-600">Le code promo a été supprimé avec succès.</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Parfait !',
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+          popup: 'rounded-lg',
+          title: 'text-xl font-semibold text-gray-800',
+          confirmButton: 'px-6 py-2 rounded-lg font-medium'
         }
       });
-
-      if (response.ok) {
-        // Supprimer le code promo de la liste locale
-        setPromoCodes(prevCodes => prevCodes.filter(promoCode => promoCode.id !== id));
-        setError(null);
-
-        // Afficher un message de succès
-        Swal.fire({
-          title: 'Suppression réussie !',
-          html: `
-            <div class="text-center">
-              <div class="flex items-center justify-center mb-3">
-                <div class="bg-red-100 text-red-600 px-3 py-1 rounded-lg font-mono font-bold mr-3">${code}</div>
-                <span class="text-green-600 font-semibold">${remisePourcentage}% de remise</span>
-              </div>
-              <p class="text-gray-600">Le code promo a été supprimé avec succès.</p>
-            </div>
-          `,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          confirmButtonText: 'Parfait !',
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: 'rounded-lg',
-            title: 'text-xl font-semibold text-gray-800',
-            confirmButton: 'px-6 py-2 rounded-lg font-medium'
-          }
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la suppression');
-      }
     } catch (err) {
-      setError(`Erreur lors de la suppression: ${err.message}`);
+      const message = err?.response?.data?.message || err.message || 'Erreur lors de la suppression';
+      setError(`Erreur lors de la suppression: ${message}`);
       console.error('Erreur lors de la suppression:', err);
 
       // Afficher un message d'erreur
       Swal.fire({
         title: 'Erreur de suppression',
-        text: `Impossible de supprimer le code promo "${code}". ${err.message}`,
+        text: `Impossible de supprimer le code promo "${code}". ${message}`,
         icon: 'error',
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'Compris',

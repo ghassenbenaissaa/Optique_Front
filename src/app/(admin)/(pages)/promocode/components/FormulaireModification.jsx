@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { promoCodeService } from '../services/promocodeService';
 
 const FormulaireModification = ({ promoCode, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -81,34 +82,24 @@ const FormulaireModification = ({ promoCode, onSuccess, onCancel }) => {
         remisePourcentage: parseFloat(formData.remisePourcentage)
       };
 
-      const response = await fetch('http://localhost:8089/api/v1/codePromo/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      await promoCodeService.updatePromoCode(dataToSend);
 
-      if (response.ok) {
-        setSuccessMessage('Code promo modifié avec succès !');
+      setSuccessMessage('Code promo modifié avec succès !');
 
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess(formData);
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de la modification du code promo.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess(formData);
+        }, 1500);
       }
     } catch (error) {
       console.error('Erreur lors de la modification du code promo:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
+      const errorData = error?.response?.data;
+      if (errorData?.errors) {
+        setErrors(errorData.errors);
+      } else {
+        setErrors({ general: 'Une erreur est survenue lors de la modification du code promo.' });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuPlus, LuSearch, LuSquarePen, LuTrash2 } from 'react-icons/lu';
 import Swal from 'sweetalert2';
+import { fetchAllVerres, deleteVerre as deleteVerreApi } from '../services/verreService';
 
 const VerreList = ({ onAddVerre, onEditVerre }) => {
   const [verres, setVerres] = useState([]);
@@ -16,7 +17,7 @@ const VerreList = ({ onAddVerre, onEditVerre }) => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch('http://localhost:8089/api/v1/verre/admin/all');
+      const response = await fetchAllVerres();
 
       if (!response.ok) {
         throw new Error(`Erreur HTTP: ${response.status}`);
@@ -32,7 +33,7 @@ const VerreList = ({ onAddVerre, onEditVerre }) => {
         // Fallback si l'API retourne directement un array
         data = responseData;
       } else {
-        throw new Error('Format de réponse API invalide');
+        throw new Error("Format de réponse API invalide");
       }
 
       // Validation et nettoyage des données
@@ -148,13 +149,8 @@ const VerreList = ({ onAddVerre, onEditVerre }) => {
         }
       });
 
-      // Utiliser le realId pour la suppression
-      const response = await fetch(`http://localhost:8089/api/v1/verre/delete/${verre.realId}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
+      // Utiliser le realId pour la suppression via le service
+      const response = await deleteVerreApi(verre.realId);
 
       if (response.ok) {
         // Supprimer le verre de la liste locale
@@ -355,7 +351,7 @@ const VerreList = ({ onAddVerre, onEditVerre }) => {
                         currentVerres.map((verre, index) => {
                           // Vérification de sécurité pour chaque verre
                           if (!verre || !verre.id) {
-                            console.warn('Verre invalide détecté:', verre, 'à l\'index:', index);
+                            console.warn('Verre invalide détecté:', verre, "à l'index:", index);
                             return null;
                           }
 

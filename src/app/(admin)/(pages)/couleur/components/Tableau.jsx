@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuPlus, LuSearch, LuSquarePen, LuTrash2 } from 'react-icons/lu';
 import Swal from 'sweetalert2';
+import { couleurService } from '../services/couleurService';
 
 const CouleurList = ({ onAddCouleur, onEditCouleur }) => {
   const [couleurs, setCouleurs] = useState([]);
@@ -15,17 +16,11 @@ const CouleurList = ({ onAddCouleur, onEditCouleur }) => {
   const fetchCouleurs = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8089/api/v1/couleur/admin');
-
-      if (!response.ok) {
-        throw new Error(`Erreur: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await couleurService.getAllCouleurs();
       setCouleurs(data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Erreur inconnue');
       console.error('Erreur lors du chargement des couleurs:', err);
     } finally {
       setLoading(false);
@@ -81,53 +76,43 @@ const CouleurList = ({ onAddCouleur, onEditCouleur }) => {
         }
       });
 
-      const response = await fetch(`http://localhost:8089/api/v1/couleur/delete/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
+      await couleurService.deleteCouleur(id);
+
+      // Supprimer la couleur de la liste locale
+      setCouleurs(prevCouleurs => prevCouleurs.filter(couleur => couleur.id !== id));
+      setError(null);
+
+      // Afficher un message de succès
+      Swal.fire({
+        title: 'Suppression réussie !',
+        html: `
+          <div class="text-center">
+            <div class="flex items-center justify-center mb-3">
+              <div class="w-8 h-8 rounded border-2 border-gray-300 mr-3" style="background-color: ${codeHex}"></div>
+              <span class="font-semibold">${name}</span>
+            </div>
+            <p class="text-gray-600">La couleur a été supprimée avec succès.</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Parfait !',
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+          popup: 'rounded-lg',
+          title: 'text-xl font-semibold text-gray-800',
+          confirmButton: 'px-6 py-2 rounded-lg font-medium'
         }
       });
-
-      if (response.ok) {
-        // Supprimer la couleur de la liste locale
-        setCouleurs(prevCouleurs => prevCouleurs.filter(couleur => couleur.id !== id));
-        setError(null);
-
-        // Afficher un message de succès
-        Swal.fire({
-          title: 'Suppression réussie !',
-          html: `
-            <div class="text-center">
-              <div class="flex items-center justify-center mb-3">
-                <div class="w-8 h-8 rounded border-2 border-gray-300 mr-3" style="background-color: ${codeHex}"></div>
-                <span class="font-semibold">${name}</span>
-              </div>
-              <p class="text-gray-600">La couleur a été supprimée avec succès.</p>
-            </div>
-          `,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          confirmButtonText: 'Parfait !',
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: 'rounded-lg',
-            title: 'text-xl font-semibold text-gray-800',
-            confirmButton: 'px-6 py-2 rounded-lg font-medium'
-          }
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la suppression');
-      }
     } catch (err) {
-      setError(`Erreur lors de la suppression: ${err.message}`);
+      setError(`Erreur lors de la suppression: ${err.message || err}`);
       console.error('Erreur lors de la suppression:', err);
 
       // Afficher un message d'erreur
       Swal.fire({
         title: 'Erreur de suppression',
-        text: `Impossible de supprimer la couleur "${name}". ${err.message}`,
+        text: `Impossible de supprimer la couleur "${name}". ${err.message || err}`,
         icon: 'error',
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'Compris',

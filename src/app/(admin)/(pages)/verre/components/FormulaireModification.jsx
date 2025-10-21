@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { updateVerre } from '../services/verreService';
+import { MateriauVerre } from '../types';
 
 const FormulaireModification = ({ verre, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -51,11 +53,11 @@ const FormulaireModification = ({ verre, onSuccess, onCancel }) => {
     }
 
     if (!formData.indice) {
-      newErrors.indice = 'L\'indice est obligatoire';
+      newErrors.indice = "L'indice est obligatoire";
     } else {
       const indice = parseFloat(formData.indice);
       if (isNaN(indice) || indice <= 0) {
-        newErrors.indice = 'L\'indice doit être un nombre positif';
+        newErrors.indice = "L'indice doit être un nombre positif";
       }
     }
 
@@ -112,13 +114,7 @@ const FormulaireModification = ({ verre, onSuccess, onCancel }) => {
         isAvailable: formData.isAvailable
       };
 
-      const response = await fetch('http://localhost:8089/api/v1/verre/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      const response = await updateVerre(dataToSend);
 
       if (response.ok) {
         setSuccessMessage('Verre modifié avec succès !');
@@ -146,7 +142,7 @@ const FormulaireModification = ({ verre, onSuccess, onCancel }) => {
         setErrors({ general: errorMessage });
       }
     } catch (error) {
-      console.error('Erreur lors de la modification du verre:', error);
+      console.error("Erreur lors de la modification du verre:", error);
       setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
@@ -254,11 +250,9 @@ const FormulaireModification = ({ verre, onSuccess, onCancel }) => {
                 disabled={isLoading}
               >
                 <option value="">Sélectionner un matériau</option>
-                <option value="Minéral">Minéral</option>
-                <option value="Organique">Organique</option>
-                <option value="Polycarbonate">Polycarbonate</option>
-                <option value="Trivex">Trivex</option>
-                <option value="Hi-Index">Hi-Index</option>
+                {[MateriauVerre.MINERAL, MateriauVerre.ORGANIQUE, MateriauVerre.POLYCARBONATE, MateriauVerre.TRIVEX, MateriauVerre.HI_INDEX].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
               </select>
               {errors.materiau && (
                 <p className="text-red-500 text-sm mt-1">{errors.materiau}</p>

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { materiauxService } from '../services/materiauxService';
 
 const FormulaireModification = ({ materiau, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -59,34 +60,23 @@ const FormulaireModification = ({ materiau, onSuccess, onCancel }) => {
     setSuccessMessage('');
 
     try {
-      const response = await fetch('http://localhost:8089/api/v1/materiauProduit/update', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      await materiauxService.updateMateriau(formData);
+      setSuccessMessage('Matériau modifié avec succès !');
 
-      if (response.ok) {
-        setSuccessMessage('Matériau modifié avec succès !');
-
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess(formData);
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de la modification du matériau.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess(formData);
+        }, 1500);
       }
     } catch (error) {
+      const apiErrors = error?.response?.data?.errors;
+      if (apiErrors) {
+        setErrors(apiErrors);
+      } else {
+        setErrors({ general: 'Une erreur est survenue lors de la modification du matériau.' });
+      }
       console.error('Erreur lors de la modification du matériau:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
     }

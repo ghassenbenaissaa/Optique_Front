@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { promoCodeService } from '../services/promocodeService';
 
 const Formulaire = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -74,35 +75,25 @@ const Formulaire = ({ onSuccess }) => {
         remisePourcentage: parseFloat(formData.remisePourcentage)
       };
 
-      const response = await fetch('http://localhost:8089/api/v1/codePromo/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      await promoCodeService.addPromoCode(dataToSend);
 
-      if (response.ok) {
-        setSuccessMessage('Code promo ajouté avec succès !');
-        setFormData({ code: '', remisePourcentage: '', dateExpiration: '' });
+      setSuccessMessage('Code promo ajouté avec succès !');
+      setFormData({ code: '', remisePourcentage: '', dateExpiration: '' });
 
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de l\'ajout du code promo.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajout du code promo:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
+      const errorData = error?.response?.data;
+      if (errorData?.errors) {
+        setErrors(errorData.errors);
+      } else {
+        setErrors({ general: 'Une erreur est survenue lors de l\'ajout du code promo.' });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { marqueService } from '../services/marqueService';
 
 const Formulaire = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -106,43 +107,35 @@ const Formulaire = ({ onSuccess }) => {
     setSuccessMessage('');
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
-
-      const response = await fetch('http://localhost:8089/api/v1/marque/add', {
-        method: 'POST',
-        body: formDataToSend // Pas de Content-Type pour FormData
+      // Utilisation du service pour ajouter une marque
+      await marqueService.addMarque({
+        name: formData.name,
+        image: formData.image,
       });
 
-      if (response.ok) {
-        setSuccessMessage('Marque ajoutée avec succès !');
-        setFormData({ name: '', image: null });
-        setImagePreview(null);
+      setSuccessMessage('Marque ajoutée avec succès !');
+      setFormData({ name: '', image: null });
+      setImagePreview(null);
 
-        // Reset file input
-        const fileInput = document.getElementById('image');
-        if (fileInput) fileInput.value = '';
+      // Reset file input
+      const fileInput = document.getElementById('image');
+      if (fileInput) fileInput.value = '';
 
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de l\'ajout de la marque.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
     } catch (error) {
+      // Essayer de récupérer des erreurs côté API si disponibles
+      const apiErrors = error?.response?.data?.errors;
+      if (apiErrors) {
+        setErrors(apiErrors);
+      } else {
+        setErrors({ general: 'Une erreur est survenue lors de l\'ajout de la marque.' });
+      }
       console.error('Erreur lors de l\'ajout de la marque:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
     }

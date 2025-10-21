@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuPlus, LuSearch, LuSquarePen, LuTrash2, LuImage } from 'react-icons/lu';
 import Swal from 'sweetalert2';
+import { marqueService } from '../services/marqueService';
 
 const MarqueList = ({ onAddMarque, onEditMarque }) => {
   const [marques, setMarques] = useState([]);
@@ -15,17 +16,12 @@ const MarqueList = ({ onAddMarque, onEditMarque }) => {
   const fetchMarques = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8089/api/v1/marque/admin');
-
-      if (!response.ok) {
-        throw new Error(`Erreur: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await marqueService.getMarques();
       setMarques(data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      const message = err?.response?.data?.message || err.message || 'Erreur lors du chargement des marques';
+      setError(message);
       console.error('Erreur lors du chargement des marques:', err);
     } finally {
       setLoading(false);
@@ -88,60 +84,50 @@ const MarqueList = ({ onAddMarque, onEditMarque }) => {
         }
       });
 
-      const response = await fetch(`http://localhost:8089/api/v1/marque/delete/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
+      await marqueService.deleteMarque(id);
+
+      // Supprimer la marque de la liste locale
+      setMarques(prevMarques => prevMarques.filter(marque => marque.id !== id));
+      setError(null);
+
+      // Afficher un message de succès
+      Swal.fire({
+        title: 'Suppression réussie !',
+        html: `
+          <div class="text-center">
+            <div class="flex items-center justify-center mb-3">
+              ${imageUrl ? 
+                `<img src="${imageUrl}" alt="${name}" class="w-16 h-16 object-cover rounded-lg border-2 border-gray-300 mr-3" />` :
+                `<div class="w-16 h-16 bg-gray-200 rounded-lg border-2 border-gray-300 mr-3 flex items-center justify-center">
+                  <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                  </div>`
+              }
+              <span class="font-semibold">${name}</span>
+            </div>
+            <p class="text-gray-600">La marque a été supprimée avec succès.</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Parfait !',
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+          popup: 'rounded-lg',
+          title: 'text-xl font-semibold text-gray-800',
+          confirmButton: 'px-6 py-2 rounded-lg font-medium'
         }
       });
-
-      if (response.ok) {
-        // Supprimer la marque de la liste locale
-        setMarques(prevMarques => prevMarques.filter(marque => marque.id !== id));
-        setError(null);
-
-        // Afficher un message de succès
-        Swal.fire({
-          title: 'Suppression réussie !',
-          html: `
-            <div class="text-center">
-              <div class="flex items-center justify-center mb-3">
-                ${imageUrl ? 
-                  `<img src="${imageUrl}" alt="${name}" class="w-16 h-16 object-cover rounded-lg border-2 border-gray-300 mr-3" />` :
-                  `<div class="w-16 h-16 bg-gray-200 rounded-lg border-2 border-gray-300 mr-3 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-                    </svg>
-                  </div>`
-                }
-                <span class="font-semibold">${name}</span>
-              </div>
-              <p class="text-gray-600">La marque a été supprimée avec succès.</p>
-            </div>
-          `,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          confirmButtonText: 'Parfait !',
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: 'rounded-lg',
-            title: 'text-xl font-semibold text-gray-800',
-            confirmButton: 'px-6 py-2 rounded-lg font-medium'
-          }
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la suppression');
-      }
     } catch (err) {
-      setError(`Erreur lors de la suppression: ${err.message}`);
+      const message = err?.response?.data?.message || err.message || 'Erreur lors de la suppression';
+      setError(`Erreur lors de la suppression: ${message}`);
       console.error('Erreur lors de la suppression:', err);
 
       // Afficher un message d'erreur
       Swal.fire({
         title: 'Erreur de suppression',
-        text: `Impossible de supprimer la marque "${name}". ${err.message}`,
+        text: `Impossible de supprimer la marque "${name}". ${message}`,
         icon: 'error',
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'Compris',

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { formeService } from '../services/formeService';
 
 const Formulaire = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -106,43 +107,31 @@ const Formulaire = ({ onSuccess }) => {
     setSuccessMessage('');
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('name', formData.name);
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
+      await formeService.addForme({ name: formData.name, image: formData.image });
 
-      const response = await fetch('http://localhost:8089/api/v1/formeProduit/add', {
-        method: 'POST',
-        body: formDataToSend // Pas de Content-Type pour FormData
-      });
+      setSuccessMessage('Forme ajoutée avec succès !');
+      setFormData({ name: '', image: null });
+      setImagePreview(null);
 
-      if (response.ok) {
-        setSuccessMessage('Forme ajoutée avec succès !');
-        setFormData({ name: '', image: null });
-        setImagePreview(null);
+      // Reset file input
+      const fileInput = document.getElementById('image');
+      if (fileInput) fileInput.value = '';
 
-        // Reset file input
-        const fileInput = document.getElementById('image');
-        if (fileInput) fileInput.value = '';
-
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de l\'ajout de la forme.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
     } catch (error) {
+      // Gestion des erreurs axios
+      const apiErrors = error?.response?.data?.errors;
+      if (apiErrors) {
+        setErrors(apiErrors);
+      } else {
+        setErrors({ general: error?.response?.data?.message || 'Une erreur est survenue lors de l\'ajout de la forme.' });
+      }
       console.error('Erreur lors de l\'ajout de la forme:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
     }

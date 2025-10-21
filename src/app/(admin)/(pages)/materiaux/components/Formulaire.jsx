@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { materiauxService } from '../services/materiauxService';
 
 const Formulaire = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -48,35 +49,27 @@ const Formulaire = ({ onSuccess }) => {
     setSuccessMessage('');
 
     try {
-      const response = await fetch('http://localhost:8089/api/v1/materiauProduit/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      // Utiliser le service API centralisé
+      await materiauxService.addMateriau(formData);
 
-      if (response.ok) {
-        setSuccessMessage('Matériau ajouté avec succès !');
-        setFormData({ name: '' });
+      setSuccessMessage('Matériau ajouté avec succès !');
+      setFormData({ name: '' });
 
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de l\'ajout du matériau.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
     } catch (error) {
-      console.error('Erreur lors de l\'ajout du matériau:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
+      // Gestion d'erreur similaire à l'implémentation fetch précédente
+      const apiErrors = error?.response?.data?.errors;
+      if (apiErrors) {
+        setErrors(apiErrors);
+      } else {
+        setErrors({ general: "Une erreur est survenue lors de l'ajout du matériau." });
+      }
+      console.error("Erreur lors de l'ajout du matériau:", error);
     } finally {
       setIsLoading(false);
     }

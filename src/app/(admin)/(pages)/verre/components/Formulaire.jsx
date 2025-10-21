@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { addVerre } from '../services/verreService';
+import { MateriauVerre } from '../types';
 
 const Formulaire = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -35,11 +37,11 @@ const Formulaire = ({ onSuccess }) => {
     }
 
     if (!formData.indice) {
-      newErrors.indice = 'L\'indice est obligatoire';
+      newErrors.indice = "L'indice est obligatoire";
     } else {
       const indice = parseFloat(formData.indice);
       if (isNaN(indice) || indice <= 0) {
-        newErrors.indice = 'L\'indice doit être un nombre positif';
+        newErrors.indice = "L'indice doit être un nombre positif";
       }
     }
 
@@ -95,13 +97,7 @@ const Formulaire = ({ onSuccess }) => {
         isAvailable: formData.isAvailable
       };
 
-      const response = await fetch('http://localhost:8089/api/v1/verre/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      const response = await addVerre(dataToSend);
 
       if (response.ok) {
         setSuccessMessage('Verre ajouté avec succès !');
@@ -123,7 +119,7 @@ const Formulaire = ({ onSuccess }) => {
         }
       } else {
         // Gestion des erreurs avec le nouveau format d'API
-        let errorMessage = 'Une erreur est survenue lors de l\'ajout du verre.';
+        let errorMessage = "Une erreur est survenue lors de l'ajout du verre.";
         try {
           const errorData = await response.json();
           if (errorData.message) {
@@ -138,7 +134,7 @@ const Formulaire = ({ onSuccess }) => {
         setErrors({ general: errorMessage });
       }
     } catch (error) {
-      console.error('Erreur lors de l\'ajout du verre:', error);
+      console.error("Erreur lors de l'ajout du verre:", error);
       setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
@@ -235,11 +231,9 @@ const Formulaire = ({ onSuccess }) => {
                 disabled={isLoading}
               >
                 <option value="">Sélectionner un matériau</option>
-                <option value="Minéral">Minéral</option>
-                <option value="Organique">Organique</option>
-                <option value="Polycarbonate">Polycarbonate</option>
-                <option value="Trivex">Trivex</option>
-                <option value="Hi-Index">Hi-Index</option>
+                {[MateriauVerre.MINERAL, MateriauVerre.ORGANIQUE, MateriauVerre.POLYCARBONATE, MateriauVerre.TRIVEX, MateriauVerre.HI_INDEX].map((m) => (
+                  <option key={m} value={m}>{m}</option>
+                ))}
               </select>
               {errors.materiau && (
                 <p className="text-red-500 text-sm mt-1">{errors.materiau}</p>

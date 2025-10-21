@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuPlus, LuSearch, LuSquarePen, LuTrash2, LuImage } from 'react-icons/lu';
 import Swal from 'sweetalert2';
+import { formeService } from '../services/formeService';
 
 const FormeList = ({ onAddForme, onEditForme }) => {
   const [formes, setFormes] = useState([]);
@@ -15,17 +16,11 @@ const FormeList = ({ onAddForme, onEditForme }) => {
   const fetchFormes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8089/api/v1/formeProduit/admin');
-
-      if (!response.ok) {
-        throw new Error(`Erreur: ${response.status}`);
-      }
-
-      const data = await response.json();
+      const data = await formeService.getFormes();
       setFormes(data);
       setError(null);
     } catch (err) {
-      setError(err.message);
+      setError(err?.response?.data?.message || err.message || 'Erreur lors du chargement des formes');
       console.error('Erreur lors du chargement des formes:', err);
     } finally {
       setLoading(false);
@@ -88,60 +83,50 @@ const FormeList = ({ onAddForme, onEditForme }) => {
         }
       });
 
-      const response = await fetch(`http://localhost:8089/api/v1/formeProduit/delete/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
+      await formeService.deleteForme(id);
+
+      // Supprimer la forme de la liste locale
+      setFormes(prevFormes => prevFormes.filter(forme => forme.id !== id));
+      setError(null);
+
+      // Afficher un message de succès
+      Swal.fire({
+        title: 'Suppression réussie !',
+        html: `
+          <div class="text-center">
+            <div class="flex items-center justify-center mb-3">
+              ${imageUrl ? 
+                `<img src="${imageUrl}" alt="${name}" class="w-16 h-16 object-cover rounded-lg border-2 border-gray-300 mr-3" />` :
+                `<div class="w-16 h-16 bg-gray-200 rounded-lg border-2 border-gray-300 mr-3 flex items-center justify-center">
+                  <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                  </svg>
+                </div>`
+              }
+              <span class="font-semibold">${name}</span>
+            </div>
+            <p class="text-gray-600">La forme a été supprimée avec succès.</p>
+          </div>
+        `,
+        icon: 'success',
+        confirmButtonColor: '#10b981',
+        confirmButtonText: 'Parfait !',
+        timer: 3000,
+        timerProgressBar: true,
+        customClass: {
+          popup: 'rounded-lg',
+          title: 'text-xl font-semibold text-gray-800',
+          confirmButton: 'px-6 py-2 rounded-lg font-medium'
         }
       });
-
-      if (response.ok) {
-        // Supprimer la forme de la liste locale
-        setFormes(prevFormes => prevFormes.filter(forme => forme.id !== id));
-        setError(null);
-
-        // Afficher un message de succès
-        Swal.fire({
-          title: 'Suppression réussie !',
-          html: `
-            <div class="text-center">
-              <div class="flex items-center justify-center mb-3">
-                ${imageUrl ? 
-                  `<img src="${imageUrl}" alt="${name}" class="w-16 h-16 object-cover rounded-lg border-2 border-gray-300 mr-3" />` :
-                  `<div class="w-16 h-16 bg-gray-200 rounded-lg border-2 border-gray-300 mr-3 flex items-center justify-center">
-                    <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                      <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-                    </svg>
-                  </div>`
-                }
-                <span class="font-semibold">${name}</span>
-              </div>
-              <p class="text-gray-600">La forme a été supprimée avec succès.</p>
-            </div>
-          `,
-          icon: 'success',
-          confirmButtonColor: '#10b981',
-          confirmButtonText: 'Parfait !',
-          timer: 3000,
-          timerProgressBar: true,
-          customClass: {
-            popup: 'rounded-lg',
-            title: 'text-xl font-semibold text-gray-800',
-            confirmButton: 'px-6 py-2 rounded-lg font-medium'
-          }
-        });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Erreur lors de la suppression');
-      }
     } catch (err) {
-      setError(`Erreur lors de la suppression: ${err.message}`);
+      setError(`Erreur lors de la suppression: ${err?.response?.data?.message || err.message || ''}`);
       console.error('Erreur lors de la suppression:', err);
 
       // Afficher un message d'erreur
       Swal.fire({
         title: 'Erreur de suppression',
-        text: `Impossible de supprimer la forme "${name}". ${err.message}`,
+        text: `Impossible de supprimer la forme "${name}". ${err?.response?.data?.message || err.message || ''}`,
         icon: 'error',
         confirmButtonColor: '#dc2626',
         confirmButtonText: 'Compris',
@@ -339,69 +324,66 @@ const FormeList = ({ onAddForme, onEditForme }) => {
                   <span className="hidden sm:inline">Précédent</span>
                 </button>
 
-                {/* Affichage des numéros de pages - Adaptatif */}
                 {totalPages > 1 && (
-                  <>
-                    {/* Version mobile : Seulement page actuelle et totale */}
-                    <div className="flex sm:hidden items-center gap-1">
-                      <span className="text-sm text-default-500">
-                        {currentPage} / {totalPages}
-                      </span>
-                    </div>
+                  <div className="flex sm:hidden items-center gap-1">
+                    <span className="text-sm text-default-500">
+                      {currentPage} / {totalPages}
+                    </span>
+                  </div>
+                )}
 
-                    {/* Version desktop : Numéros de pages complets */}
-                    <div className="hidden sm:flex items-center gap-2">
-                      {currentPage > 2 && (
-                        <>
-                          <button
-                            type="button"
-                            className="btn size-7.5 border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary"
-                            onClick={() => goToPage(1)}
-                          >
-                            1
-                          </button>
-                          {currentPage > 3 && <span className="text-default-500">...</span>}
-                        </>
-                      )}
-
-                      {currentPage > 1 && (
+                {totalPages > 1 && (
+                  <div className="hidden sm:flex items-center gap-2">
+                    {currentPage > 2 && (
+                      <>
                         <button
                           type="button"
                           className="btn size-7.5 border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary"
-                          onClick={() => goToPage(currentPage - 1)}
+                          onClick={() => goToPage(1)}
                         >
-                          {currentPage - 1}
+                          1
                         </button>
-                      )}
+                        {currentPage > 3 && <span className="text-default-500">...</span>}
+                      </>
+                    )}
 
-                      <button type="button" className="btn size-7.5 bg-primary text-white">
-                        {currentPage}
+                    {currentPage > 1 && (
+                      <button
+                        type="button"
+                        className="btn size-7.5 border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary"
+                        onClick={() => goToPage(currentPage - 1)}
+                      >
+                        {currentPage - 1}
                       </button>
+                    )}
 
-                      {currentPage < totalPages && (
+                    <button type="button" className="btn size-7.5 bg-primary text-white">
+                      {currentPage}
+                    </button>
+
+                    {currentPage < totalPages && (
+                      <button
+                        type="button"
+                        className="btn size-7.5 border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary"
+                        onClick={() => goToPage(currentPage + 1)}
+                      >
+                        {currentPage + 1}
+                      </button>
+                    )}
+
+                    {currentPage < totalPages - 1 && (
+                      <>
+                        {currentPage < totalPages - 2 && <span className="text-default-500">...</span>}
                         <button
                           type="button"
                           className="btn size-7.5 border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary"
-                          onClick={() => goToPage(currentPage + 1)}
+                          onClick={() => goToPage(totalPages)}
                         >
-                          {currentPage + 1}
+                          {totalPages}
                         </button>
-                      )}
-
-                      {currentPage < totalPages - 1 && (
-                        <>
-                          {currentPage < totalPages - 2 && <span className="text-default-500">...</span>}
-                          <button
-                            type="button"
-                            className="btn size-7.5 border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary"
-                            onClick={() => goToPage(totalPages)}
-                          >
-                            {totalPages}
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </>
+                      </>
+                    )}
+                  </div>
                 )}
 
                 <button

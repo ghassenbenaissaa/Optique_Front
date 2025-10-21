@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { marqueService } from '../services/marqueService';
 
 const FormulaireModification = ({ marque, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -119,38 +120,29 @@ const FormulaireModification = ({ marque, onSuccess, onCancel }) => {
     setSuccessMessage('');
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('id', formData.id);
-      formDataToSend.append('name', formData.name);
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
-
-      const response = await fetch('http://localhost:8089/api/v1/marque/update', {
-        method: 'PUT',
-        body: formDataToSend // Pas de Content-Type pour FormData
+      // Utilisation du service pour mettre à jour une marque
+      await marqueService.updateMarque({
+        id: formData.id,
+        name: formData.name,
+        image: formData.image,
       });
 
-      if (response.ok) {
-        setSuccessMessage('Marque modifiée avec succès !');
+      setSuccessMessage('Marque modifiée avec succès !');
 
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess(formData);
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de la modification de la marque.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess(formData);
+        }, 1500);
       }
     } catch (error) {
+      const apiErrors = error?.response?.data?.errors;
+      if (apiErrors) {
+        setErrors(apiErrors);
+      } else {
+        setErrors({ general: 'Une erreur est survenue lors de la modification de la marque.' });
+      }
       console.error('Erreur lors de la modification de la marque:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
     }

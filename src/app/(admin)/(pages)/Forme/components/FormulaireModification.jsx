@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { formeService } from '../services/formeService';
 
 const FormulaireModification = ({ forme, onSuccess, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -119,38 +120,24 @@ const FormulaireModification = ({ forme, onSuccess, onCancel }) => {
     setSuccessMessage('');
 
     try {
-      const formDataToSend = new FormData();
-      formDataToSend.append('id', formData.id);
-      formDataToSend.append('name', formData.name);
-      if (formData.image) {
-        formDataToSend.append('image', formData.image);
-      }
+      await formeService.updateForme({ id: formData.id, name: formData.name, image: formData.image });
 
-      const response = await fetch('http://localhost:8089/api/v1/formeProduit/update', {
-        method: 'PUT',
-        body: formDataToSend // Pas de Content-Type pour FormData
-      });
+      setSuccessMessage('Forme modifiée avec succès !');
 
-      if (response.ok) {
-        setSuccessMessage('Forme modifiée avec succès !');
-
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess(formData);
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de la modification de la forme.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess(formData);
+        }, 1500);
       }
     } catch (error) {
+      const apiErrors = error?.response?.data?.errors;
+      if (apiErrors) {
+        setErrors(apiErrors);
+      } else {
+        setErrors({ general: error?.response?.data?.message || 'Une erreur est survenue lors de la modification de la forme.' });
+      }
       console.error('Erreur lors de la modification de la forme:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
     } finally {
       setIsLoading(false);
     }

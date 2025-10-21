@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
+import { couleurService } from '../services/couleurService';
+import { HEX_COLOR_REGEX } from '../types';
 
 const Formulaire = ({ onSuccess }) => {
   const [formData, setFormData] = useState({
@@ -34,7 +36,7 @@ const Formulaire = ({ onSuccess }) => {
 
     if (!formData.codeHex.trim()) {
       newErrors.codeHex = 'Le code hexadécimal est obligatoire';
-    } else if (!/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(formData.codeHex)) {
+    } else if (!HEX_COLOR_REGEX.test(formData.codeHex)) {
       newErrors.codeHex = 'Le code hexadécimal doit être au format #RRGGBB ou #RGB';
     }
 
@@ -53,35 +55,24 @@ const Formulaire = ({ onSuccess }) => {
     setSuccessMessage('');
 
     try {
-      const response = await fetch('http://localhost:8089/api/v1/couleur/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData)
-      });
+      await couleurService.addCouleur(formData);
+      setSuccessMessage('Couleur ajoutée avec succès !');
+      setFormData({ name: '', codeHex: '' });
 
-      if (response.ok) {
-        setSuccessMessage('Couleur ajoutée avec succès !');
-        setFormData({ name: '', codeHex: '' });
-
-        // Appeler onSuccess après un délai pour laisser voir le message de succès
-        if (onSuccess) {
-          setTimeout(() => {
-            onSuccess();
-          }, 1500);
-        }
-      } else {
-        const errorData = await response.json();
-        if (errorData.errors) {
-          setErrors(errorData.errors);
-        } else {
-          setErrors({ general: 'Une erreur est survenue lors de l\'ajout de la couleur.' });
-        }
+      // Appeler onSuccess après un délai pour laisser voir le message de succès
+      if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 1500);
       }
     } catch (error) {
-      console.error('Erreur lors de l\'ajout de la couleur:', error);
-      setErrors({ general: 'Erreur de connexion au serveur.' });
+      const errorData = error?.response?.data;
+      if (errorData?.errors) {
+        setErrors(errorData.errors);
+      } else {
+        setErrors({ general: "Une erreur est survenue lors de l'ajout de la couleur." });
+      }
+      console.error("Erreur lors de l'ajout de la couleur:", error);
     } finally {
       setIsLoading(false);
     }
