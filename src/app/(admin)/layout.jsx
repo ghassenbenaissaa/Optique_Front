@@ -1,6 +1,7 @@
 import Footer from '@/components/layouts/Footer';
 import Sidebar from '@/components/layouts/SideNav';
 import Topbar from '@/components/layouts/topbar';
+
 const Layout = ({
   children
 }) => {

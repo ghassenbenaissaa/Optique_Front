@@ -5,6 +5,7 @@ import HoverToggle from './HoverToggle';
 import logoDark from '@/assets/images/logo-dark.png';
 import logoLight from '@/assets/images/logo-light.png';
 import logoSm from '@/assets/images/logo-sm.png';
+
 const Sidebar = () => {
   return <aside id="app-menu" className="app-menu">
       <Link to="/index" className="logo-box sticky top-0 flex min-h-topbar-height items-center justify-start px-6 backdrop-blur-xs">

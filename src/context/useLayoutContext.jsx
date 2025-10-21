@@ -75,7 +75,7 @@ const LayoutProvider = ({
     return () => {
       window.removeEventListener('resize', debouncedResize);
     };
-  }, [hasHydrated]);
+  }, [hasHydrated, changeSideNavSize]);
   return <LayoutContext value={useMemo(() => ({
     ...settings,
     updateSettings,

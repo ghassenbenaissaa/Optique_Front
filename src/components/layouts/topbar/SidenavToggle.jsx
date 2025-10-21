@@ -1,5 +1,5 @@
 import { LuAlignLeft } from 'react-icons/lu';
-import { showBackdrop, toggleClassName } from '@/utils/layout';
+import { toggleClassName } from '@/utils/layout';
 import { useLayoutContext } from '@/context/useLayoutContext';
 
 const SidenavToggle = () => {
@@ -16,11 +16,6 @@ const SidenavToggle = () => {
         size: newSize
       }
     });
-
-    // 🔹 Si on ouvre le menu, on peut afficher le backdrop (optionnel)
-    if (newSize === 'default') {
-      showBackdrop();
-    }
 
     toggleClassName('sidenav-enable');
   };
