@@ -1,7 +1,6 @@
 import Footer from '@/components/layouts/Footer';
 import Sidebar from '@/components/layouts/SideNav';
 import Topbar from '@/components/layouts/topbar';
-import Customizer from '@/components/layouts/customizer';
 const PageWrapper = ({
   children
 }) => {
@@ -14,7 +13,6 @@ const PageWrapper = ({
           <Footer />
         </div>
       </div>
-      <Customizer />
     </>;
 };
 export default PageWrapper;

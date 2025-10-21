@@ -16,31 +16,6 @@ import SimpleBar from 'simplebar-react';
 import SidenavToggle from './SidenavToggle';
 import ThemeModeToggle from './ThemeModeToggle';
 import { LuBellRing, LuClock, LuGem, LuHeart, LuLogOut, LuMail, LuMessagesSquare, LuMoveRight, LuSettings, LuShoppingBag } from 'react-icons/lu';
-const languages = [{
-  src: UsFlag,
-  label: 'English'
-}, {
-  src: SpainFlag,
-  label: 'Spanish'
-}, {
-  src: GermanyFlag,
-  label: 'German'
-}, {
-  src: FrenchFlag,
-  label: 'French'
-}, {
-  src: JapaneseFlag,
-  label: 'Japanese'
-}, {
-  src: ItalyFlag,
-  label: 'Italian'
-}, {
-  src: RussiaFlag,
-  label: 'Russian'
-}, {
-  src: ArabianFlag,
-  label: 'Arabic'
-}];
 const tabs = [{
   id: 'tabsViewall',
   title: 'View all',
@@ -131,22 +106,7 @@ const notifications = {
     ago: 'yesterday'
   }]
 };
-const profileMenu = [{
-  icon: <LuMail className="size-4" />,
-  label: 'Inbox',
-  to: '/mailbox',
-  badge: '15'
-}, {
-  icon: <LuMessagesSquare className="size-4" />,
-  label: 'Chat',
-  to: '/chat'
-}, {
-  icon: <LuGem className="size-4" />,
-  label: 'Upgrade Pro',
-  to: '/pricing'
-}, {
-  divider: true
-}, {
+const profileMenu = [ {
   icon: <LuLogOut className="size-4" />,
   label: 'Sign Out',
   to: '/basic-logout'
@@ -156,30 +116,9 @@ const Topbar = () => {
       <div className="w-full flex items-center justify-between px-6">
         <div className="flex items-center gap-5">
           <SidenavToggle />
-
-          <div className="lg:flex hidden items-center relative">
-            <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-              <TbSearch className="text-base" />
-            </div>
-            <input type="search" id="topbar-search" className="form-input px-12 text-sm rounded border-transparent focus:border-transparent w-60" placeholder="Search something..." />
-            <button type="button" className="absolute inset-y-0 end-0 flex items-center pe-4">
-              <span className="ms-auto font-medium">⌘ K</span>
-            </button>
-          </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="topbar-item hs-dropdown [--placement:bottom-right] relative inline-flex">
-            <button className="hs-dropdown-toggle btn btn-icon size-8 hover:bg-default-150 rounded-full relative" type="button">
-              <img src={UsFlag} alt="us-flag" className="size-4.5 rounded" />
-            </button>
-            <div className="hs-dropdown-menu" role="menu">
-              {languages.map((lang, i) => <Link key={i} to="#" className="flex items-center gap-x-3.5 py-1.5 px-3 text-default-600 hover:bg-default-150 rounded font-medium">
-                  <img src={lang.src} alt={lang.label} className="size-4 rounded-full" />
-                  {lang.label}
-                </Link>)}
-            </div>
-          </div>
 
           <ThemeModeToggle />
 
@@ -245,11 +184,6 @@ const Topbar = () => {
             </div>
           </div>
 
-          <div className="topbar-item">
-            <button className="btn btn-icon size-8 hover:bg-default-150 rounded-full" type="button" aria-haspopup="dialog" aria-expanded="false" aria-controls="theme-customization" data-hs-overlay="#theme-customization">
-              <LuSettings className="size-4.5" />
-            </button>
-          </div>
 
           <div className="topbar-item hs-dropdown relative inline-flex">
             <button className="cursor-pointer bg-pink-100 rounded-full">
@@ -257,8 +191,7 @@ const Topbar = () => {
             </button>
             <div className="hs-dropdown-menu min-w-48">
               <div className="p-2">
-                <h6 className="mb-2 text-default-500">Welcome to Tailwick</h6>
-                <Link to="#!" className="flex gap-3">
+                <div className="flex gap-3">
                   <div className="relative inline-block">
                     <img src={avatar1} alt="user" className="size-12 rounded" />
                     <span className="-top-1 -end-1 absolute w-2.5 h-2.5 bg-green-400 border-2 border-white rounded-full"></span>
@@ -267,7 +200,7 @@ const Topbar = () => {
                     <h6 className="mb-1 text-sm font-semibold text-default-800">Paula Keenan</h6>
                     <p className="text-default-500">CEO & Founder</p>
                   </div>
-                </Link>
+                </div>
               </div>
 
               <div className="border-t border-default-200 -mx-2 my-2"></div>
