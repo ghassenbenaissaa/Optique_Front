@@ -1,147 +1,186 @@
-import avatar1 from '@/assets/images/user/avatar-1.png';
-import avatar2 from '@/assets/images/user/avatar-2.png';
-import avatar5 from '@/assets/images/user/avatar-5.png';
-import avatar7 from '@/assets/images/user/avatar-7.png';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { LuChevronLeft, LuChevronRight, LuCircleCheck, LuCircleX, LuDownload, LuEllipsis, LuEye, LuLoader, LuPlus, LuSearch, LuSlidersHorizontal, LuSquarePen, LuTrash2 } from 'react-icons/lu';
+import { LuChevronLeft, LuChevronRight, LuCircleCheck, LuCircleX, LuDownload, LuLoader, LuPlus, LuSearch, LuSlidersHorizontal, LuUserX } from 'react-icons/lu';
+import Swal from 'sweetalert2';
+import { userService } from '../services/userService';
+import { getBanStatusLabel, formatDate } from '../types';
+
 const UserListTabel = () => {
-  const users = [{
-    id: '#TW1500001',
-    name: 'Marie Prohaska',
-    role: 'Graphic Designer',
-    location: 'United Kingdom',
-    email: 'prohaska@tailwick.com',
-    phone: '853 565 9802',
-    joiningDate: '04 Jan, 2023',
-    status: 'Verified',
-    avatar: avatar2
-  }, {
-    id: '#TW1500002',
-    name: 'Jaqueline Hammes',
-    role: 'ASP.Net Developer',
-    location: 'Brazil',
-    email: 'jaqueline@tailwick.com',
-    phone: '546 6334 586',
-    joiningDate: '18 Jan, 2023',
-    status: 'Waiting',
-    avatar: avatar1
-  }, {
-    id: '#TW1500003',
-    name: 'Marlene Hirthe',
-    role: 'Angular Developer',
-    location: 'Spain',
-    email: 'marlene@tailwick.com',
-    phone: '141 654 9876',
-    joiningDate: '04 Feb, 2023',
-    status: 'Verified',
-    avatar: avatar2
-  }, {
-    id: '#TW1500004',
-    name: 'Darien Romaguera',
-    role: 'PHP Developer',
-    location: 'United Kingdom',
-    email: 'darien@tailwick.com',
-    phone: '687 1345 935',
-    joiningDate: '18 May, 2023',
-    status: 'Verified',
-    avatar: avatar5
-  }, {
-    id: '#TW1500005',
-    name: 'Jessika McKenzie',
-    role: 'UI/UX Designer',
-    location: 'France',
-    email: 'jessika@tailwick.com',
-    phone: '546 8745 235',
-    joiningDate: '14 Jul, 2023',
-    status: 'Rejected',
-    avatar: avatar7
-  }, {
-    id: '#TW1500006',
-    name: 'Domenic Tromp',
-    role: 'Team Leader',
-    location: 'Germany',
-    email: 'domenic@tailwick.com',
-    phone: '612 6088 735',
-    joiningDate: '27 Oct, 2023',
-    status: 'Verified',
-    initials: 'DT'
-  }, {
-    id: '#TW1500007',
-    name: 'Chandler Erdman',
-    role: 'React Developer',
-    location: 'Japan',
-    email: 'chandler@tailwick.com',
-    phone: '687 1345 935',
-    joiningDate: '21 Nov, 2023',
-    status: 'Waiting',
-    initials: 'CE'
-  }, {
-    id: '#TW1500008',
-    name: 'Lavada Muller',
-    role: 'Laravel Developer',
-    location: 'United States',
-    email: 'lavada@tailwick.com',
-    phone: '141 654 9876',
-    joiningDate: '05 Dec, 2023',
-    status: 'Rejected',
-    initials: 'LM'
-  }, {
-    id: '#TW1500009',
-    name: 'Ambrose Hills',
-    role: 'Python Developer',
-    location: 'China',
-    email: 'ambrose@tailwick.com',
-    phone: '697 4563 453',
-    joiningDate: '25 Dec, 2023',
-    status: 'Verified',
-    initials: 'AH'
-  }, {
-    id: '#TW1500010',
-    name: 'Dameon Watsica',
-    role: 'Team Leader',
-    location: 'France',
-    email: 'dameon@tailwick.com',
-    phone: '141 654 9876',
-    joiningDate: '14 Jan, 2024',
-    status: 'Verified',
-    initials: 'DW'
-  }];
+  const [users, setUsers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [banningUser, setBanningUser] = useState(null);
+
+  // Récupérer les utilisateurs
+  const fetchUsers = async (page = 0) => {
+    try {
+      setLoading(true);
+      console.log('Fetching users for page:', page);
+      const response = await userService.getAllUsers(page, 10);
+      console.log('API Response:', response);
+
+      setUsers(response.content || []);
+      setTotalPages(response.totalPages || 0);
+      setTotalUsers(response.totalElements || 0);
+      setCurrentPage(page);
+
+      console.log('Users set:', response.content?.length || 0, 'users');
+    } catch (error) {
+      console.error('Erreur lors de la récupération des utilisateurs:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Bannir/débannir un utilisateur
+  const handleToggleBan = async (userId, currentBanStatus) => {
+    try {
+      setBanningUser(userId);
+      const newBanStatus = !currentBanStatus;
+      await userService.toggleUserBanStatus(userId, newBanStatus);
+
+      // Rafraîchir la liste des utilisateurs
+      await fetchUsers(currentPage);
+    } catch (error) {
+      console.error('Erreur lors du changement de statut:', error);
+    } finally {
+      setBanningUser(null);
+    }
+  };
+
+  // Bannir un utilisateur avec confirmation SweetAlert
+  const banUser = async (user) => {
+    // SweetAlert2 pour la confirmation de bannissement
+    const result = await Swal.fire({
+      title: 'Bannir cet utilisateur ?',
+      html: `
+        <div class="text-center">
+          <div class="flex items-center justify-center mb-3">
+            <div class="w-12 h-12 flex items-center justify-center rounded-full bg-red-100 text-red-600 font-semibold mr-3">
+              ${user.firstname.charAt(0)}${user.lastname.charAt(0)}
+            </div>
+            <div class="text-left">
+              <div class="font-semibold text-lg">${user.firstname} ${user.lastname}</div>
+              <div class="text-gray-600 text-sm">${user.email}</div>
+            </div>
+          </div>
+          <p class="text-red-600 font-medium">⚠️ Cette action est irréversible !</p>
+          <p class="text-gray-600 text-sm mt-2">L'utilisateur sera définitivement banni et ne pourra plus accéder à la plateforme.</p>
+        </div>
+      `,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#dc2626',
+      cancelButtonColor: '#6b7280',
+      confirmButtonText: 'Oui, bannir',
+      cancelButtonText: 'Annuler',
+      reverseButtons: true,
+      focusCancel: true,
+      customClass: {
+        popup: 'swal2-popup-large',
+        title: 'swal2-title-red'
+      }
+    });
+
+    if (result.isConfirmed) {
+      // Afficher le loading pendant l'action
+      Swal.fire({
+        title: 'Bannissement en cours...',
+        html: `Bannissement de <strong>${user.firstname} ${user.lastname}</strong>`,
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      try {
+        await userService.toggleUserBanStatus(user.id, true);
+
+        // Rafraîchir la liste des utilisateurs
+        await fetchUsers(currentPage);
+
+        // Succès
+        Swal.fire({
+          title: 'Utilisateur banni !',
+          html: `<strong>${user.firstname} ${user.lastname}</strong> a été banni avec succès.`,
+          icon: 'success',
+          confirmButtonColor: '#059669',
+          timer: 3000,
+          timerProgressBar: true,
+        });
+      } catch (error) {
+        console.error('Erreur lors du bannissement:', error);
+
+        // Erreur
+        Swal.fire({
+          title: 'Erreur !',
+          text: 'Une erreur est survenue lors du bannissement de l\'utilisateur.',
+          icon: 'error',
+          confirmButtonColor: '#dc2626',
+        });
+      }
+    }
+  };
+
+  // Gérer la pagination
+  const handlePageChange = (page) => {
+    if (page >= 0 && page < totalPages) {
+      fetchUsers(page);
+    }
+  };
+
+  // Filtrer les utilisateurs affichés
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = searchTerm === '' ||
+      user.firstname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.lastname.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const matchesStatus = statusFilter === '' ||
+      (statusFilter === 'Banni' && user.isBanned) ||
+      (statusFilter === 'Actif' && !user.isBanned);
+
+    return matchesSearch && matchesStatus;
+  });
+
+  // Charger les utilisateurs au montage du composant
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
   return <div className="card">
       <div className="card-header">
-        <h6 className="card-title">Users List</h6>
-        <button className="btn btn-sm bg-primary text-white">
-          <LuPlus className="size-4 me-1" />
-          Add user
-        </button>
+        <h6 className="card-title">Liste des Utilisateurs</h6>
       </div>
 
       <div className="card-header">
         <div className="md:flex items-center md:space-y-0 space-y-4 gap-3">
           <div className="relative">
-            <input type="email" className="form-input form-input-sm ps-9" placeholder="Search for name,email" />
+            <input
+              type="text"
+              className="form-input form-input-sm ps-9"
+              placeholder="Rechercher par nom ou email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
             <div className="absolute inset-y-0 start-0 flex items-center ps-3">
               <LuSearch className="size-3.5 flex items-center text-default-500 fill-default-100" />
             </div>
           </div>
 
-          <select className="form-input form-input-sm">
-            <option defaultValue="">select status</option>
-            <option>Hidden</option>
-            <option>Rejected</option>
-            <option>Verified</option>
-            <option>Waiting</option>
+          <select
+            className="form-input form-input-sm"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="">Tous les statuts</option>
+            <option value="Actif">Actif</option>
+            <option value="Banni">Banni</option>
           </select>
-        </div>
-
-        <div className="flex gap-2 items-center flex-wrap">
-          <button type="button" className="btn btn-sm bg-transparent border border-dashed border-primary  text-primary hover:bg-primary/10">
-            <LuDownload className="size-4" />
-            Import
-          </button>
-
-          <button type="button" className="btn btn-sm size-7.5 bg-default-100 text-default-500 hover:bg-default-1500  hover:text-white">
-            <LuSlidersHorizontal className="size-4" />
-          </button>
         </div>
       </div>
 
@@ -149,106 +188,132 @@ const UserListTabel = () => {
         <div className="overflow-x-auto">
           <div className="min-w-full inline-block align-middle">
             <div className="overflow-hidden">
-              <table className="min-w-full divide-y divide-default-200">
-                <thead className="bg-default-150">
-                  <tr className="text-sm font-normal text-default-700 whitespace-nowrap">
-                    <th className="ps-4 text-start">
-                      <input id="checkbox-all" type="checkbox" className="form-checkbox" />
-                    </th>
-                    <th className="px-3.5 py-3 text-start">User ID</th>
-                    <th className="px-3.5 py-3 text-start">Name</th>
-                    <th className="px-3.5 py-3 text-start">Location</th>
-                    <th className="px-3.5 py-3 text-start">Email</th>
-                    <th className="px-3.5 py-3 text-start">Phone Number</th>
-                    <th className="px-3.5 py-3 text-start">Joining Date</th>
-                    <th className="px-3.5 py-3 text-start">Status</th>
-                    <th className="px-3.5 py-3 text-start">Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {users.map(user => <tr key={user.id} className="text-default-800 font-normal text-sm whitespace-nowrap">
-                      <td className="py-3 ps-4">
-                        <input type="checkbox" className="form-checkbox" />
-                      </td>
-                      <td className="px-3.5 py-3 text-primary">{user.id}</td>
-                      <td className="flex py-3 px-3.5 items-center gap-3">
-                        {user.avatar ? <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full" /> : <div className="w-10 h-10 flex items-center justify-center rounded-full bg-default-200 font-semibold">
-                            {user.initials}
-                          </div>}
-                        <div>
-                          <h6 className="mb-1.5 font-semibold">
-                            <Link to="#" className="text-default-800">
-                              {user.name}
-                            </Link>
-                          </h6>
-                          <p className="text-default-500">{user.role}</p>
-                        </div>
-                      </td>
-                      <td className="py-3 px-3.5">{user.location}</td>
-                      <td className="py-3 px-3.5">{user.email}</td>
-                      <td className="py-3 px-3.5">{user.phone}</td>
-                      <td className="py-3 px-3.5">{user.joiningDate}</td>
-                      <td className="px-3.5 py-3">
-                        {user.status === 'Verified' && <span className="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-success/10 text-success rounded">
-                            <LuCircleCheck className="size-3" />
-                            Verified
-                          </span>}
-                        {user.status === 'Waiting' && <span className="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-default-200 text-default-600 rounded">
-                            <LuLoader className="size-3" />
-                            Waiting
-                          </span>}
-                        {user.status === 'Rejected' && <span className="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-danger/10 text-danger rounded">
-                            <LuCircleX className="size-3" />
-                            Rejected
-                          </span>}
-                      </td>
-                      <td className="px-3.5 py-3">
-                        <div className="hs-dropdown relative inline-flex">
-                          <button type="button" className="hs-dropdown-toggle btn size-7.5 bg-default-200 hover:bg-default-600 text-default-500">
-                            <LuEllipsis className="size-4" />
-                          </button>
-                          <div className="hs-dropdown-menu" role="menu">
-                            <Link to="#" className="flex items-center gap-1.5 py-1.5 px-3 text-default-500 hover:bg-default-150 rounded">
-                              <LuEye className="size-3" /> Overview
-                            </Link>
-                            <Link to="#" className="flex items-center gap-1.5 py-1.5 px-3 text-default-500 hover:bg-default-150 rounded">
-                              <LuSquarePen className="size-3" /> Edit
-                            </Link>
-                            <Link to="#" className="flex items-center gap-1.5 py-1.5 px-3 text-default-500 hover:bg-default-150 rounded">
-                              <LuTrash2 className="size-3" /> Delete
-                            </Link>
+              {loading ? (
+                <div className="flex justify-center items-center py-8">
+                  <LuLoader className="size-6 animate-spin text-primary" />
+                  <span className="ml-2">Chargement...</span>
+                </div>
+              ) : (
+                <table className="min-w-full divide-y divide-default-200">
+                  <thead className="bg-default-150">
+                    <tr className="text-sm font-normal text-default-700 whitespace-nowrap">
+                      <th className="ps-4 text-start">
+                        <input id="checkbox-all" type="checkbox" className="form-checkbox" />
+                      </th>
+                      <th className="px-3.5 py-3 text-start">ID</th>
+                      <th className="px-3.5 py-3 text-start">Nom</th>
+                      <th className="px-3.5 py-3 text-start">Email</th>
+                      <th className="px-3.5 py-3 text-start">Téléphone</th>
+                      <th className="px-3.5 py-3 text-start">Adresse</th>
+                      <th className="px-3.5 py-3 text-start">Date d'inscription</th>
+                      <th className="px-3.5 py-3 text-start">Statut</th>
+                      <th className="px-3.5 py-3 text-start">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map(user => (
+                      <tr key={user.id} className="text-default-800 font-normal text-sm whitespace-nowrap">
+                        <td className="py-3 ps-4">
+                          <input type="checkbox" className="form-checkbox" />
+                        </td>
+                        <td className="px-3.5 py-3 text-primary">#{user.id}</td>
+                        <td className="flex py-3 px-3.5 items-center gap-3">
+                          <div className="w-10 h-10 flex items-center justify-center rounded-full bg-primary/10 font-semibold text-primary">
+                            {user.firstname.charAt(0)}{user.lastname.charAt(0)}
                           </div>
-                        </div>
-                      </td>
-                    </tr>)}
-                </tbody>
-              </table>
+                          <div>
+                            <h6 className="mb-1.5 font-semibold">
+                              <Link to="#" className="text-default-800">
+                                {user.firstname} {user.lastname}
+                              </Link>
+                            </h6>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3.5">{user.email}</td>
+                        <td className="py-3 px-3.5">{user.numTel}</td>
+                        <td className="py-3 px-3.5">{user.adresse}</td>
+                        <td className="py-3 px-3.5">{formatDate(user.createdDate)}</td>
+                        <td className="px-3.5 py-3">
+                          {!user.isBanned ? (
+                            <span className="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-success/10 text-success rounded">
+                              <LuCircleCheck className="size-3" />
+                              Actif
+                            </span>
+                          ) : (
+                            <span className="py-0.5 px-2.5 inline-flex items-center gap-x-1 text-xs font-medium bg-danger/10 text-danger rounded">
+                              <LuCircleX className="size-3" />
+                              Banni
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-3.5 py-3">
+                          {user.isBanned ? (
+                            <div className="text-center">
+                              <p className="text-xs text-red-600 mb-1">Action irréversible</p>
+                              <button
+                                disabled
+                                className="btn btn-sm bg-gray-200 text-gray-500 cursor-not-allowed"
+                              >
+                                <LuUserX className="size-3 mr-1" />
+                                Déjà banni
+                              </button>
+                            </div>
+                          ) : (
+                            <button
+                              onClick={() => banUser(user)}
+                              className="btn btn-sm bg-danger/10 text-danger hover:bg-danger hover:text-white"
+                            >
+                              <LuUserX className="size-3 mr-1" />
+                              Bannir
+                            </button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
         <div className="card-footer">
           <p className="text-default-500 text-sm">
-            Showing <b>10</b> of <b>58</b> Results
+            Affichage de <b>{Math.min(10, filteredUsers.length)}</b> sur <b>{totalUsers}</b> résultats
           </p>
           <nav className="flex items-center gap-2" aria-label="Pagination">
-            <button type="button" className="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10">
-              <LuChevronLeft className="size-4 me-1" /> Prev
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage === 0}
+              className="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <LuChevronLeft className="size-4 me-1" /> Précédent
             </button>
 
-            <button type="button" className="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10">
-              1
-            </button>
+            {[...Array(Math.min(5, totalPages))].map((_, index) => {
+              const pageNum = Math.max(0, Math.min(currentPage - 2 + index, totalPages - 1));
+              return (
+                <button
+                  key={pageNum}
+                  type="button"
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`btn size-7.5 ${currentPage === pageNum 
+                    ? 'bg-primary text-white' 
+                    : 'bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10'
+                  }`}
+                >
+                  {pageNum + 1}
+                </button>
+              );
+            })}
 
-            <button type="button" className="btn size-7.5 bg-primary text-white">
-              2
-            </button>
-
-            <button type="button" className="btn size-7.5 bg-transparent border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10">
-              3
-            </button>
-
-            <button type="button" className="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10">
-              Next
+            <button
+              type="button"
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage === totalPages - 1}
+              className="btn btn-sm border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Suivant
               <LuChevronRight className="size-4 ms-1" />
             </button>
           </nav>
@@ -256,4 +321,5 @@ const UserListTabel = () => {
       </div>
     </div>;
 };
+
 export default UserListTabel;

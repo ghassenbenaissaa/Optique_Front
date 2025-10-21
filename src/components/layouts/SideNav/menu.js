@@ -49,11 +49,6 @@ export const menuItemsData = [ {
   icon: LuPalette,
   href: '/couleur'
 },{
-  key: 'PromoCode',
-  label: 'Promo Code',
-  icon: LuPercent,
-  href: '/promocode'
-},{
   key: 'Matériaux',
   label: 'Matériaux',
   icon: LuBlocks,
@@ -68,6 +63,11 @@ export const menuItemsData = [ {
   label: 'Marque',
   icon: LuFactory,
   href: '/marque'
+},{
+  key: 'PromoCode',
+  label: 'Promo Code',
+  icon: LuPercent,
+  href: '/promocode'
 }, {
   key: 'Ecommerce',
   label: 'Ecommerce',
@@ -86,18 +86,10 @@ export const menuItemsData = [ {
     href: '/orders'
   }]
 }, {
-  key: 'Users',
-  label: 'Users',
+  key: 'Utilisateurs',
+  label: 'Utilisateurs',
   icon: LuSquareUserRound,
-  children: [{
-    key: 'List View',
-    label: 'List View',
-    href: '/users-list'
-  }, {
-    key: 'Grid View',
-    label: 'Grid View',
-    href: '/users-grid'
-  }]
+  href: '/users-list'
 }, {
   key: 'Extra',
   label: 'Extra',
