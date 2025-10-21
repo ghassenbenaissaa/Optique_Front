@@ -14,7 +14,7 @@ const Forme = lazy(() => import('@/app/(admin)/(pages)/forme'));
 const Marque = lazy(() => import('@/app/(admin)/(pages)/marque'));
 const Verre = lazy(() => import('@/app/(admin)/(pages)/verre'));
 const Monture = lazy(() => import('@/app/(admin)/(pages)/monture'));
-
+const Entreprise = lazy(() => import('@/app/(admin)/(pages)/entreprise'));
 // USers
 const UserGrid = lazy(() => import('@/app/(admin)/(app)/(users)/users-grid'));
 const UserList = lazy(() => import('@/app/(admin)/(app)/(users)/users-list'));
@@ -58,6 +58,10 @@ export const layoutsRoutes = [{
   path: '/index',
   name: 'Ecommerce',
   element: <Ecommerce />
+}, {
+  path: '/entreprise',
+  name: 'Entreprise',
+  element: <Entreprise />
 }, {
   path: '/cart',
   name: 'Cart',

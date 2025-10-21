@@ -27,12 +27,18 @@ import {
   LuShieldCheck,
   LuShoppingBag,
   LuSquareUserRound,
+  LuStore,
 } from 'react-icons/lu';
 export const menuItemsData = [ {
   key: 'Dashboards',
   label: 'Dashboards',
   icon: LuMonitorDot,
   href: '/index'
+},{
+  key: 'Vos Donnees',
+  label: 'Vos Donnees',
+  icon: LuStore,
+  href: '/entreprise'
 },{
   key: 'Verre',
   label: 'Verre',
