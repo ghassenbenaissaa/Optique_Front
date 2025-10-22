@@ -1,12 +1,10 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
 // Service pour les formes
 export const formeService = {
   // Récupérer toutes les formes (vue admin)
   getFormes: async () => {
-    const response = await axios.get(`${API_BASE_URL}/formeProduit/admin`);
+    const response = await api.get('/formeProduit/admin');
     return response.data;
   },
 
@@ -18,7 +16,7 @@ export const formeService = {
       formData.append('image', data.image);
     }
 
-    const response = await axios.post(`${API_BASE_URL}/formeProduit/add`, formData, {
+    const response = await api.post('/formeProduit/add', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
@@ -33,7 +31,7 @@ export const formeService = {
       formData.append('image', data.image);
     }
 
-    const response = await axios.put(`${API_BASE_URL}/formeProduit/update`, formData, {
+    const response = await api.put('/formeProduit/update', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
@@ -41,6 +39,6 @@ export const formeService = {
 
   // Supprimer une forme
   deleteForme: async (id) => {
-    await axios.delete(`${API_BASE_URL}/formeProduit/delete/${id}`);
+    await api.delete(`/formeProduit/delete/${id}`);
   },
 };

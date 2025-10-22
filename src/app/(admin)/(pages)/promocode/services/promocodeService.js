@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
 // Service pour les codes promo
 export const promoCodeService = {
@@ -9,7 +7,7 @@ export const promoCodeService = {
    * @returns {Promise<import('../types').PromoCode[]>}
    */
   getAllPromoCodes: async () => {
-    const response = await axios.get(`${API_BASE_URL}/codePromo/admin`);
+    const response = await api.get('/codePromo/admin');
     return response.data;
   },
 
@@ -19,7 +17,7 @@ export const promoCodeService = {
    * @returns {Promise<import('../types').PromoCode>}
    */
   addPromoCode: async (data) => {
-    const response = await axios.post(`${API_BASE_URL}/codePromo/add`, data, {
+    const response = await api.post('/codePromo/add', data, {
       headers: { 'Content-Type': 'application/json' },
     });
     return response.data;
@@ -31,7 +29,7 @@ export const promoCodeService = {
    * @returns {Promise<import('../types').PromoCode>}
    */
   updatePromoCode: async (data) => {
-    const response = await axios.put(`${API_BASE_URL}/codePromo/update`, data, {
+    const response = await api.put('/codePromo/update', data, {
       headers: { 'Content-Type': 'application/json' },
     });
     return response.data;
@@ -43,6 +41,6 @@ export const promoCodeService = {
    * @returns {Promise<void>}
    */
   deletePromoCode: async (id) => {
-    await axios.delete(`${API_BASE_URL}/codePromo/delete/${id}`);
+    await api.delete(`/codePromo/delete/${id}`);
   },
 };

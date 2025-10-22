@@ -1,21 +1,13 @@
-import ArabianFlag from '@/assets/images/flags/arebian.svg';
-import FrenchFlag from '@/assets/images/flags/french.jpg';
-import GermanyFlag from '@/assets/images/flags/germany.jpg';
-import ItalyFlag from '@/assets/images/flags/italy.jpg';
-import JapaneseFlag from '@/assets/images/flags/japanese.svg';
-import RussiaFlag from '@/assets/images/flags/russia.jpg';
-import SpainFlag from '@/assets/images/flags/spain.jpg';
-import UsFlag from '@/assets/images/flags/us.jpg';
 import avatar1 from '@/assets/images/user/avatar-1.png';
 import avatar3 from '@/assets/images/user/avatar-3.png';
 import avatar5 from '@/assets/images/user/avatar-5.png';
 import avatar7 from '@/assets/images/user/avatar-7.png';
-import { Link } from 'react-router';
-import { TbSearch } from 'react-icons/tb';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 import SimpleBar from 'simplebar-react';
 import SidenavToggle from './SidenavToggle';
 import ThemeModeToggle from './ThemeModeToggle';
-import { LuBellRing, LuClock, LuGem, LuHeart, LuLogOut, LuMail, LuMessagesSquare, LuMoveRight, LuSettings, LuShoppingBag } from 'react-icons/lu';
+import { LuBellRing, LuClock, LuHeart, LuLogOut, LuMoveRight, LuShoppingBag } from 'react-icons/lu';
 const tabs = [{
   id: 'tabsViewall',
   title: 'View all',
@@ -109,9 +101,13 @@ const notifications = {
 const profileMenu = [ {
   icon: <LuLogOut className="size-4" />,
   label: 'Sign Out',
-  to: '/basic-logout'
+  to: '#!'
 }];
+//const { isAuthenticated, logout } = useAuth();
 const Topbar = () => {
+  // Récupérer la fonction logout depuis le contexte d'auth
+  const { logout } = useAuth();
+
   return <div className="app-header min-h-topbar-height flex items-center sticky top-0 z-30 bg-(--topbar-background) border-b border-default-200">
       <div className="w-full flex items-center justify-between px-6">
         <div className="flex items-center gap-5">
@@ -206,7 +202,7 @@ const Topbar = () => {
               <div className="border-t border-default-200 -mx-2 my-2"></div>
 
               <div className="flex flex-col gap-y-1">
-                {profileMenu.map((item, i) => item.divider ? <div key={i} className="border-t border-default-200 -mx-2 my-1"></div> : <Link key={i} to={item.to || '#!'} className="flex items-center gap-x-3.5 py-1.5 px-3 text-default-600 hover:bg-default-150 rounded font-medium">
+                {profileMenu.map((item, i) => item.divider ? <div key={i} className="border-t border-default-200 -mx-2 my-1"></div> : <Link key={i} to={item.to || '#!'} onClick={item.label === 'Sign Out' ? (e) => { e.preventDefault(); logout(); } : undefined} className="flex items-center gap-x-3.5 py-1.5 px-3 text-default-600 hover:bg-default-150 rounded font-medium">
                       {item.icon}
                       {item.label}
                       {item.badge && <span className="size-4.5 font-semibold bg-danger rounded text-white flex items-center justify-center text-xs">

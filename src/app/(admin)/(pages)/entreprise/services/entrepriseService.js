@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
 /**
  * Service pour la gestion des entreprises
@@ -11,16 +9,16 @@ export const entrepriseService = {
    */
   getEntreprise: async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/entreprise/admin`);
+      const response = await api.get('/entreprise/admin');
       return {
         success: true,
         data: response.data
       };
     } catch (error) {
-      console.error('Erreur lors de la récupération de l\'entreprise:', error);
+      console.error("Erreur lors de la récupération de l'entreprise:", error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Erreur lors de la récupération de l\'entreprise',
+        error: error.response?.data?.message || "Erreur lors de la récupération de l'entreprise",
         status: error.response?.status
       };
     }
@@ -31,7 +29,7 @@ export const entrepriseService = {
    */
   addEntreprise: async (entrepriseData) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/entreprise/add`, entrepriseData, {
+      const response = await api.post('/entreprise/add', entrepriseData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -42,10 +40,10 @@ export const entrepriseService = {
         message: 'Entreprise ajoutée avec succès'
       };
     } catch (error) {
-      console.error('Erreur lors de l\'ajout de l\'entreprise:', error);
+      console.error("Erreur lors de l'ajout de l'entreprise:", error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Erreur lors de l\'ajout de l\'entreprise',
+        error: error.response?.data?.message || "Erreur lors de l'ajout de l'entreprise",
         status: error.response?.status
       };
     }
@@ -56,7 +54,7 @@ export const entrepriseService = {
    */
   updateEntreprise: async (entrepriseData) => {
     try {
-      const response = await axios.put(`${API_BASE_URL}/entreprise/update`, entrepriseData, {
+      const response = await api.put('/entreprise/update', entrepriseData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -67,10 +65,10 @@ export const entrepriseService = {
         message: 'Entreprise mise à jour avec succès'
       };
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de l\'entreprise:', error);
+      console.error("Erreur lors de la mise à jour de l'entreprise:", error);
       return {
         success: false,
-        error: error.response?.data?.message || 'Erreur lors de la mise à jour de l\'entreprise',
+        error: error.response?.data?.message || "Erreur lors de la mise à jour de l'entreprise",
         status: error.response?.status
       };
     }

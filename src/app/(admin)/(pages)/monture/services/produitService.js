@@ -1,12 +1,10 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
 // Service pour les produits
 export const produitService = {
   // Récupérer tous les produits
   getAllProduits: async () => {
-    const response = await axios.get(`${API_BASE_URL}/produit/all/admin`);
+    const response = await api.get('/produit/all/admin');
     return response.data;
   },
 
@@ -42,7 +40,7 @@ export const produitService = {
     // ⚠️ Changement: Envoyer rawVariations au lieu de variations
     formData.append('rawVariations', JSON.stringify(data.variations));
 
-    const response = await axios.post(`${API_BASE_URL}/produit/add`, formData, {
+    const response = await api.post('/produit/add', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -80,7 +78,7 @@ export const produitService = {
     // ⚠️ Changement: Envoyer rawVariations au lieu de variations
     formData.append('rawVariations', JSON.stringify(data.variations));
 
-    const response = await axios.put(`${API_BASE_URL}/produit/update`, formData, {
+    const response = await api.put('/produit/update', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -90,34 +88,34 @@ export const produitService = {
 
   // Supprimer un produit
   deleteProduit: async (id) => {
-    await axios.delete(`${API_BASE_URL}/produit/delete/${id}`);
+    await api.delete(`/produit/delete/${id}`);
   },
 
   // Appliquer un solde
   applySolde: async (data) => {
-    await axios.put(`${API_BASE_URL}/produit/solde`, data);
+    await api.put('/produit/solde', data);
   },
 };
 
 // Services pour les données de référence
 export const referenceDataService = {
   getMarques: async () => {
-    const response = await axios.get(`${API_BASE_URL}/marque/admin`);
+    const response = await api.get('/marque/admin');
     return response.data;
   },
 
   getMateriaux: async () => {
-    const response = await axios.get(`${API_BASE_URL}/materiauProduit/admin`);
+    const response = await api.get('/materiauProduit/admin');
     return response.data;
   },
 
   getCouleurs: async () => {
-    const response = await axios.get(`${API_BASE_URL}/couleur/admin`);
+    const response = await api.get('/couleur/admin');
     return response.data;
   },
 
   getFormes: async () => {
-    const response = await axios.get(`${API_BASE_URL}/formeProduit/admin`);
+    const response = await api.get('/formeProduit/admin');
     return response.data;
   },
 };

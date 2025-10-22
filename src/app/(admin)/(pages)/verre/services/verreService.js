@@ -1,36 +1,60 @@
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
-// Services API pour la ressource Verre
-// On retourne l'objet Response pour laisser la logique existante dans les composants (ok/json/erreurs)
+// Wrapper pour exposer une interface proche de fetch Response
+// Retourne un objet { ok, status, json: async () => data }
+async function toFetchLike(promise) {
+  try {
+    const response = await promise; // Axios response
+    return {
+      ok: true,
+      status: response.status,
+      json: async () => response.data,
+    };
+  } catch (error) {
+    // Erreur réseau (pas de response) ou erreur serveur avec response
+    if (!error.response) {
+      console.error('[VerreService] Erreur réseau ou serveur indisponible.', error);
+      return {
+        ok: false,
+        status: 0,
+        json: async () => ({ message: 'Erreur réseau ou serveur indisponible' }),
+      };
+    }
+
+    const { status, data } = error.response;
+    return {
+      ok: false,
+      status,
+      json: async () => data,
+    };
+  }
+}
+
+// Services API pour la ressource Verre (compatibles avec l'ancien contrat fetch)
 export const fetchAllVerres = () => {
-  return fetch(`${API_BASE_URL}/verre/admin/all`);
+  return toFetchLike(api.get('/verre/admin/all'));
 };
 
 export const addVerre = (payload) => {
-  return fetch(`${API_BASE_URL}/verre/add`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+  return toFetchLike(
+    api.post('/verre/add', payload, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  );
 };
 
 export const updateVerre = (payload) => {
-  return fetch(`${API_BASE_URL}/verre/update`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  });
+  return toFetchLike(
+    api.put('/verre/update', payload, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  );
 };
 
 export const deleteVerre = (id) => {
-  return fetch(`${API_BASE_URL}/verre/delete/${id}`, {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-  });
+  return toFetchLike(
+    api.delete(`/verre/delete/${id}`, {
+      headers: { 'Content-Type': 'application/json' },
+    })
+  );
 };

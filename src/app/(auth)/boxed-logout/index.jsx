@@ -41,7 +41,7 @@ const Index = () => {
                       Thank you for using tailwick admin template
                     </p>
                   </div>
-                  <Link to="/oxed-login">
+                  <Link to="/boxed-login">
                     <button className="btn bg-primary text-white w-full">Sign In</button>
                   </Link>
                 </div>

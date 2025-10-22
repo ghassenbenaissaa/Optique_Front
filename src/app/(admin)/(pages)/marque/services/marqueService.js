@@ -1,11 +1,9 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
 export const marqueService = {
   // Récupérer toutes les marques (admin)
   getMarques: async () => {
-    const response = await axios.get(`${API_BASE_URL}/marque/admin`);
+    const response = await api.get('/marque/admin');
     return response.data;
   },
 
@@ -17,7 +15,7 @@ export const marqueService = {
       formData.append('image', data.image);
     }
 
-    const response = await axios.post(`${API_BASE_URL}/marque/add`, formData, {
+    const response = await api.post('/marque/add', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -34,7 +32,7 @@ export const marqueService = {
       formData.append('image', data.image);
     }
 
-    const response = await axios.put(`${API_BASE_URL}/marque/update`, formData, {
+    const response = await api.put('/marque/update', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -44,6 +42,6 @@ export const marqueService = {
 
   // Supprimer une marque
   deleteMarque: async (id) => {
-    await axios.delete(`${API_BASE_URL}/marque/delete/${id}`);
+    await api.delete(`/marque/delete/${id}`);
   },
 };

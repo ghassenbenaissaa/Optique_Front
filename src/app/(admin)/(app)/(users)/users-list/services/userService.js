@@ -1,11 +1,9 @@
-import axios from 'axios';
-
-const API_BASE_URL = 'http://localhost:8089/api/v1';
+import api from '@/lib/axios';
 
 export const userService = {
   // Récupérer tous les utilisateurs avec pagination
   getAllUsers: async (page = 0, size = 10) => {
-    const response = await axios.get(`${API_BASE_URL}/user/all`, {
+    const response = await api.get('/user/all', {
       params: {
         page,
         size
@@ -48,8 +46,8 @@ export const userService = {
 
   // Basculer le statut de ban d'un utilisateur
   toggleUserBanStatus: async (userId, banStatus) => {
-    const response = await axios.put(
-      `${API_BASE_URL}/user/toggleUserBanStatus/${userId}`,
+    const response = await api.put(
+      `/user/toggleUserBanStatus/${userId}`,
       null,
       {
         params: {

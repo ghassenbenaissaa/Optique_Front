@@ -1,4 +1,6 @@
 import { lazy } from 'react';
+import ProtectedRoute from '@/components/security/ProtectedRoute';
+import PageWrapper from '@/components/PageWrapper';
 
 // admin Ecommerce
 
@@ -9,7 +11,7 @@ const ProductGrid = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/product-g
 //Ghassen Add
 const Couleur = lazy(() => import('@/app/(admin)/(pages)/couleur'));
 const PromoCode = lazy(() => import('@/app/(admin)/(pages)/promocode'));
-const Matériaux = lazy(() => import('@/app/(admin)/(pages)/materiaux'));
+const Materiaux = lazy(() => import('@/app/(admin)/(pages)/materiaux'));
 const Forme = lazy(() => import('@/app/(admin)/(pages)/forme'));
 const Marque = lazy(() => import('@/app/(admin)/(pages)/marque'));
 const Verre = lazy(() => import('@/app/(admin)/(pages)/verre'));
@@ -19,10 +21,10 @@ const Entreprise = lazy(() => import('@/app/(admin)/(pages)/entreprise'));
 const UserGrid = lazy(() => import('@/app/(admin)/(app)/(users)/users-grid'));
 const UserList = lazy(() => import('@/app/(admin)/(app)/(users)/users-list'));
 
-// dashboard
-const Ecommerce = lazy(() => import('@/app/(admin)/(dashboards)/index'));
+// dashboard (renommé en AdminDashboard pour clarté)
+const AdminDashboard = lazy(() => import('@/app/(admin)/(dashboards)/index'));
 
-// layouts
+// layouts (admin demos)
 const DarkMode = lazy(() => import('@/app/(admin)/(layouts)/dark-mode'));
 const SideNavHidden = lazy(() => import('@/app/(admin)/(layouts)/sidenav-hidden'));
 const SideOffcanvas = lazy(() => import('@/app/(admin)/(layouts)/sidenav-offcanvas'));
@@ -39,7 +41,7 @@ const BoxedResetPassword = lazy(() => import('@/app/(auth)/boxed-reset-password'
 const BoxedLogout = lazy(() => import('@/app/(auth)/boxed-logout'));
 const BoxedTwoStep = lazy(() => import('@/app/(auth)/boxed-two-steps'));
 
-//  landing
+//  landing (public)
 
 const OnePageLanding = lazy(() => import('@/app/(landing)/onepage-landing'));
 const ProductLanding = lazy(() => import('@/app/(landing)/product-landing'));
@@ -50,94 +52,215 @@ const Error404 = lazy(() => import('@/app/(others)/404'));
 const CommingSoon = lazy(() => import('@/app/(others)/coming-soon'));
 const Maintenance = lazy(() => import('@/app/(others)/maintenance'));
 const Offline = lazy(() => import('@/app/(others)/offline'));
+
+// Routes admin: toutes préfixées par /admin
+// NOTE RBAC futur: on pourra envelopper ces routes dans un composant <AdminRoute>
+// qui vérifiera le rôle (ROLE_ADMIN/ROLE_SUPER_ADMIN) avant d'autoriser l'accès.
 export const layoutsRoutes = [{
-  path: '/',
-  name: 'Ecommerce',
-  element: <Ecommerce />
+  path: '/admin/dashboard',
+  name: 'AdminDashboard',
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <AdminDashboard />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/index',
-  name: 'Ecommerce',
-  element: <Ecommerce />
+  path: '/admin',
+  name: 'AdminRoot',
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <AdminDashboard />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/entreprise',
+  path: '/admin/entreprise',
   name: 'Entreprise',
-  element: <Entreprise />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Entreprise />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/cart',
+  path: '/admin/cart',
   name: 'Cart',
-  element: <Cart />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Cart />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/orders',
+  path: '/admin/orders',
   name: 'Orders',
-  element: <Orders />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Orders />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/product-grid',
+  path: '/admin/product-grid',
   name: 'ProductGrid',
-  element: <ProductGrid />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <ProductGrid />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/users-grid',
+  path: '/admin/users-grid',
   name: 'UserGrid',
-  element: <UserGrid />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <UserGrid />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/users-list',
+  path: '/admin/users',
   name: 'UserList',
-  element: <UserList />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <UserList />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/',
-  name: 'Ecommerce',
-  element: <Ecommerce />
-}, {
-  path: '/dark-mode',
+  path: '/admin/dark-mode',
   name: 'DarkMode',
-  element: <DarkMode />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <DarkMode />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 },{
-  path: '/sidenav-hidden',
+  path: '/admin/sidenav-hidden',
   name: 'SideNavHidden',
-  element: <SideNavHidden />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <SideNavHidden />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/sidenav-offcanvas',
+  path: '/admin/sidenav-offcanvas',
   name: 'SideNavOffcanvas',
-  element: <SideOffcanvas />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <SideOffcanvas />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/faqs',
+  path: '/admin/faqs',
   name: 'Faqs',
-  element: <Faq />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Faq />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/couleur',
+  path: '/admin/couleur',
   name: 'Couleur',
-  element: <Couleur />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Couleur />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/promocode',
+  path: '/admin/promocode',
   name: 'Promo Code',
-  element: <PromoCode />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <PromoCode />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/promocode',
-  name: 'Promo Code',
-  element: <PromoCode />
-}, {
-  path: '/materiaux',
+  path: '/admin/materiaux',
   name: 'Matériaux',
-  element: <Matériaux />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Materiaux />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/forme',
+  path: '/admin/forme',
   name: 'Forme',
-  element: <Forme />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Forme />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/marque',
+  path: '/admin/marque',
   name: 'Marque',
-  element: <Marque />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Marque />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/verre',
+  path: '/admin/verre',
   name: 'Verre',
-  element: <Verre />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Verre />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }, {
-  path: '/monture',
+  path: '/admin/monture',
   name: 'Monture',
-  element: <Monture />
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Monture />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
 }];
+
+// Routes publiques (hors admin)
 export const singlePageRoutes = [{
+  // Page publique principale
+  path: '/',
+  name: 'ProductLanding',
+  element: <ProductLanding />
+}, {
   path: '/boxed-login',
   name: 'BoxedLogin',
+  element: <BoxedLogin />
+}, {
+  path: '/login',
+  name: 'LoginAlias',
   element: <BoxedLogin />
 }, {
   path: '/boxed-register',
@@ -165,7 +288,7 @@ export const singlePageRoutes = [{
   element: <OnePageLanding />
 }, {
   path: '/product-landing',
-  name: 'ProductLanding',
+  name: 'ProductLandingAlt',
   element: <ProductLanding />
 }, {
   path: '/404',

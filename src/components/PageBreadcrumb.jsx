@@ -1,4 +1,4 @@
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import { LuChevronRight } from 'react-icons/lu';
 const PageBreadcrumb = ({
   title,

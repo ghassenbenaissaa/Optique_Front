@@ -34,6 +34,7 @@
     "clsx": "^2.1.1",
     "flatpickr": "^4.6.13",
     "fullcalendar": "^6.1.19",
+    "jwt-decode": "^4.0.0",
     "lucide-react": "^0.544.0",
     "path": "^0.12.7",
     "preline": "^3.2.3",

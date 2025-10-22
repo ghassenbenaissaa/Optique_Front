@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
 import LayoutProvider from '@/context/useLayoutContext';
-import { useLocation } from 'react-router';
+import { useLocation } from 'react-router-dom';
+import { AuthProvider } from '@/context/AuthContext';
+
 const ProvidersWrapper = ({
   children
 }) => {
@@ -29,8 +31,12 @@ const ProvidersWrapper = ({
     });
     return () => observer.disconnect();
   }, []);
-  return <>
-      <LayoutProvider>{children}</LayoutProvider>
-    </>;
+  return (
+    <AuthProvider>
+      <LayoutProvider>
+        {children}
+      </LayoutProvider>
+    </AuthProvider>
+  );
 };
 export default ProvidersWrapper;

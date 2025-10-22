@@ -31,71 +31,71 @@ import {
 } from 'react-icons/lu';
 export const menuItemsData = [ {
   key: 'Dashboards',
-  label: 'Dashboards',
+  label: 'Tableau de bord',
   icon: LuMonitorDot,
-  href: '/index'
+  href: '/admin/dashboard'
 },{
   key: 'Vos Donnees',
-  label: 'Vos Donnees',
+  label: 'Vos Données',
   icon: LuStore,
-  href: '/entreprise'
+  href: '/admin/entreprise'
 },{
   key: 'Verre',
   label: 'Verre',
   icon: LuScanEye,
-  href: '/verre'
+  href: '/admin/verre'
 },{
   key: 'Monture',
   label: 'Monture',
   icon: LuGlasses,
-  href: '/monture'
+  href: '/admin/monture'
 }, {
   key: 'Couleur',
   label: 'Couleur',
   icon: LuPalette,
-  href: '/couleur'
+  href: '/admin/couleur'
 },{
-  key: 'Matériaux',
+  key: 'Materiaux',
   label: 'Matériaux',
   icon: LuBlocks,
-  href: '/materiaux'
+  href: '/admin/materiaux'
 },{
   key: 'Forme',
   label: 'Forme',
   icon: LuShapes,
-  href: '/forme'
+  href: '/admin/forme'
 },{
   key: 'Marque',
   label: 'Marque',
   icon: LuFactory,
-  href: '/marque'
+  href: '/admin/marque'
 },{
   key: 'PromoCode',
-  label: 'Promo Code',
+  label: 'Codes Promo',
   icon: LuPercent,
-  href: '/promocode'
+  href: '/admin/promocode'
 }, {
   key: 'Ecommerce',
   label: 'Ecommerce',
   icon: LuShoppingBag,
   children: [ {
     key: 'Products Grid',
-    label: 'Products Grid',
-    href: '/product-grid'
+    label: 'Produits (grille)',
+    href: '/admin/product-grid'
   }, {
     key: 'Shopping Cart',
-    label: 'Shopping Cart',
-    href: '/cart'
+    label: 'Panier',
+    href: '/admin/cart'
   }, {
     key: 'Orders',
-    label: 'Orders',
-    href: '/orders'
+    label: 'Commandes',
+    href: '/admin/orders'
   }]
 }, {
   key: 'Utilisateurs',
   label: 'Utilisateurs',
   icon: LuSquareUserRound,
-  href: '/users-list'
+  href: '/admin/users'
 }, {
   key: 'Extra',
   label: 'Extra',
@@ -107,7 +107,7 @@ export const menuItemsData = [ {
   children: [ {
     key: 'FAQ',
     label: 'FAQ',
-    href: '/faqs'
+    href: '/admin/faqs'
   }, {
     key: 'Maintenance',
     label: 'Maintenance',
@@ -157,20 +157,5 @@ export const menuItemsData = [ {
     key: 'Create Password',
     label: 'Create Password',
     href: '/boxed-create-password'
-  }]
-},{
-  key: 'Landing Page',
-  label: 'Landing Page',
-  icon: LuPictureInPicture2,
-  children: [{
-    key: 'One Page',
-    label: 'One Page',
-    href: '/onepage-landing',
-    target: '_blank'
-  }, {
-    key: 'Product',
-    label: 'Product',
-    href: '/product-landing',
-    target: '_blank'
   }]
 }];
