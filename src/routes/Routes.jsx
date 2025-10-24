@@ -43,6 +43,8 @@ const BoxedTwoStep = lazy(() => import('@/app/(auth)/boxed-two-steps'));
 const BoxedBanned = lazy(() => import('@/app/(auth)/boxed-banned'));
 const EmailConfirmation = lazy(() => import('@/app/(auth)/email-confirmation'));
 const ResendVerification = lazy(() => import('@/app/(auth)/resend-verification'));
+const ForgotPassword = lazy(() => import('@/app/(auth)/forgot-password'));
+const ResetPassword = lazy(() => import('@/app/(auth)/reset-password'));
 
 //  landing (public)
 
@@ -56,9 +58,6 @@ const CommingSoon = lazy(() => import('@/app/(others)/coming-soon'));
 const Maintenance = lazy(() => import('@/app/(others)/maintenance'));
 const Offline = lazy(() => import('@/app/(others)/offline'));
 
-// Routes admin: toutes préfixées par /admin
-// NOTE RBAC futur: on pourra envelopper ces routes dans un composant <AdminRoute>
-// qui vérifiera le rôle (ROLE_ADMIN/ROLE_SUPER_ADMIN) avant d'autoriser l'accès.
 export const layoutsRoutes = [{
   path: '/admin/dashboard',
   name: 'AdminDashboard',
@@ -277,6 +276,14 @@ export const singlePageRoutes = [{
   path: '/resend-verification',
   name: 'ResendVerification',
   element: <ResendVerification />
+}, {
+  path: '/auth/forgot-password',
+  name: 'ForgotPassword',
+  element: <ForgotPassword />
+}, {
+  path: '/auth/reset-password',
+  name: 'ResetPassword',
+  element: <ResetPassword />
 }, {
   path: '/boxed-create-password',
   name: 'BoxedCreatePassword',

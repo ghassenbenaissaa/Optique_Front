@@ -116,13 +116,15 @@ const Index = () => {
                   </div>
 
                   <div className="mb-4">
-                    <Link to="/boxed-reset-password" className="text-primary font-medium text-sm mb-2 float-end">
-                      Mot de passe oublié ?
-                    </Link>
                     <label htmlFor="password" className="block font-medium text-default-900 text-sm mb-2">
                       Mot de passe
                     </label>
                     <input type="password" id="password" className="form-input w-full" placeholder="Entrez votre mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+                    <div className="mt-2 text-right">
+                      <Link to="/auth/forgot-password" className="text-primary font-medium text-sm">
+                        Mot de passe oublié ?
+                      </Link>
+                    </div>
                   </div>
 
                   <div className="mt-6 sm:mt-8 text-center">
