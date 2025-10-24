@@ -97,6 +97,16 @@ const Index = () => {
                       {error}
                     </div>
                   )}
+                  {error && error.includes('Account not activated') && (
+                    <div className="mt-4 text-center">
+                      <p className="text-xs sm:text-sm text-default-500">
+                        Vous n’avez pas reçu d’email de confirmation ?{' '}
+                        <Link to="/resend-verification" className="font-semibold underline hover:text-primary transition duration-200">
+                          Cliquez ici
+                        </Link>
+                      </p>
+                    </div>
+                  )}
 
                   <div className="mb-4">
                     <label htmlFor="email" className="block font-medium text-default-900 text-sm mb-2">

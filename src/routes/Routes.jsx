@@ -42,6 +42,7 @@ const BoxedLogout = lazy(() => import('@/app/(auth)/boxed-logout'));
 const BoxedTwoStep = lazy(() => import('@/app/(auth)/boxed-two-steps'));
 const BoxedBanned = lazy(() => import('@/app/(auth)/boxed-banned'));
 const EmailConfirmation = lazy(() => import('@/app/(auth)/email-confirmation'));
+const ResendVerification = lazy(() => import('@/app/(auth)/resend-verification'));
 
 //  landing (public)
 
@@ -272,6 +273,10 @@ export const singlePageRoutes = [{
   path: '/emailConfirmation',
   name: 'EmailConfirmation',
   element: <EmailConfirmation />
+}, {
+  path: '/resend-verification',
+  name: 'ResendVerification',
+  element: <ResendVerification />
 }, {
   path: '/boxed-create-password',
   name: 'BoxedCreatePassword',

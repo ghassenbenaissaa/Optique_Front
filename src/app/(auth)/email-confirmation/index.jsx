@@ -144,6 +144,16 @@ const EmailConfirmationPage = () => {
                         <div className="mb-6 text-sm text-red-600 bg-red-50 border border-red-200 px-3 py-2 rounded">
                           Veuillez demander un nouvel email de confirmation depuis la page d'inscription.
                         </div>
+                        {status === 'error' && (
+                          <div className="px-6 sm:px-8 lg:px-10 pb-8 -mt-4">
+                            <p className="text-xs sm:text-sm text-default-500 text-center">
+                              Vous n’avez pas reçu d’email de confirmation ?{' '}
+                              <Link to="/resend-verification" className="font-semibold underline hover:text-primary transition duration-200">
+                                Cliquez ici
+                              </Link>
+                            </p>
+                          </div>
+                        )}
                         <div className="mt-8 sm:mt-10 text-center">
                           <button onClick={handleBackToLogin} className="btn bg-primary text-white w-full py-3 text-sm sm:text-base rounded-lg hover:bg-primary/90 transition-all duration-200">
                             Retour au login
