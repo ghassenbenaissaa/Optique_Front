@@ -40,6 +40,7 @@ const BoxedRegister = lazy(() => import('@/app/(auth)/boxed-register'));
 const BoxedResetPassword = lazy(() => import('@/app/(auth)/boxed-reset-password'));
 const BoxedLogout = lazy(() => import('@/app/(auth)/boxed-logout'));
 const BoxedTwoStep = lazy(() => import('@/app/(auth)/boxed-two-steps'));
+const BoxedBanned = lazy(() => import('@/app/(auth)/boxed-banned'));
 
 //  landing (public)
 
@@ -255,17 +256,17 @@ export const singlePageRoutes = [{
   name: 'ProductLanding',
   element: <ProductLanding />
 }, {
-  path: '/boxed-login',
-  name: 'BoxedLogin',
-  element: <BoxedLogin />
-}, {
   path: '/login',
   name: 'LoginAlias',
   element: <BoxedLogin />
 }, {
-  path: '/boxed-register',
-  name: 'BoxedRegister',
+  path: '/register',
+  name: 'Register',
   element: <BoxedRegister />
+}, {
+  path: '/banned',
+  name: 'Banned',
+  element: <BoxedBanned />
 }, {
   path: '/boxed-create-password',
   name: 'BoxedCreatePassword',
