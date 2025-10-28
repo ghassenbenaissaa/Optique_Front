@@ -110,10 +110,10 @@ const Footer = () => {
             </div>
           </div>
 
-          {footerSections.map((section, index) => <div key={index} className={`${index === 0 ? 'lg:col-span-3 md:col-span-4 col-span-12' : index === 1 ? 'lg:col-span-3 md:col-span-4 col-span-12' : 'lg:col-span-2 md:col-span-4 col-span-12'}`}>
+          {footerSections.map((section, index) => <div key={`footer-section-${index}`} className={`${index === 0 ? 'lg:col-span-3 md:col-span-4 col-span-12' : index === 1 ? 'lg:col-span-3 md:col-span-4 col-span-12' : 'lg:col-span-2 md:col-span-4 col-span-12'}`}>
               <h5 className="mb-4 font-medium text-lg text-default-700">{section.title}</h5>
               <ul className="flex flex-col gap-y-3 text-sm">
-                {section.links.map((link, i) => <li key={i}>
+                {section.links.map((link, i) => <li key={`footer-link-${section.title}-${i}`}>
                     <Link to={link.href} className="relative inline-block transition-all duration-200 ease-linear hover:text-default-900 text-default-600 before:absolute before:border-b before:border-default-200 before:inset-x-0 before:bottom-0 before:w-0 hover:before:w-full before:transition-all before:duration-300 before:ease-linear">
                       {link.label}
                     </Link>

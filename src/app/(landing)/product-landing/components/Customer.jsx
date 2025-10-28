@@ -82,7 +82,7 @@ const Customer = () => {
                 <div className="text-yellow-500 flex items-center justify-center gap-1">
                   {Array.from({
                 length: t.rating
-              }).map((_, i) => <LuStar key={i} className="size-3.5 fill-yellow-500" />)}
+              }).map((_, i) => <LuStar key={`star-${t.name}-${i}`} className="size-3.5 fill-yellow-500" />)}
                 </div>
               </div>
             </SwiperSlide>)}

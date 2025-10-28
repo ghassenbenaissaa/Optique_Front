@@ -7,10 +7,14 @@ import Footer from './components/Footer';
 import Hero from './components/Hero';
 import Navbar from './components/Navbar';
 import Product from './components/Product';
+import PromoBanner from './components/PromoBanner';
+import BannerCarousel from './components/BannerCarousel';
 const Index = () => {
   return <>
       <PageMeta title="Product Landing" />
+      <PromoBanner />
       <Navbar />
+      <BannerCarousel />
       <Hero />
       <Product />
       <Features />

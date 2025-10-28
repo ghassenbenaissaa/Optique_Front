@@ -38,9 +38,15 @@ Contact: themesdesign.in@gmail.com
 @import './custom/_forms.css';
 @import './custom/_print.css';
 @import './custom/_chart.css';
+@import './custom/_utilities.css';
 
 /* Simplebar */
 @import './custom/_simplebar.css';
 
 /* Calendar */
 @import './custom/_calendar.css';
+
+/* Désactiver le backdrop du menu mobile afin d'éviter le voile gris bloquant */
+#navbarMenu-backdrop {
+  display: none !important;
+}

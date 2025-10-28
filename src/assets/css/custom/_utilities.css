@@ -1,0 +1,4 @@
+/* Utilitaire: masquer les barres de défilement horizontales/verticales */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
