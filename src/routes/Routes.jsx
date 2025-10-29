@@ -50,6 +50,7 @@ const ResetPassword = lazy(() => import('@/app/(auth)/reset-password'));
 
 const OnePageLanding = lazy(() => import('@/app/(landing)/onepage-landing'));
 const ProductLanding = lazy(() => import('@/app/(landing)/product-landing'));
+const NewsletterConfirm = lazy(() => import('@/app/(landing)/newsletter-confirm'));
 
 //Other
 
@@ -308,6 +309,10 @@ export const singlePageRoutes = [{
   path: '/product-landing',
   name: 'ProductLandingAlt',
   element: <ProductLanding />
+}, {
+  path: '/newsletter/confirm',
+  name: 'NewsletterConfirm',
+  element: <NewsletterConfirm />
 }, {
   path: '/404',
   name: '404',

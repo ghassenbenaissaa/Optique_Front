@@ -194,7 +194,14 @@ const MontureDetail = ({ monture, onClose }) => {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="font-semibold text-gray-900">{variation.couleur}</span>
+                            {variation.hexcouleur && (
+                              <div
+                                className="w-5 h-5 rounded-full border-2 border-gray-300"
+                                style={{ backgroundColor: variation.hexcouleur }}
+                                title={variation.nomcouleur}
+                              />
+                            )}
+                            <span className="font-semibold text-gray-900">{variation.nomcouleur}</span>
                             <span className="text-gray-400">•</span>
                             <span className="text-sm text-gray-600">{variation.materiauProduit}</span>
                           </div>
