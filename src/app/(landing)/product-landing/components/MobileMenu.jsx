@@ -40,12 +40,14 @@ const MobileMenu = () => {
     return () => window.removeEventListener('keydown', onKey);
   }, []);
 
-  // Empêche le scroll du body quand ouvert
+  // Empêche le scroll du body quand ouvert et cache le PromoBanner
   useEffect(() => {
     if (open) {
       document.documentElement.style.overflow = 'hidden';
+      document.documentElement.style.setProperty('--mobile-menu-open', '1');
     } else {
       document.documentElement.style.overflow = '';
+      document.documentElement.style.setProperty('--mobile-menu-open', '0');
     }
   }, [open]);
 
@@ -180,6 +182,11 @@ const MobileMenu = () => {
             {/* Verres */}
             <li>
               <a href="#product" className="block py-3 text-default-800 hover:text-primary">Verres</a>
+            </li>
+
+            {/* Store - Bouton mis en avant */}
+            <li>
+              <a href="#store" className="block py-3 text-default-800 hover:text-primary">Store</a>
             </li>
           </ul>
         </div>

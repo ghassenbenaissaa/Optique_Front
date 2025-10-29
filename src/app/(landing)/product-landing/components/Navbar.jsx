@@ -136,8 +136,8 @@ const Navbar = () => {
             <div className="lg:col-span-2 md:col-span-2 col-span-2 flex items-center justify-end gap-4">
               <MobileMenu />
 
-              {/* Icône panier améliorée */}
-              <Link to="#cart" aria-label="Panier" className="relative inline-flex group">
+              {/* Icône panier améliorée - masqué en mobile */}
+              <Link to="#cart" aria-label="Panier" className="relative hidden md:inline-flex group">
                 <span className="sr-only">Ouvrir le panier</span>
                 <span className="inline-flex items-center justify-center rounded-full bg-default-100 dark:bg-default-50/10 border border-default-200/70 shadow-sm group-hover:shadow transition-all h-10 w-10">
                   <LuShoppingBag className="h-[20px] w-[20px] text-default-700 dark:text-default-200 group-hover:text-primary transition-colors" />

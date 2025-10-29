@@ -11,6 +11,7 @@ import { Link } from 'react-router';
  */
 const PromoBanner = () => {
   const [visible, setVisible] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
   const barRef = useRef(null);
   const ticking = useRef(false);
@@ -101,13 +102,33 @@ const PromoBanner = () => {
     return () => window.removeEventListener('resize', onResize);
   }, [visible]);
 
+  // Observer la variable CSS pour détecter l'ouverture du menu mobile
+  useEffect(() => {
+    const checkMenuState = () => {
+      const isOpen = document.documentElement.style.getPropertyValue('--mobile-menu-open') === '1';
+      setMobileMenuOpen(isOpen);
+    };
+
+    // Observer les changements de style sur documentElement
+    const observer = new MutationObserver(checkMenuState);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['style']
+    });
+
+    // Vérification initiale
+    checkMenuState();
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <div
       role="region"
       aria-label="Promotion"
       ref={barRef}
-      className={`fixed inset-x-0 top-0 z-[60] transition-transform motion-reduce:transition-none duration-300 ease-in-out will-change-transform ${
-        visible ? 'translate-y-0' : '-translate-y-full'
+      className={`fixed inset-x-0 top-0 z-[60] transition-all motion-reduce:transition-none duration-300 ease-in-out will-change-transform ${
+        visible && !mobileMenuOpen ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0'
       }`}
     >
       {/* Bande pleine largeur avec gradient + séparateur bas */}
