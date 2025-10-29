@@ -1,25 +1,22 @@
 import PageMeta from '@/components/PageMeta';
-import About from './components/About';
 import Cta from './components/Cta';
-import Customer from './components/Customer';
-import Features from './components/Features';
 import Footer from './components/Footer';
-import Hero from './components/Hero';
 import Navbar from './components/Navbar';
-import Product from './components/Product';
 import PromoBanner from './components/PromoBanner';
 import BannerCarousel from './components/BannerCarousel';
+import VisionSection from './components/VisionSection';
+import ShapeSection from './components/ShapeSection';
+import RandomProductsSection from './components/RandomProductsSection';
+
 const Index = () => {
   return <>
       <PageMeta title="Product Landing" />
       <PromoBanner />
       <Navbar />
       <BannerCarousel />
-      <Hero />
-      <Product />
-      <Features />
-      <About />
-      <Customer />
+      <VisionSection />
+      <ShapeSection />
+      <RandomProductsSection />
       <Cta />
       <Footer />
     </>;

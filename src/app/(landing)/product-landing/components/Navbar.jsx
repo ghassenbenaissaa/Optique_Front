@@ -49,8 +49,11 @@ const Navbar = () => {
     <header className="relative">
       <nav
         ref={navRef}
-        className="fixed inset-x-0 z-50 bg-card py-4 md:py-6 border-b border-default-150 flex justify-between items-center top-[var(--promo-offset,0px)] transition-[top] duration-300 ease-in-out will-change-[top]"
-        style={{ transitionProperty: 'top' }}
+        className="fixed inset-x-0 z-50 bg-card py-4 md:py-6 border-b border-default-150 flex justify-between items-center top-[var(--promo-offset,0px)] transition-[top] duration-300 will-change-[top]"
+        style={{
+          transitionProperty: 'top',
+          transitionTimingFunction: 'cubic-bezier(0.4, 0, 0.2, 1)'
+        }}
       >
         <div className="container">
           <div className="grid lg:grid-cols-12 md:grid-cols-10 grid-cols-3 items-center">

@@ -1,136 +1,166 @@
 import logoDark from '@/assets/images/logo-dark.png';
 import logoLight from '@/assets/images/logo-light.png';
-import React from 'react';
-import { LuFacebook, LuInstagram, LuLinkedin, LuTwitter, LuYoutube } from 'react-icons/lu';
+import { LuFacebook, LuInstagram, LuMail, LuMapPin, LuPhone } from 'react-icons/lu';
 import { Link } from 'react-router';
-import { currentYear, developedBy } from '../../../../helpers/constants';
-const socialLinks = [{
-  id: 1,
-  icon: LuFacebook,
-  href: '#'
-}, {
-  id: 2,
-  icon: LuLinkedin,
-  href: '#'
-}, {
-  id: 3,
-  icon: LuInstagram,
-  href: '#'
-}, {
-  id: 4,
-  icon: LuTwitter,
-  href: '#'
-}, {
-  id: 5,
-  icon: LuYoutube,
-  href: '#'
-}];
-const footerSections = [{
-  title: 'Dashboards',
-  links: [{
-    label: 'Analytics',
-    href: '#'
-  }, {
-    label: 'CRM',
-    href: '#'
-  }, {
-    label: 'Ecommerce',
-    href: '#'
-  }, {
-    label: 'Email',
-    href: '#'
-  }, {
-    label: 'HR',
-    href: '#'
-  }, {
-    label: 'Social Media',
-    href: '#'
-  }]
-}, {
-  title: 'About Us',
-  links: [{
-    label: 'News',
-    href: '#'
-  }, {
-    label: 'Service',
-    href: '#'
-  }, {
-    label: 'Our Policy',
-    href: '#'
-  }, {
-    label: 'Support 24/7',
-    href: '#'
-  }, {
-    label: "FAQ's",
-    href: '#'
-  }]
-}, {
-  title: 'Get Help',
-  links: [{
-    label: 'About Us',
-    href: '#'
-  }, {
-    label: 'Contact Us',
-    href: '#'
-  }, {
-    label: 'Payment Policy',
-    href: '#'
-  }, {
-    label: 'Return Policy',
-    href: '#'
-  }]
-}];
+
+const socialLinks = [
+  { id: 1, icon: LuFacebook, href: '#', label: 'Facebook' },
+  { id: 2, icon: LuInstagram, href: '#', label: 'Instagram' }
+];
+
+const footerSections = [
+  {
+    title: 'Nos Produits',
+    links: [
+      { label: 'Lunettes de vue', href: '#' },
+      { label: 'Lunettes de soleil', href: '#' },
+      { label: 'Lentilles de contact', href: '#' },
+      { label: 'Accessoires', href: '#' }
+    ]
+  },
+  {
+    title: 'Services',
+    links: [
+      { label: 'Essai virtuel', href: '#' },
+      { label: 'Livraison gratuite', href: '#' },
+      { label: 'Garantie 2 ans', href: '#' },
+      { label: 'Service client', href: '#' }
+    ]
+  },
+  {
+    title: 'Informations',
+    links: [
+      { label: 'À propos', href: '#' },
+      { label: 'Nos magasins', href: '#' },
+      { label: 'Conditions générales', href: '#' },
+      { label: 'Politique de retour', href: '#' }
+    ]
+  }
+];
 const Footer = () => {
-  return <footer className="relative md:pt-20 pt-12 md:pb-0 border-t border-default-200">
-      <div className="absolute -top-16 start-0 size-64 bg-purple-500/10 blur-3xl"></div>
-      <div className="container">
-        <div className="grid grid-cols-12 md:gap-12 gap-6">
-          <div className="lg:col-span-4 col-span-12">
-            <div className="mb-5">
-              <Link to="#">
-                <img src={logoDark} alt="logo dark" className="h-7 block dark:hidden" width={111} />
-                <img src={logoLight} alt="logo light" className="h-7 hidden dark:block" width={111} />
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="relative bg-gradient-to-br from-default-50 to-white dark:from-default-900 dark:to-default-900/50 border-t border-default-200 dark:border-default-800">
+      {/* Décorations */}
+      <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 blur-3xl rounded-full"></div>
+      <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-purple-500/5 blur-3xl rounded-full"></div>
+
+      <div className="container relative z-10">
+        {/* Section principale */}
+        <div className="py-12 md:py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-8 lg:gap-12">
+            {/* Logo et description */}
+            <div className="lg:col-span-4">
+              <Link to="/" className="inline-block mb-6">
+                <img src={logoDark} alt="Logo" className="h-8 block dark:hidden" />
+                <img src={logoLight} alt="Logo" className="h-8 hidden dark:block" />
               </Link>
+
+              <p className="text-default-600 dark:text-default-400 mb-6 leading-relaxed">
+                Votre spécialiste en lunettes de vue et de soleil. Qualité, style et expertise à votre service.
+              </p>
+
+              {/* Coordonnées */}
+              <div className="space-y-3 mb-6">
+                <div className="flex items-start gap-3 text-sm">
+                  <LuMapPin className="w-5 h-5 text-primary mt-0.5 flex-shrink-0" />
+                  <span className="text-default-600 dark:text-default-400">
+                    123 Avenue de la République, Tunis, Tunisie
+                  </span>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <LuPhone className="w-5 h-5 text-primary flex-shrink-0" />
+                  <a href="tel:+21612345678" className="text-default-600 dark:text-default-400 hover:text-primary transition-colors">
+                    +216 12 345 678
+                  </a>
+                </div>
+                <div className="flex items-center gap-3 text-sm">
+                  <LuMail className="w-5 h-5 text-primary flex-shrink-0" />
+                  <a href="mailto:contact@optique.tn" className="text-default-600 dark:text-default-400 hover:text-primary transition-colors">
+                    contact@optique.tn
+                  </a>
+                </div>
+              </div>
+
+              {/* Réseaux sociaux */}
+              <div className="flex gap-3">
+                {socialLinks.map(({ id, icon: Icon, href, label }) => (
+                  <a
+                    key={id}
+                    href={href}
+                    aria-label={label}
+                    className="w-10 h-10 flex items-center justify-center rounded-full bg-white dark:bg-default-800 border border-default-200 dark:border-default-700 text-default-600 dark:text-default-400 hover:bg-primary hover:border-primary hover:text-white transition-all duration-300 hover:scale-110"
+                  >
+                    <Icon className="w-5 h-5" />
+                  </a>
+                ))}
+              </div>
             </div>
 
-            <p className="mb-5 text-sm text-default-500">
-              Premium Multipurpose Admin & Dashboard Template You can build any type of web
-              application like eCommerce, CRM, CMS, Project management apps, Admin Panels, etc using
-              Tailwick.
-            </p>
+            {/* Sections de liens */}
+            {footerSections.map((section, index) => (
+              <div key={`footer-section-${index}`} className="lg:col-span-2 md:col-span-1">
+                <h5 className="font-semibold text-default-900 dark:text-default-100 mb-4">
+                  {section.title}
+                </h5>
+                <ul className="space-y-3">
+                  {section.links.map((link, i) => (
+                    <li key={`footer-link-${section.title}-${i}`}>
+                      <Link
+                        to={link.href}
+                        className="text-sm text-default-600 dark:text-default-400 hover:text-primary dark:hover:text-primary transition-colors duration-200 inline-block"
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
 
-            <div className="flex flex-wrap gap-3 md:mt-0 mt-5">
-              {socialLinks.map(({
-              id,
-              icon: Icon,
-              href
-            }) => <Link key={id} to={href} className="size-10 flex items-center justify-center border border-default-200 bg-transparent rounded-full text-default-500 hover:text-primary transition">
-                  <Icon className="size-4" />
-                </Link>)}
+            {/* Horaires d'ouverture */}
+            <div className="lg:col-span-2">
+              <h5 className="font-semibold text-default-900 dark:text-default-100 mb-4">
+                Horaires
+              </h5>
+              <ul className="space-y-2 text-sm text-default-600 dark:text-default-400">
+                <li className="flex justify-between">
+                  <span>Lun - Ven</span>
+                  <span className="font-medium">9h - 19h</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Samedi</span>
+                  <span className="font-medium">9h - 18h</span>
+                </li>
+                <li className="flex justify-between">
+                  <span>Dimanche</span>
+                  <span className="font-medium">Fermé</span>
+                </li>
+              </ul>
             </div>
           </div>
+        </div>
 
-          {footerSections.map((section, index) => <div key={`footer-section-${index}`} className={`${index === 0 ? 'lg:col-span-3 md:col-span-4 col-span-12' : index === 1 ? 'lg:col-span-3 md:col-span-4 col-span-12' : 'lg:col-span-2 md:col-span-4 col-span-12'}`}>
-              <h5 className="mb-4 font-medium text-lg text-default-700">{section.title}</h5>
-              <ul className="flex flex-col gap-y-3 text-sm">
-                {section.links.map((link, i) => <li key={`footer-link-${section.title}-${i}`}>
-                    <Link to={link.href} className="relative inline-block transition-all duration-200 ease-linear hover:text-default-900 text-default-600 before:absolute before:border-b before:border-default-200 before:inset-x-0 before:bottom-0 before:w-0 hover:before:w-full before:transition-all before:duration-300 before:ease-linear">
-                      {link.label}
-                    </Link>
-                  </li>)}
-              </ul>
-            </div>)}
+        {/* Barre de copyright */}
+        <div className="py-6 border-t border-default-200 dark:border-default-800">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-default-600 dark:text-default-400">
+            <p>
+              © {currentYear} <span className="font-semibold text-default-900 dark:text-default-100">Optique</span>. Tous droits réservés.
+            </p>
+            <div className="flex items-center gap-6">
+              <Link to="#" className="hover:text-primary transition-colors">
+                Politique de confidentialité
+              </Link>
+              <Link to="#" className="hover:text-primary transition-colors">
+                Mentions légales
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
-
-      <div className="lg:py-10 py-6 mt-12 text-center text-default-500 text-base border-t border-default-200">
-        <p>
-          {currentYear} © Tailwick. Design & Develop by{' '}
-          <Link to="https://themesdesign.in/" target="_blank" rel="noopener noreferrer" className="underline text-default-800 font-bold transition-all hover:text-primary">
-            {developedBy}
-          </Link>
-        </p>
-      </div>
-    </footer>;
+    </footer>
+  );
 };
+
 export default Footer;

@@ -158,7 +158,7 @@ const MobileMenu = () => {
                     <div className="grid grid-cols-2 gap-3">
                       {brands.map((b, idx) => {
                         const name = b.name || b.nom || 'Marque';
-                        const key = b.id ?? `${name}-${idx}`;
+                        const key = `mobile-brand-${idx}-${name}`;
                         const img = b.imageUrl || b.image || b.logo || null;
                         return (
                           <a key={key} href="#product" className="flex items-center gap-3 rounded-lg border border-default-200/70 p-2 hover:border-primary/50">
