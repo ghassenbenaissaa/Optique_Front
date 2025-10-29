@@ -17,6 +17,7 @@ const Marque = lazy(() => import('@/app/(admin)/(pages)/marque'));
 const Verre = lazy(() => import('@/app/(admin)/(pages)/verre'));
 const Monture = lazy(() => import('@/app/(admin)/(pages)/monture'));
 const Entreprise = lazy(() => import('@/app/(admin)/(pages)/entreprise'));
+const Newsletter = lazy(() => import('@/app/(admin)/(pages)/newsletter'));
 // USers
 const UserGrid = lazy(() => import('@/app/(admin)/(app)/(users)/users-grid'));
 const UserList = lazy(() => import('@/app/(admin)/(app)/(users)/users-list'));
@@ -246,6 +247,16 @@ export const layoutsRoutes = [{
     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
       <PageWrapper>
         <Monture />
+      </PageWrapper>
+    </ProtectedRoute>
+  )
+}, {
+  path: '/admin/newsletter',
+  name: 'Newsletter',
+  element: (
+    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
+      <PageWrapper>
+        <Newsletter />
       </PageWrapper>
     </ProtectedRoute>
   )

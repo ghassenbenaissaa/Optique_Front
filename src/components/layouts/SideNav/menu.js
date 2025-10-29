@@ -75,6 +75,16 @@ export const menuItemsData = [ {
   icon: LuPercent,
   href: '/admin/promocode'
 }, {
+  key: 'Newsletter',
+  label: 'Newsletter',
+  icon: LuMail,
+  href: '/admin/newsletter'
+}, {
+  key: 'Utilisateurs',
+  label: 'Utilisateurs',
+  icon: LuSquareUserRound,
+  href: '/admin/users'
+}, {
   key: 'Ecommerce',
   label: 'Ecommerce',
   icon: LuShoppingBag,
@@ -91,11 +101,6 @@ export const menuItemsData = [ {
     label: 'Commandes',
     href: '/admin/orders'
   }]
-}, {
-  key: 'Utilisateurs',
-  label: 'Utilisateurs',
-  icon: LuSquareUserRound,
-  href: '/admin/users'
 }, {
   key: 'Extra',
   label: 'Extra',
@@ -124,38 +129,5 @@ export const menuItemsData = [ {
     key: 'Offline',
     label: 'Offline',
     href: '/offline'
-  }]
-}, {
-  key: 'Boxed Auth',
-  label: 'Boxed Auth',
-  icon: LuPackage,
-  children: [{
-    key: 'Login',
-    label: 'Login',
-    href: '/boxed-login'
-  }, {
-    key: 'Register',
-    label: 'Register',
-    href: '/boxed-register'
-  }, {
-    key: 'Verify Email',
-    label: 'Verify Email',
-    href: '/boxed-verify-email'
-  }, {
-    key: 'Two Steps',
-    label: 'Two Steps',
-    href: '/boxed-two-steps'
-  }, {
-    key: 'Logout',
-    label: 'Logout',
-    href: '/boxed-logout'
-  }, {
-    key: 'Reset Password',
-    label: 'Reset Password',
-    href: '/boxed-reset-password'
-  }, {
-    key: 'Create Password',
-    label: 'Create Password',
-    href: '/boxed-create-password'
   }]
 }];
