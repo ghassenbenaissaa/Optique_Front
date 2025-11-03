@@ -62,11 +62,14 @@ const Formulaire = ({ onSuccess }) => {
         }, 1500);
       }
     } catch (error) {
-      // Gestion d'erreur similaire à l'implémentation fetch précédente
-      const apiErrors = error?.response?.data?.errors;
-      if (apiErrors) {
-        setErrors(apiErrors);
-      } else {
+      const errorData = error?.response?.data;
+      if (errorData?.message) {
+        setErrors({ general: errorData.message });
+      }
+      else if (errorData?.errors) {
+        setErrors(errorData.message || 'Erreur de validation');
+      }
+      else {
         setErrors({ general: "Une erreur est survenue lors de l'ajout du matériau." });
       }
       console.error("Erreur lors de l'ajout du matériau:", error);

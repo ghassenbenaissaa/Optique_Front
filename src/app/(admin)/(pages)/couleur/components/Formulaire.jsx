@@ -67,12 +67,16 @@ const Formulaire = ({ onSuccess }) => {
       }
     } catch (error) {
       const errorData = error?.response?.data;
-      if (errorData?.errors) {
-        setErrors(errorData.errors);
-      } else {
-        setErrors({ general: "Une erreur est survenue lors de l'ajout de la couleur." });
+      if (errorData?.message) {
+        setErrors({ general: errorData.message });
       }
-      console.error("Erreur lors de l'ajout de la couleur:", error);
+      else if (errorData?.errors) {
+        setErrors(errorData.message || 'Erreur de validation');
+      }
+      else {
+        setErrors({ general: 'Une erreur est survenue lors de l\'ajout de la couleur.' });
+      }
+      console.error('Erreur lors de la modification de la couleur:', error);
     } finally {
       setIsLoading(false);
     }

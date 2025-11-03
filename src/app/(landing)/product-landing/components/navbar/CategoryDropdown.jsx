@@ -24,6 +24,22 @@ const CategoryDropdown = ({ variant = 'eyeglasses' }) => {
         { key: 'all', label: 'Tous les optiques', href: '#product' },
       ];
 
+  const imagesEyeglasses = {
+    men: '/images/men.jpg',
+    women: '/images/women.jpg',
+    kids: '/images/kids.jpg',
+    all: '/images/all.jpg',
+  };
+
+  const imagesSunglasses = {
+    men: '/images/men.sg.jpg',
+    women: '/images/women.sg.jpg',
+    kids: '/images/kids.sg.jpg',
+    all: '/images/all.jpg',
+  };
+
+  const imageMap = isSunglasses ? imagesSunglasses : imagesEyeglasses;
+
   return (
     <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-[min(92vw,56rem)]">
       <div className="rounded-xl border border-default-200/70 bg-card shadow-lg ring-1 ring-black/5 p-4 md:p-5">
@@ -39,7 +55,16 @@ const CategoryDropdown = ({ variant = 'eyeglasses' }) => {
               href={it.href}
               className="group rounded-xl overflow-hidden border border-default-200/70 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md bg-default-50 dark:bg-default-50/10"
             >
-              <div className="aspect-[16/9] bg-gradient-to-br from-default-100 to-default-200 dark:from-default-50/10 dark:to-default-100/10" />
+              <div className="aspect-[16/9] bg-gradient-to-br from-default-100 to-default-200 dark:from-default-50/10 dark:to-default-100/10">
+                {imageMap[it.key] ? (
+                  <img
+                    src={imageMap[it.key]}
+                    alt={it.label}
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                  />
+                ) : null}
+              </div>
               <div className="p-3">
                 <div className="text-base md:text-[15px] font-semibold text-default-800 dark:text-default-100">{it.label}</div>
                 <div className="mt-1 text-xs text-default-500">Découvrir la collection</div>

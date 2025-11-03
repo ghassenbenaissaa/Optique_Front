@@ -124,11 +124,7 @@ const Navbar = () => {
                 </li>
 
                 {/* Verres */}
-                <li>
-                  <a href="#product" className="px-2 py-1 rounded-md hover:text-primary transition-colors">
-                    Verres
-                  </a>
-                </li>
+
               </ul>
             </div>
 

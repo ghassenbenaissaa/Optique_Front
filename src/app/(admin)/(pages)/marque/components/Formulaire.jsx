@@ -128,11 +128,14 @@ const Formulaire = ({ onSuccess }) => {
         }, 1500);
       }
     } catch (error) {
-      // Essayer de récupérer des erreurs côté API si disponibles
-      const apiErrors = error?.response?.data?.errors;
-      if (apiErrors) {
-        setErrors(apiErrors);
-      } else {
+      const errorData = error?.response?.data;
+      if (errorData?.message) {
+        setErrors({ general: errorData.message });
+      }
+      else if (errorData?.errors) {
+        setErrors(errorData.message || 'Erreur de validation');
+      }
+      else {
         setErrors({ general: 'Une erreur est survenue lors de l\'ajout de la marque.' });
       }
       console.error('Erreur lors de l\'ajout de la marque:', error);

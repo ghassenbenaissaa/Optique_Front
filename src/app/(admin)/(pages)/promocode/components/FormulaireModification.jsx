@@ -95,9 +95,13 @@ const FormulaireModification = ({ promoCode, onSuccess, onCancel }) => {
     } catch (error) {
       console.error('Erreur lors de la modification du code promo:', error);
       const errorData = error?.response?.data;
-      if (errorData?.errors) {
-        setErrors(errorData.errors);
-      } else {
+      if (errorData?.message) {
+        setErrors({ general: errorData.message });
+      }
+      else if (errorData?.errors) {
+        setErrors(errorData.message || 'Erreur de validation');
+      }
+      else {
         setErrors({ general: 'Une erreur est survenue lors de la modification du code promo.' });
       }
     } finally {

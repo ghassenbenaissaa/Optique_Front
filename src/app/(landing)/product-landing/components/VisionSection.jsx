@@ -96,7 +96,7 @@ const VisionSection = () => {
               lunettes de soleil abordables. Découvrez des milliers de modèles
               avec l'essai virtuel, la livraison en 2 jours et des montures à
               partir de seulement{' '}
-              <span className="font-bold text-primary">6 €</span> !
+              <span className="font-bold text-primary">50 TND</span> !
             </p>
 
             {/* Conteneur des boutons CTA */}

@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import banner from '@/assets/images/banner.avif';
+import banner2 from '@/assets/images/banner2.avif';
+import banner3 from '@/assets/images/banner3.avif';
 
 /**
  * BannerCarousel - Défilement infini parfait avec CSS Transform
@@ -15,7 +17,7 @@ const BannerCarousel = () => {
   const isResetting = useRef(false);
 
   // Bannières originales (peut être n'importe quel nombre)
-  const originalBanners = [banner, banner, banner, banner];
+  const originalBanners = [banner, banner2, banner3, banner];
   const totalBanners = originalBanners.length;
 
   // Triple duplication pour un défilement infini parfait
