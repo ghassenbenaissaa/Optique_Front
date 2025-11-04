@@ -24,11 +24,11 @@ const ResendVerificationPage = () => {
     setLoading(true);
     try {
       const res = await api.post('/auth/resend-verification', { email });
-      const txt = res?.data || 'Email de vérification renvoyé.';
-      setMessage(typeof txt === 'string' ? txt : 'Email de vérification renvoyé.');
+      setMessage(res?.data?.message || 'Email de vérification renvoyé.');
     } catch (err) {
-      const backend = err?.response?.data || err?.message || 'Une erreur est survenue.';
-      setError(typeof backend === 'string' ? backend : 'Une erreur est survenue.');
+      const rawMessage = err.response?.data?.message || err.message || 'Une erreur est survenue.';
+      const cleanMessage = rawMessage.replace(/^\d{3} [A-Z_]+ "/, '').replace(/"$/, '');
+      setError(cleanMessage);
     } finally {
       setLoading(false);
     }

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { LuChevronLeft, LuChevronRight, LuSearch, LuMail } from 'react-icons/lu';
+import IconifyIcon from '@/components/client-wrapper/IconifyIcon';
 import { newsletterService } from '../services/newsletterService';
 
-const NewsletterTableau = () => {
+const NewsletterTableau = ({ onShowForm }) => {
   const [newsletters, setNewsletters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -89,6 +90,14 @@ const NewsletterTableau = () => {
               </div>
             </div>
           </div>
+
+          <button
+            className="btn btn-sm bg-primary text-white"
+            onClick={onShowForm}
+          >
+            <IconifyIcon icon="mdi:email-send" className="size-4 me-1" />
+            Envoyer Newsletter
+          </button>
         </div>
 
         <div className="flex flex-col">

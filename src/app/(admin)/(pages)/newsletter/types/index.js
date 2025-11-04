@@ -8,6 +8,12 @@
  */
 
 /**
+ * @typedef {Object} NewsletterRequest
+ * @property {string} subject - Titre de la newsletter
+ * @property {string} content - Contenu principal de la newsletter
+ */
+
+/**
  * @typedef {Object.<string, string>} ValidationErrors
  */
 
