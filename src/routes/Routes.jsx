@@ -5,7 +5,6 @@ import PageWrapper from '@/components/PageWrapper';
 // admin Ecommerce
 const Cart = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/cart'));
 const Orders = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/orders'));
-const ProductGrid = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/product-grid'));
 
 //admin use
 const AdminDashboard = lazy(() => import('@/app/(admin)/(dashboards)/index'));
@@ -42,6 +41,7 @@ const ResetPassword = lazy(() => import('@/app/(auth)/reset-password'));
 
 //  landing (public)
 const ProductLanding = lazy(() => import('@/app/(landing)/product-landing'));
+const ProductGrid = lazy(() => import('@/app/(landing)/product-grid'));
 
 //Other
 const Error404 = lazy(() => import('@/app/(others)/404'));
@@ -96,16 +96,6 @@ export const layoutsRoutes = [{
     <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
       <PageWrapper>
         <Orders />
-      </PageWrapper>
-    </ProtectedRoute>
-  )
-}, {
-  path: '/admin/product-grid',
-  name: 'ProductGrid',
-  element: (
-    <ProtectedRoute allowedRoles={['ROLE_ADMIN']}>
-      <PageWrapper>
-        <ProductGrid />
       </PageWrapper>
     </ProtectedRoute>
   )
@@ -257,6 +247,10 @@ export const singlePageRoutes = [{
   path: '/',
   name: 'ProductLanding',
   element: <ProductLanding />
+}, {
+  path: '/product',
+  name: 'ProductGrid',
+  element: <ProductGrid />
 }, {
   path: '/login',
   name: 'LoginAlias',
