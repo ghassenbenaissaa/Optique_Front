@@ -169,15 +169,7 @@ const ProductFilter = () => {
           <h6 className="card-title text-lg font-bold text-default-900 dark:text-default-100">
             Filtres
           </h6>
-          <div className="shrink-0">
-            <Link
-              to="#"
-              className="text-primary hover:text-primary/80 transition-all duration-200 text-sm font-medium flex items-center gap-1 group"
-            >
-              <LuX className="size-3.5 group-hover:rotate-90 transition-transform duration-300" />
-              Effacer tout
-            </Link>
-          </div>
+
         </motion.div>
 
         <motion.div
