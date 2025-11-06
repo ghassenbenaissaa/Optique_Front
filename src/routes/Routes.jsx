@@ -3,12 +3,12 @@ import ProtectedRoute from '@/components/security/ProtectedRoute';
 import PageWrapper from '@/components/PageWrapper';
 
 // admin Ecommerce
-
 const Cart = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/cart'));
 const Orders = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/orders'));
 const ProductGrid = lazy(() => import('@/app/(admin)/(app)/(ecommerce)/product-grid'));
 
-//Ghassen Add
+//admin use
+const AdminDashboard = lazy(() => import('@/app/(admin)/(dashboards)/index'));
 const Couleur = lazy(() => import('@/app/(admin)/(pages)/couleur'));
 const PromoCode = lazy(() => import('@/app/(admin)/(pages)/promocode'));
 const Materiaux = lazy(() => import('@/app/(admin)/(pages)/materiaux'));
@@ -18,12 +18,10 @@ const Verre = lazy(() => import('@/app/(admin)/(pages)/verre'));
 const Monture = lazy(() => import('@/app/(admin)/(pages)/monture'));
 const Entreprise = lazy(() => import('@/app/(admin)/(pages)/entreprise'));
 const Newsletter = lazy(() => import('@/app/(admin)/(pages)/newsletter'));
+
 // USers
 const UserGrid = lazy(() => import('@/app/(admin)/(app)/(users)/users-grid'));
 const UserList = lazy(() => import('@/app/(admin)/(app)/(users)/users-list'));
-
-// dashboard (renommé en AdminDashboard pour clarté)
-const AdminDashboard = lazy(() => import('@/app/(admin)/(dashboards)/index'));
 
 // layouts (admin demos)
 const DarkMode = lazy(() => import('@/app/(admin)/(layouts)/dark-mode'));
@@ -31,16 +29,11 @@ const SideNavHidden = lazy(() => import('@/app/(admin)/(layouts)/sidenav-hidden'
 const SideOffcanvas = lazy(() => import('@/app/(admin)/(layouts)/sidenav-offcanvas'));
 
 //Pages
-
 const Faq = lazy(() => import('@/app/(admin)/(pages)/faqs'));
 
 //auth
-const BoxedCreatePassword = lazy(() => import('@/app/(auth)/boxed-create-password'));
 const BoxedLogin = lazy(() => import('@/app/(auth)/boxed-login'));
 const BoxedRegister = lazy(() => import('@/app/(auth)/boxed-register'));
-const BoxedResetPassword = lazy(() => import('@/app/(auth)/boxed-reset-password'));
-const BoxedLogout = lazy(() => import('@/app/(auth)/boxed-logout'));
-const BoxedTwoStep = lazy(() => import('@/app/(auth)/boxed-two-steps'));
 const BoxedBanned = lazy(() => import('@/app/(auth)/boxed-banned'));
 const EmailConfirmation = lazy(() => import('@/app/(auth)/email-confirmation'));
 const ResendVerification = lazy(() => import('@/app/(auth)/resend-verification'));
@@ -48,13 +41,9 @@ const ForgotPassword = lazy(() => import('@/app/(auth)/forgot-password'));
 const ResetPassword = lazy(() => import('@/app/(auth)/reset-password'));
 
 //  landing (public)
-
-const OnePageLanding = lazy(() => import('@/app/(landing)/onepage-landing'));
 const ProductLanding = lazy(() => import('@/app/(landing)/product-landing'));
-const NewsletterConfirm = lazy(() => import('@/app/(landing)/newsletter-confirm'));
 
 //Other
-
 const Error404 = lazy(() => import('@/app/(others)/404'));
 const CommingSoon = lazy(() => import('@/app/(others)/coming-soon'));
 const Maintenance = lazy(() => import('@/app/(others)/maintenance'));
@@ -296,34 +285,6 @@ export const singlePageRoutes = [{
   path: '/auth/reset-password',
   name: 'ResetPassword',
   element: <ResetPassword />
-}, {
-  path: '/boxed-create-password',
-  name: 'BoxedCreatePassword',
-  element: <BoxedCreatePassword />
-}, {
-  path: '/boxed-reset-password',
-  name: 'BoxedResetPassword',
-  element: <BoxedResetPassword />
-}, {
-  path: '/boxed-logout',
-  name: 'BoxedLogout',
-  element: <BoxedLogout />
-}, {
-  path: '/boxed-two-steps',
-  name: 'BoxedTwoStep',
-  element: <BoxedTwoStep />
-}, {
-  path: '/onepage-landing',
-  name: 'OnePageLanding',
-  element: <OnePageLanding />
-}, {
-  path: '/product-landing',
-  name: 'ProductLandingAlt',
-  element: <ProductLanding />
-}, {
-  path: '/newsletter/confirm',
-  name: 'NewsletterConfirm',
-  element: <NewsletterConfirm />
 }, {
   path: '/404',
   name: '404',

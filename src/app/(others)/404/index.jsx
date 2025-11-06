@@ -44,7 +44,7 @@ const PageNotFound = () => {
                 It will be as straightforward as Occidental; in fact, it will be just like
                 Occidental to an English speaker.
               </p>
-              <Link to="/index">
+              <Link to="/">
                 <button type="button" className="bg-primary text-white hover:bg-blue-600 rounded text-[13px] py-2 px-4 inline-flex items-center">
                   <LuHouse className="size-3 me-1" />
                   Back to Home
