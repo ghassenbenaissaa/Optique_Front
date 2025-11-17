@@ -440,46 +440,64 @@ const ProductFilter = () => {
   };
   const isMontureSelected = (id) => selectedMontures.includes(id);
 
-  const MontureIcon = ({ type }) => {
+  const MontureIcon = ({ type, selected }) => {
+    const strokeColor = 'currentColor';
+    const strokeWidth = selected ? 2.2 : 1.8;
+    const dashed = selected ? '4 3' : '3 3'; // motif dash (légèrement différent si sélectionné)
     const common = {
       fill: 'none',
-      stroke: 'currentColor',
-      strokeWidth: 1.8,
+      stroke: strokeColor,
+      strokeWidth,
       strokeLinecap: 'round',
       strokeLinejoin: 'round',
     };
+    const fillOverlay = selected ? 'rgba(59,130,246,0.08)' : 'transparent';
+
     if (type === 'monture-cerclee') {
       return (
-        <svg viewBox="0 0 48 24" className="w-11 h-11" aria-hidden="true" focusable="false">
+        <svg viewBox="0 0 64 28" className="w-11 h-11" aria-hidden="true" focusable="false">
+          <title>Monture cerclée</title>
           <g {...common}>
-            <circle cx="12" cy="12" r="7" />
-            <circle cx="36" cy="12" r="7" />
-            <path d="M19 12h10" />
-            <path d="M3 12h3M42 12h3" />
+            <rect x="8" y="6" width="20" height="16" rx="8" fill={fillOverlay} />
+            <rect x="36" y="6" width="20" height="16" rx="8" fill={fillOverlay} />
+            <path d="M28 14h8" />
+            <path d="M8 14H4" />
+            <path d="M56 14h4" />
+            <path d="M31 12.5c1.2-.8 2.8-.8 4 0" strokeWidth={strokeWidth * 0.75} />
           </g>
         </svg>
       );
     }
     if (type === 'monture-demi-cerclee') {
       return (
-        <svg viewBox="0 0 48 24" className="w-11 h-11" aria-hidden="true" focusable="false">
+        <svg viewBox="0 0 64 28" className="w-11 h-11" aria-hidden="true" focusable="false">
+          <title>Monture demi-cerclée</title>
           <g {...common}>
-            <path d="M5 12a7 7 0 0 1 14 0" />
-            <path d="M29 12a7 7 0 0 1 14 0" />
-            <path d="M19 12h10" />
-            <path d="M3 12h3M42 12h3" />
+            {/* Arcs supérieurs pleins */}
+            <path d="M8 14c0-8 20-8 20 0" fill={fillOverlay} />
+            <path d="M36 14c0-8 20-8 20 0" fill={fillOverlay} />
+            {/* Arcs inférieurs en pointillés pour partie non cadrée */}
+            <path d="M8 14c0 8 20 8 20 0" strokeDasharray={dashed} opacity={0.85} />
+            <path d="M36 14c0 8 20 8 20 0" strokeDasharray={dashed} opacity={0.85} />
+            <path d="M28 14h8" />
+            <path d="M8 14H4" />
+            <path d="M56 14h4" />
+            <path d="M31 12.7c1.2-.8 2.8-.8 4 0" strokeWidth={strokeWidth * 0.75} />
           </g>
         </svg>
       );
     }
-    // sans monture
+    // Sans monture : cercles en pointillés pour représenter verres sans cadre
     return (
-      <svg viewBox="0 0 48 24" className="w-11 h-11" aria-hidden="true" focusable="false">
-        <g {...common}>
-          <path d="M10 12h6" />
-          <path d="M32 12h6" />
-          <path d="M19 12h10" />
-          <path d="M8 12h1M39 12h1" />
+      <svg viewBox="0 0 64 28" className="w-11 h-11" aria-hidden="true" focusable="false">
+        <title>Monture sans monture</title>
+        <g {...common} transform="translate(0,0.3)">
+          <circle cx="18" cy="14" r="7.5" strokeDasharray={dashed} />
+          <circle cx="46" cy="14" r="7.5" strokeDasharray={dashed} />
+          {/* Pont discret sur l'écart complet */}
+          <path d="M26 14h12" />
+          {/* Accent pont centré */}
+          <path d="M29.8 13.2c1-.55 2.4-.55 3.4 0" strokeWidth={strokeWidth * 0.7} />
         </g>
       </svg>
     );
@@ -801,8 +819,8 @@ const ProductFilter = () => {
                                       className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                     />
                                     <label htmlFor={inputId} className="flex items-center gap-3 cursor-pointer select-none flex-1">
-                                      <div className={`w-12 h-12 flex items-center justify-center rounded-md overflow-hidden bg-white dark:bg-default-800 border ${selected ? 'border-primary ring-2 ring-primary/30 text-primary' : 'border-default-200 dark:border-default-600 text-default-500'}`}>
-                                        <MontureIcon type={opt.id} />
+                                      <div className={`w-12 h-12 flex items-center justify-center rounded-md overflow-hidden bg-white dark:bg-default-800 border ${selected ? 'border-primary ring-2 ring-primary/30 text-primary' : 'border-default-200 dark:border-default-600 text-default-500'} transition-colors duration-300`}>
+                                        <MontureIcon type={opt.id} selected={selected} />
                                       </div>
                                       <span className={`text-sm ${selected ? 'font-medium text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{opt.label}</span>
                                     </label>
