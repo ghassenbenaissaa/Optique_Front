@@ -191,123 +191,34 @@ const DoubleSlider = ({
 const filterConfig = [{
   id: 'type-verre',
   title: 'Type de verre',
-  options: [{
-    id: 'type-vue',
-    label: 'Lunettes de vue'
-  }, {
-    id: 'type-soleil',
-    label: 'Lunettes de soleil'
-  }, {
-    id: 'type-ia',
-    label: 'Lunettes IA'
-  }]
+  options: [{ id: 'type-vue', label: 'Lunettes de vue' }, { id: 'type-soleil', label: 'Lunettes de soleil' }, { id: 'type-ia', label: 'Lunettes IA' }]
 }, {
   id: 'genre',
   title: 'Genre',
-  options: [{
-    id: 'genre-homme',
-    label: 'Homme'
-  }, {
-    id: 'genre-femme',
-    label: 'Femme'
-  }, {
-    id: 'genre-unisex',
-    label: 'Unisexe'
-  }, {
-    id: 'genre-enfant',
-    label: 'Enfant'
-  }]
+  options: [{ id: 'genre-homme', label: 'Homme' }, { id: 'genre-femme', label: 'Femme' }, { id: 'genre-unisex', label: 'Unisexe' }, { id: 'genre-enfant', label: 'Enfant' }]
 }, {
   id: 'taille',
   title: 'Taille',
-  options: [{
-    id: 'taille-extra-petit',
-    label: 'Extra Petit'
-  }, {
-    id: 'taille-petit',
-    label: 'Petit'
-  }, {
-    id: 'taille-moyen',
-    label: 'Moyen'
-  }, {
-    id: 'taille-grand',
-    label: 'Grand'
-  }, {
-    id: 'taille-extra-grand',
-    label: 'Extra Grand'
-  }, {
-    id: 'taille-sur-mesure',
-    label: 'Sur mesure',
-    isCustomSize: true
-  }]
+  options: [{ id: 'taille-extra-petit', label: 'Extra Petit' }, { id: 'taille-petit', label: 'Petit' }, { id: 'taille-moyen', label: 'Moyen' }, { id: 'taille-grand', label: 'Grand' }, { id: 'taille-extra-grand', label: 'Extra Grand' }, { id: 'taille-sur-mesure', label: 'Sur mesure', isCustomSize: true }]
 }, {
   id: 'forme',
   title: 'Forme',
-  options: [{
-    id: 'forme-rectangulaire',
-    label: 'Rectangulaire'
-  }, {
-    id: 'forme-ronde',
-    label: 'Ronde'
-  }, {
-    id: 'forme-ovale',
-    label: 'Ovale'
-  }, {
-    id: 'forme-carree',
-    label: 'Carrée'
-  }, {
-    id: 'forme-papillon',
-    label: 'Papillon'
-  }, {
-    id: 'forme-aviateur',
-    label: 'Aviateur'
-  }, {
-    id: 'forme-wayfarer',
-    label: 'Wayfarer'
-  }]
+  isDynamicForme: true,
+  options: [] // dynamique
 }, {
   id: 'couleur',
   title: 'Couleur',
-  isDynamic: true, // Marquer comme dynamique pour chargement API
-  options: [] // Sera rempli dynamiquement
+  isDynamic: true,
+  options: []
 }, {
   id: 'materiau',
   title: 'Matériau',
-  options: [{
-    id: 'materiau-plastique',
-    label: 'Plastique'
-  }, {
-    id: 'materiau-metal',
-    label: 'Métal'
-  }, {
-    id: 'materiau-acetate',
-    label: 'Acétate'
-  }, {
-    id: 'materiau-titane',
-    label: 'Titane'
-  }, {
-    id: 'materiau-bois',
-    label: 'Bois'
-  }, {
-    id: 'materiau-aluminium',
-    label: 'Aluminium'
-  }]
+  options: [{ id: 'materiau-plastique', label: 'Plastique' }, { id: 'materiau-metal', label: 'Métal' }, { id: 'materiau-acetate', label: 'Acétate' }, { id: 'materiau-titane', label: 'Titane' }, { id: 'materiau-bois', label: 'Bois' }, { id: 'materiau-aluminium', label: 'Aluminium' }]
 }, {
   id: 'type-monture',
   title: 'Type de monture',
-  options: [{
-    id: 'monture-cerclee',
-    label: 'Cerclée',
-  }, {
-    id: 'monture-demi-cerclee',
-    label: 'Demi-cerclée',
-  }, {
-    id: 'monture-sans',
-    label: 'Sans monture',
-  }]
-},
-// Sliders avancés
-{
+  options: [{ id: 'monture-cerclee', label: 'Cerclée' }, { id: 'monture-demi-cerclee', label: 'Demi-cerclée' }, { id: 'monture-sans', label: 'Sans monture' }]
+}, {
   id: 'prix-avance',
   title: 'Prix',
   isSlider: true,
@@ -384,6 +295,9 @@ const ProductFilter = () => {
   const [longueurBrancheMin, setLongueurBrancheMin] = useState(DEFAULT_FILTER_VALUES.minLongueurBranche);
   const [longueurBrancheMax, setLongueurBrancheMax] = useState(DEFAULT_FILTER_VALUES.maxLongueurBranche);
 
+  const [formes, setFormes] = useState([]);
+  const [selectedFormes, setSelectedFormes] = useState([]);
+
   useEffect(() => {
     const fetchFilterValues = async () => {
       try {
@@ -434,6 +348,16 @@ const ProductFilter = () => {
           setColors([]);
         }
 
+        // Charger les formes
+        try {
+          const formesData = await filtreService.getAllFormes();
+          const availableFormes = (formesData || []).filter(f => f.isAvailable && f.name && f.imageUrl);
+          setFormes(availableFormes);
+        } catch (formeError) {
+          console.error('Erreur lors du chargement des formes:', formeError);
+          setFormes([]);
+        }
+
       } catch (error) {
         console.error('Erreur lors du chargement des filtres:', error);
 
@@ -470,6 +394,16 @@ const ProductFilter = () => {
   };
 
   const isColorSelected = (colorName) => selectedColors.includes(colorName);
+
+  // Gestion de la sélection des formes
+  const handleToggleForme = (name) => {
+    setSelectedFormes(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
+  };
+
+  const isFormeSelected = (name) => selectedFormes.includes(name);
+
+  // Helper pour générer un id unique pour les formes (sans utiliser l'id API qui peut être null)
+  const slugify = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$|/g, '').replace(/-+/g,'-');
 
   return <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -551,176 +485,203 @@ const ProductFilter = () => {
                 const { val1, val2, setVals } = getSliderBinding(section.id);
 
                 return (
-                  <>
-                    <motion.div
-                      key={section.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 + index * 0.1 }}
-                      className="hs-accordion mt-6 first:mt-0"
-                      id={`hs-accordion-${section.id}`}
-                    >
-                      <button className="hs-accordion-toggle group inline-flex items-center justify-between gap-x-3 w-full font-semibold text-start text-default-800 dark:text-default-200 rounded-lg text-base hover:text-primary transition-colors duration-300" aria-expanded="false" aria-controls={`hs-collapse-${section.id}`}>
-                        {section.title}
-                        <div className="relative">
-                          <LuChevronDown size={18} className="text-base hs-accordion-active:hidden block group-hover:text-primary transition-colors" />
-                          <LuChevronUp size={18} className="text-base hs-accordion-active:block hidden group-hover:text-primary transition-colors" />
-                        </div>
-                      </button>
+                  <motion.div
+                    key={section.id}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.4 + index * 0.1 }}
+                    className="hs-accordion mt-6 first:mt-0"
+                    id={`hs-accordion-${section.id}`}
+                  >
+                    <button className="hs-accordion-toggle group inline-flex items-center justify-between gap-x-3 w-full font-semibold text-start text-default-800 dark:text-default-200 rounded-lg text-base hover:text-primary transition-colors duration-300" aria-expanded="false" aria-controls={`hs-collapse-${section.id}`}>
+                      {section.title}
+                      <div className="relative">
+                        <LuChevronDown size={18} className="text-base hs-accordion-active:hidden block group-hover:text-primary transition-colors" />
+                        <LuChevronUp size={18} className="text-base hs-accordion-active:block hidden group-hover:text-primary transition-colors" />
+                      </div>
+                    </button>
 
-                      <div id={`hs-collapse-${section.id}`} className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" role="region" aria-labelledby={`hs-accordion-${section.id}`}>
-                        {isSlider ? (
-                          <motion.div
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 0.5 }}
-                            className="mt-4 space-y-4"
-                          >
-                            <DoubleSlider
-                              min={typeof boundsMin === 'number' ? boundsMin : 0}
-                              max={typeof boundsMax === 'number' ? boundsMax : 100}
-                              step={typeof section.step === 'number' ? section.step : 1}
-                              value1={val1}
-                              value2={val2}
-                              onChange={(v1, v2) => setVals?.(v1, v2)}
-                              formatValue={(v) => formatUnit(section.unit, v)}
-                              ariaLabelFrom={`${section.title} min`}
-                              ariaLabelTo={`${section.title} max`}
-                            />
-                          </motion.div>
-                        ) : (
-                          // Affichage normal pour les autres filtres
-                          <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : 'flex-col gap-3'}`}>
-                            {/* Affichage dynamique des couleurs */}
-                            {section.id === 'couleur' ? (
-                              colors.length > 0 ? (
-                                colors.map((color, colorIndex) => (
-                                  <motion.div
-                                    key={`${color.name}-${colorIndex}`}
-                                    initial={{ scale: 0, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: 0.5 + colorIndex * 0.05 }}
-                                    className="relative cursor-pointer group z-10"
-                                    onClick={() => handleColorToggle(color.name)}
-                                    title={color.name}
-                                  >
-                                    <div
-                                      className={`w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 shadow-sm ${
-                                        isColorSelected(color.name) 
-                                          ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-md' 
-                                          : 'border-2'
-                                      }`}
-                                      style={{
-                                        backgroundColor: color.codeHex,
-                                        borderColor: color.codeHex === '#FFFFFF' || color.codeHex.toLowerCase() === '#fff' ? '#E5E7EB' : color.codeHex
-                                      }}
-                                    />
-                                    {/* Effet hover avec bordure primary */}
-                                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-primary/50 transition-all duration-300 pointer-events-none"></div>
-
-                                    {/* Indicateur de sélection */}
-                                    {isColorSelected(color.name) && (
-                                      <motion.div
-                                        initial={{ scale: 0 }}
-                                        animate={{ scale: 1 }}
-                                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
-                                      >
-                                        <div className="w-2 h-2 bg-white rounded-full shadow-lg border border-primary"></div>
-                                      </motion.div>
-                                    )}
-                                  </motion.div>
-                                ))
-                              ) : (
-                                <div className="text-sm text-default-500 italic py-2">Aucune couleur disponible</div>
-                              )
-                            ) : (
-                              // Autres filtres (non-couleur)
-                              section.options?.map((opt, optIndex) => (
+                    <div id={`hs-collapse-${section.id}`} className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" role="region" aria-labelledby={`hs-accordion-${section.id}`}>
+                      {isSlider ? (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.5 }}
+                          className="mt-4 space-y-4"
+                        >
+                          <DoubleSlider
+                            min={typeof boundsMin === 'number' ? boundsMin : 0}
+                            max={typeof boundsMax === 'number' ? boundsMax : 100}
+                            step={typeof section.step === 'number' ? section.step : 1}
+                            value1={val1}
+                            value2={val2}
+                            onChange={(v1, v2) => setVals?.(v1, v2)}
+                            formatValue={(v) => formatUnit(section.unit, v)}
+                            ariaLabelFrom={`${section.title} min`}
+                            ariaLabelTo={`${section.title} max`}
+                          />
+                        </motion.div>
+                      ) : (
+                        <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : section.id === 'forme' ? 'flex-wrap gap-4 p-2' : 'flex-col gap-3'}`}>
+                          {section.id === 'couleur' ? (
+                            colors.length > 0 ? (
+                              colors.map((color, colorIndex) => (
                                 <motion.div
-                                  key={opt.id}
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ delay: 0.5 + optIndex * 0.05 }}
-                                  className="flex gap-3 items-center group hover:bg-primary/5 rounded-lg px-2 py-1.5 transition-all duration-300"
+                                  key={`${color.name}-${colorIndex}`}
+                                  initial={{ scale: 0, opacity: 0 }}
+                                  animate={{ scale: 1, opacity: 1 }}
+                                  transition={{ delay: 0.5 + colorIndex * 0.05 }}
+                                  className="relative cursor-pointer group z-10"
+                                  onClick={() => handleColorToggle(color.name)}
+                                  title={color.name}
                                 >
-                                  <input
-                                    type="checkbox"
-                                    className="form-checkbox checked:bg-primary border-default-300 rounded transition-all duration-300 focus:ring-2 focus:ring-primary/30"
-                                    id={opt.id}
-                                    onChange={(e) => {
-                                      if (opt.id === 'taille-sur-mesure') {
-                                        setIsSurMesureSelected(e.target.checked);
-                                      }
+                                  <div
+                                    className={`w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 shadow-sm ${
+                                      isColorSelected(color.name) ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-md' : 'border-2'
+                                    }`}
+                                    style={{
+                                      backgroundColor: color.codeHex,
+                                      borderColor: color.codeHex === '#FFFFFF' || color.codeHex.toLowerCase() === '#fff' ? '#E5E7EB' : color.codeHex
                                     }}
                                   />
-                                  {opt.icon && (
-                                    <div className="flex-shrink-0">
-                                      {opt.icon}
-                                    </div>
+                                  <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-primary/50 transition-all duration-300 pointer-events-none" />
+                                  {isColorSelected(color.name) && (
+                                    <motion.div
+                                      initial={{ scale: 0 }}
+                                      animate={{ scale: 1 }}
+                                      className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                    >
+                                      <div className="w-2 h-2 bg-white rounded-full shadow-lg border border-primary"></div>
+                                    </motion.div>
                                   )}
-                                  <label
-                                    htmlFor={opt.id}
-                                    className="text-sm text-default-700 dark:text-default-300 align-middle cursor-pointer select-none group-hover:text-default-900 dark:group-hover:text-default-100 transition-colors duration-300 flex-1"
-                                  >
-                                    {opt.label}
-                                  </label>
                                 </motion.div>
                               ))
-                            )}
-                            {/* Sliders sur mesure intégrés */}
-                            {section.id === 'taille' && isSurMesureSelected && (
-                              <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                transition={{ duration: 0.3 }}
-                                className="mt-4 space-y-4 border-t border-default-200 dark:border-default-700 pt-4"
-                              >
-                                <h6 className="text-sm font-semibold text-default-700 dark:text-default-200">Dimensions sur mesure</h6>
-                                {dimensionSliders.map((dim, dimIndex) => {
-                                  const boundsMinDim = filterValues?.[dim.fieldMin] ?? DEFAULT_FILTER_VALUES[dim.fieldMin];
-                                  const boundsMaxDim = filterValues?.[dim.fieldMax] ?? DEFAULT_FILTER_VALUES[dim.fieldMax];
-                                  // Récupération binding
-                                  let val1Dim, val2Dim, setValsDim;
-                                  if (dim.id === 'largeur-totale-avance') { val1Dim = largeurTotaleMin; val2Dim = largeurTotaleMax; setValsDim = (a,b)=>{setLargeurTotaleMin(a); setLargeurTotaleMax(b);} }
-                                  else if (dim.id === 'largeur-verre-avance') { val1Dim = largeurVerreMin; val2Dim = largeurVerreMax; setValsDim = (a,b)=>{setLargeurVerreMin(a); setLargeurVerreMax(b);} }
-                                  else if (dim.id === 'hauteur-verre-avance') { val1Dim = hauteurVerreMin; val2Dim = hauteurVerreMax; setValsDim = (a,b)=>{setHauteurVerreMin(a); setHauteurVerreMax(b);} }
-                                  else if (dim.id === 'largeur-pont-avance') { val1Dim = largeurPontMin; val2Dim = largeurPontMax; setValsDim = (a,b)=>{setLargeurPontMin(a); setLargeurPontMax(b);} }
-                                  else if (dim.id === 'longueur-branche-avance') { val1Dim = longueurBrancheMin; val2Dim = longueurBrancheMax; setValsDim = (a,b)=>{setLongueurBrancheMin(a); setLongueurBrancheMax(b);} }
+                            ) : (
+                              <div className="text-sm text-default-500 italic py-2">Aucune couleur disponible</div>
+                            )
+                          ) : section.id === 'forme' ? (
+                            formes.length > 0 ? (
+                              <div className="flex flex-col gap-3 w-full">
+                                {formes.map((forme, formeIndex) => {
+                                  const formeId = `forme-${slugify(forme.name)}-${formeIndex}`;
+                                  const selected = isFormeSelected(forme.name);
                                   return (
                                     <motion.div
-                                      key={dim.id}
-                                      initial={{ opacity: 0, y: 8 }}
+                                      key={formeId}
+                                      initial={{ opacity: 0, y: 6 }}
                                       animate={{ opacity: 1, y: 0 }}
-                                      transition={{ delay: 0.55 + dimIndex * 0.07 }}
-                                      className="space-y-1.5"
+                                      transition={{ delay: 0.45 + formeIndex * 0.05 }}
+                                      className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
                                     >
-                                      <div className="flex items-center justify-between">
-                                        <span className="text-xs font-medium text-default-600 dark:text-default-300">{dim.title}</span>
-                                        <span className="text-xs text-default-500">{formatUnit(dim.unit, Math.min(val1Dim,val2Dim))} – {formatUnit(dim.unit, Math.max(val1Dim,val2Dim))}</span>
-                                      </div>
-                                      <DoubleSlider
-                                        compact
-                                        min={typeof boundsMinDim === 'number' ? boundsMinDim : 0}
-                                        max={typeof boundsMaxDim === 'number' ? boundsMaxDim : 100}
-                                        step={typeof dim.step === 'number' ? dim.step : 1}
-                                        value1={val1Dim}
-                                        value2={val2Dim}
-                                        onChange={(v1,v2)=>setValsDim?.(v1,v2)}
-                                        formatValue={(v)=> formatUnit(dim.unit, v)}
-                                        ariaLabelFrom={`${dim.title} min`}
-                                        ariaLabelTo={`${dim.title} max`}
+                                      <input
+                                        type="checkbox"
+                                        id={formeId}
+                                        checked={selected}
+                                        onChange={() => handleToggleForme(forme.name)}
+                                        className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                       />
+                                      <label htmlFor={formeId} className="flex items-center gap-3 cursor-pointer select-none flex-1">
+                                        <div className={`w-12 h-12 flex items-center justify-center rounded-md overflow-hidden bg-white dark:bg-default-800 border ${selected ? 'border-primary ring-2 ring-primary/30' : 'border-default-200 dark:border-default-600'}`}>
+                                          {forme.imageUrl ? (
+                                            <img
+                                              src={forme.imageUrl}
+                                              alt={forme.name}
+                                              className="w-10 h-10 object-contain"
+                                              loading="lazy"
+                                            />
+                                          ) : (
+                                            <span className="text-xs text-default-500">N/A</span>
+                                          )}
+                                        </div>
+                                        <span className={`text-sm ${selected ? 'font-medium text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{forme.name}</span>
+                                      </label>
                                     </motion.div>
                                   );
                                 })}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-default-500 italic py-2">Aucune forme disponible</div>
+                            )
+                          ) : (
+                            section.options?.map((opt, optIndex) => (
+                              <motion.div
+                                key={opt.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.5 + optIndex * 0.05 }}
+                                className="flex gap-3 items-center group hover:bg-primary/5 rounded-lg px-2 py-1.5 transition-all duration-300"
+                              >
+                                <input
+                                  type="checkbox"
+                                  className="form-checkbox bg-white dark:bg-default-800 border border-default-300 rounded transition-all duration-300 checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30"
+                                  id={opt.id}
+                                  onChange={(e) => {
+                                    if (opt.id === 'taille-sur-mesure') {
+                                      setIsSurMesureSelected(e.target.checked);
+                                    }
+                                  }}
+                                />
+                                {opt.icon && <div className="flex-shrink-0">{opt.icon}</div>}
+                                <label
+                                  htmlFor={opt.id}
+                                  className="text-sm text-default-700 dark:text-default-300 align-middle cursor-pointer select-none group-hover:text-default-900 dark:group-hover:text-default-100 transition-colors duration-300 flex-1"
+                                >
+                                  {opt.label}
+                                </label>
                               </motion.div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  </>
+                            ))
+                          )}
+                          {section.id === 'taille' && isSurMesureSelected && (
+                            <motion.div
+                              initial={{ opacity: 0, height: 0 }}
+                              animate={{ opacity: 1, height: 'auto' }}
+                              exit={{ opacity: 0, height: 0 }}
+                              transition={{ duration: 0.3 }}
+                              className="mt-4 space-y-4 border-t border-default-200 dark:border-default-700 pt-4"
+                            >
+                              <h6 className="text-sm font-semibold text-default-700 dark:text-default-200">Dimensions sur mesure</h6>
+                              {dimensionSliders.map((dim, dimIndex) => {
+                                const boundsMinDim = filterValues?.[dim.fieldMin] ?? DEFAULT_FILTER_VALUES[dim.fieldMin];
+                                const boundsMaxDim = filterValues?.[dim.fieldMax] ?? DEFAULT_FILTER_VALUES[dim.fieldMax];
+                                let val1Dim, val2Dim, setValsDim;
+                                if (dim.id === 'largeur-totale-avance') { val1Dim = largeurTotaleMin; val2Dim = largeurTotaleMax; setValsDim = (a,b)=>{setLargeurTotaleMin(a); setLargeurTotaleMax(b);} }
+                                else if (dim.id === 'largeur-verre-avance') { val1Dim = largeurVerreMin; val2Dim = largeurVerreMax; setValsDim = (a,b)=>{setLargeurVerreMin(a); setLargeurVerreMax(b);} }
+                                else if (dim.id === 'hauteur-verre-avance') { val1Dim = hauteurVerreMin; val2Dim = hauteurVerreMax; setValsDim = (a,b)=>{setHauteurVerreMin(a); setHauteurVerreMax(b);} }
+                                else if (dim.id === 'largeur-pont-avance') { val1Dim = largeurPontMin; val2Dim = largeurPontMax; setValsDim = (a,b)=>{setLargeurPontMin(a); setLargeurPontMax(b);} }
+                                else if (dim.id === 'longueur-branche-avance') { val1Dim = longueurBrancheMin; val2Dim = longueurBrancheMax; setValsDim = (a,b)=>{setLongueurBrancheMin(a); setLongueurBrancheMax(b);} }
+                                return (
+                                  <motion.div
+                                    key={dim.id}
+                                    initial={{ opacity: 0, y: 8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.55 + dimIndex * 0.07 }}
+                                    className="space-y-1.5"
+                                  >
+                                    <div className="flex items-center justify-between">
+                                      <span className="text-xs font-medium text-default-600 dark:text-default-300">{dim.title}</span>
+                                      <span className="text-xs text-default-500">{formatUnit(dim.unit, Math.min(val1Dim,val2Dim))} – {formatUnit(dim.unit, Math.max(val1Dim,val2Dim))}</span>
+                                    </div>
+                                    <DoubleSlider
+                                      compact
+                                      min={typeof boundsMinDim === 'number' ? boundsMinDim : 0}
+                                      max={typeof boundsMaxDim === 'number' ? boundsMaxDim : 100}
+                                      step={typeof dim.step === 'number' ? dim.step : 1}
+                                      value1={val1Dim}
+                                      value2={val2Dim}
+                                      onChange={(v1,v2)=>setValsDim?.(v1,v2)}
+                                      formatValue={(v)=> formatUnit(dim.unit, v)}
+                                      ariaLabelFrom={`${dim.title} min`}
+                                      ariaLabelTo={`${dim.title} max`}
+                                    />
+                                  </motion.div>
+                                );
+                              })}
+                            </motion.div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </motion.div>
                 );
               })}
         </div>

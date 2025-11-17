@@ -52,9 +52,29 @@ class FiltreService {
       );
     }
   }
+
+  /**
+   * Récupère toutes les formes disponibles depuis l'API
+   * @returns {Promise<import('../types/filtre.js').GetFormeResponse[]>}
+   * @throws {Error} Si l'appel échoue
+   */
+  async getAllFormes() {
+    try {
+      const response = await api.get('/formeProduit/getAll');
+      if (!response?.data) {
+        throw new Error('Réponse API invalide');
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des formes:', error);
+      throw new Error(
+        error.response?.data?.message ||
+        'Impossible de charger les formes. Veuillez réessayer.'
+      );
+    }
+  }
 }
 
 // Export d'une instance unique (Singleton)
 const filtreService = new FiltreService();
 export default filtreService;
-

@@ -27,6 +27,15 @@
  */
 
 /**
+ * Type de réponse pour l'API de récupération des formes
+ * @typedef {Object} GetFormeResponse
+ * @property {number|null} id - ID (peut être null, ne pas utiliser)
+ * @property {string} name - Nom de la forme
+ * @property {boolean} isAvailable - Indique si la forme est disponible
+ * @property {string} imageUrl - URL de l'image associée à la forme
+ */
+
+/**
  * Valeurs par défaut pour les filtres en cas d'erreur
  * @type {GetFiltreResponse}
  */
@@ -46,4 +55,3 @@ export const DEFAULT_FILTER_VALUES = {
 };
 
 export default {};
-
