@@ -36,6 +36,14 @@
  */
 
 /**
+ * Type de réponse pour l'API de récupération des matériaux
+ * @typedef {Object} GetMateriauResponse
+ * @property {number|null} id - ID (peut être null, ne pas utiliser)
+ * @property {string} name - Nom du matériau
+ * @property {boolean} isAvailable - Indique si le matériau est disponible
+ */
+
+/**
  * Valeurs par défaut pour les filtres en cas d'erreur
  * @type {GetFiltreResponse}
  */

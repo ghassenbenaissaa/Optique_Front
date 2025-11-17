@@ -73,6 +73,27 @@ class FiltreService {
       );
     }
   }
+
+  /**
+   * Récupère tous les matériaux disponibles depuis l'API
+   * @returns {Promise<import('../types/filtre.js').GetMateriauResponse[]>}
+   * @throws {Error} Si l'appel échoue
+   */
+  async getMateriaux() {
+    try {
+      const response = await api.get('/materiauProduit/getAll');
+      if (!response?.data) {
+        throw new Error('Réponse API invalide');
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des matériaux:', error);
+      throw new Error(
+        error.response?.data?.message ||
+        'Impossible de charger les matériaux. Veuillez réessayer.'
+      );
+    }
+  }
 }
 
 // Export d'une instance unique (Singleton)

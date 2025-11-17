@@ -211,9 +211,10 @@ const filterConfig = [{
   isDynamic: true,
   options: []
 }, {
-  id: 'materiau',
+  id: 'materiau-dynamique',
   title: 'Matériau',
-  options: [{ id: 'materiau-plastique', label: 'Plastique' }, { id: 'materiau-metal', label: 'Métal' }, { id: 'materiau-acetate', label: 'Acétate' }, { id: 'materiau-titane', label: 'Titane' }, { id: 'materiau-bois', label: 'Bois' }, { id: 'materiau-aluminium', label: 'Aluminium' }]
+  isDynamicMateriau: true,
+  options: [] // dynamique
 }, {
   id: 'type-monture',
   title: 'Type de monture',
@@ -297,6 +298,8 @@ const ProductFilter = () => {
 
   const [formes, setFormes] = useState([]);
   const [selectedFormes, setSelectedFormes] = useState([]);
+  const [materiaux, setMateriaux] = useState([]);
+  const [selectedMateriaux, setSelectedMateriaux] = useState([]);
 
   useEffect(() => {
     const fetchFilterValues = async () => {
@@ -358,6 +361,16 @@ const ProductFilter = () => {
           setFormes([]);
         }
 
+        // Charger les matériaux
+        try {
+          const materiauxData = await filtreService.getMateriaux();
+          const availableMateriaux = (materiauxData || []).filter(m => (m.isAvailable ?? m.available) && m.name);
+          setMateriaux(availableMateriaux);
+        } catch (materiauError) {
+          console.error('Erreur lors du chargement des matériaux:', materiauError);
+          setMateriaux([]);
+        }
+
       } catch (error) {
         console.error('Erreur lors du chargement des filtres:', error);
 
@@ -401,6 +414,12 @@ const ProductFilter = () => {
   };
 
   const isFormeSelected = (name) => selectedFormes.includes(name);
+
+  const handleToggleMateriau = (name) => {
+    setSelectedMateriaux(prev => prev.includes(name) ? prev.filter(m => m !== name) : [...prev, name]);
+  };
+
+  const isMateriauSelected = (name) => selectedMateriaux.includes(name);
 
   // Helper pour générer un id unique pour les formes (sans utiliser l'id API qui peut être null)
   const slugify = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$|/g, '').replace(/-+/g,'-');
@@ -522,7 +541,7 @@ const ProductFilter = () => {
                           />
                         </motion.div>
                       ) : (
-                        <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : section.id === 'forme' ? 'flex-wrap gap-4 p-2' : 'flex-col gap-3'}`}>
+                        <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : section.id === 'forme' ? 'flex-wrap gap-4 p-2' : section.id === 'materiau-dynamique' ? 'flex-col gap-3' : 'flex-col gap-3'}`}>
                           {section.id === 'couleur' ? (
                             colors.length > 0 ? (
                               colors.map((color, colorIndex) => (
@@ -601,6 +620,37 @@ const ProductFilter = () => {
                               </div>
                             ) : (
                               <div className="text-sm text-default-500 italic py-2">Aucune forme disponible</div>
+                            )
+                          ) : section.id === 'materiau-dynamique' ? (
+                            materiaux.length > 0 ? (
+                              <div className="flex flex-col gap-3 w-full">
+                                {materiaux.map((materiau, matIndex) => {
+                                  const materiauId = `materiau-${slugify(materiau.name)}-${matIndex}`;
+                                  const selected = isMateriauSelected(materiau.name);
+                                  return (
+                                    <motion.div
+                                      key={materiauId}
+                                      initial={{ opacity: 0, y: 6 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ delay: 0.45 + matIndex * 0.05 }}
+                                      className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        id={materiauId}
+                                        checked={selected}
+                                        onChange={() => handleToggleMateriau(materiau.name)}
+                                        className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
+                                      />
+                                      <label htmlFor={materiauId} className="flex items-center gap-2 cursor-pointer select-none flex-1">
+                                        <span className={`text-sm font-medium ${selected ? 'text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{materiau.name}</span>
+                                      </label>
+                                    </motion.div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-default-500 italic py-2">Aucun matériau disponible</div>
                             )
                           ) : (
                             section.options?.map((opt, optIndex) => (
