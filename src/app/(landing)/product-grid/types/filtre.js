@@ -17,6 +17,16 @@
  */
 
 /**
+ * Type de réponse pour l'API de récupération des couleurs
+ *
+ * @typedef {Object} GetCouleurResponse
+ * @property {number|null} id - ID de la couleur (peut être null, ne pas utiliser)
+ * @property {string} name - Nom de la couleur
+ * @property {string} codeHex - Code hexadécimal de la couleur (#RRGGBB)
+ * @property {boolean} available - Indique si la couleur est disponible
+ */
+
+/**
  * Valeurs par défaut pour les filtres en cas d'erreur
  * @type {GetFiltreResponse}
  */

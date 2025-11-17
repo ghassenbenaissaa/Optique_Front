@@ -125,10 +125,14 @@ const DoubleSlider = ({
           onMouseDown={handleTrackClick}
           onTouchStart={handleTrackClick}
         >
-          <div className="absolute inset-0 bg-default-200 dark:bg-default-800 rounded-full" />
+          <div className="absolute inset-0 bg-default-200 dark:bg-default-700 rounded-full" />
           <div
-            className="absolute top-0 bottom-0 rounded-full bg-gradient-to-r from-primary to-primary shadow-sm"
-            style={{ left: `${left}%`, width: `${right - left}%`, pointerEvents: 'none' }}
+            className="absolute top-0 bottom-0 rounded-full shadow-sm bg-gradient-to-r from-primary via-purple-600 to-primary"
+            style={{
+              left: `${left}%`,
+              width: `${right - left}%`,
+              pointerEvents: 'none'
+            }}
           />
           <button
             type="button"
@@ -139,8 +143,17 @@ const DoubleSlider = ({
             onMouseDown={(e) => { e.stopPropagation(); setDragging('from'); }}
             onTouchStart={(e) => { e.stopPropagation(); setDragging('from'); }}
             onKeyDown={handleKey('from')}
-            className={`group absolute ${compact ? 'w-3 h-3' : 'w-4 h-4'} rounded-full bg-primary border-2 border-white dark:border-default-900 shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary/40 hover:scale-110`}
-            style={{ left: `${p1}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: dragging === 'from' ? 30 : 20, transition: dragging === 'from' ? 'none' : 'transform 150ms ease-out' }}
+            className={`group absolute ${compact ? 'w-3 h-3' : 'w-4 h-4'} rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none hover:scale-110`}
+            style={{
+              left: `${p1}%`,
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: dragging === 'from' ? 30 : 20,
+              transition: dragging === 'from' ? 'none' : 'transform 150ms ease-out',
+              backgroundColor: '#3b82f6',
+              border: '3px solid white',
+              boxShadow: dragging === 'from' ? '0 0 0 4px rgba(59, 130, 246, 0.3)' : '0 0 0 2px rgba(59, 130, 246, 0.2)'
+            }}
           />
           <button
             type="button"
@@ -151,8 +164,17 @@ const DoubleSlider = ({
             onMouseDown={(e) => { e.stopPropagation(); setDragging('to'); }}
             onTouchStart={(e) => { e.stopPropagation(); setDragging('to'); }}
             onKeyDown={handleKey('to')}
-            className={`group absolute ${compact ? 'w-3 h-3' : 'w-4 h-4'} rounded-full bg-primary border-2 border-white dark:border-default-900 shadow-lg cursor-grab active:cursor-grabbing focus:outline-none focus:ring-2 focus:ring-primary/40 hover:scale-110`}
-            style={{ left: `${p2}%`, top: '50%', transform: 'translate(-50%, -50%)', zIndex: dragging === 'to' ? 30 : 20, transition: dragging === 'to' ? 'none' : 'transform 150ms ease-out' }}
+            className={`group absolute ${compact ? 'w-3 h-3' : 'w-4 h-4'} rounded-full shadow-lg cursor-grab active:cursor-grabbing focus:outline-none hover:scale-110`}
+            style={{
+              left: `${p2}%`,
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: dragging === 'to' ? 30 : 20,
+              transition: dragging === 'to' ? 'none' : 'transform 150ms ease-out',
+              backgroundColor: '#3b82f6',
+              border: '3px solid white',
+              boxShadow: dragging === 'to' ? '0 0 0 4px rgba(59, 130, 246, 0.3)' : '0 0 0 2px rgba(59, 130, 246, 0.2)'
+            }}
           />
         </div>
       </div>
@@ -246,62 +268,8 @@ const filterConfig = [{
 }, {
   id: 'couleur',
   title: 'Couleur',
-  options: [{
-    id: 'couleur-noir',
-    label: 'Noir',
-    isColor: true,
-    colorCode: '#000000'
-  }, {
-    id: 'couleur-marron',
-    label: 'Marron',
-    isColor: true,
-    colorCode: '#8B4513'
-  }, {
-    id: 'couleur-bleu',
-    label: 'Bleu',
-    isColor: true,
-    colorCode: '#0000FF'
-  }, {
-    id: 'couleur-rouge',
-    label: 'Rouge',
-    isColor: true,
-    colorCode: '#FF0000'
-  }, {
-    id: 'couleur-vert',
-    label: 'Vert',
-    isColor: true,
-    colorCode: '#00FF00'
-  }, {
-    id: 'couleur-gris',
-    label: 'Gris',
-    isColor: true,
-    colorCode: '#808080'
-  }, {
-    id: 'couleur-rose',
-    label: 'Rose',
-    isColor: true,
-    colorCode: '#FFC0CB'
-  }, {
-    id: 'couleur-violet',
-    label: 'Violet',
-    isColor: true,
-    colorCode: '#800080'
-  }, {
-    id: 'couleur-or',
-    label: 'Or',
-    isColor: true,
-    colorCode: '#FFD700'
-  }, {
-    id: 'couleur-argent',
-    label: 'Argent',
-    isColor: true,
-    colorCode: '#C0C0C0'
-  }, {
-    id: 'couleur-transparent',
-    label: 'Transparent',
-    isColor: true,
-    colorCode: '#FFFFFF'
-  }]
+  isDynamic: true, // Marquer comme dynamique pour chargement API
+  options: [] // Sera rempli dynamiquement
 }, {
   id: 'materiau',
   title: 'Matériau',
@@ -351,7 +319,7 @@ const filterConfig = [{
 
 const dimensionSliders = [{
   id: 'largeur-totale-avance',
-  title: 'Largeur totale (mm)',
+  title: 'Largeur totale',
   isSlider: true,
   fieldMin: 'minLargeurTotale',
   fieldMax: 'maxLargeurTotale',
@@ -359,7 +327,7 @@ const dimensionSliders = [{
   step: 1,
 }, {
   id: 'largeur-verre-avance',
-  title: 'Largeur verre (mm)',
+  title: 'Largeur verre',
   isSlider: true,
   fieldMin: 'minLargeurVerre',
   fieldMax: 'maxLargeurVerre',
@@ -367,7 +335,7 @@ const dimensionSliders = [{
   step: 1,
 }, {
   id: 'hauteur-verre-avance',
-  title: 'Hauteur verre (mm)',
+  title: 'Hauteur verre',
   isSlider: true,
   fieldMin: 'minHauteurVerre',
   fieldMax: 'maxHauteurVerre',
@@ -375,7 +343,7 @@ const dimensionSliders = [{
   step: 1,
 }, {
   id: 'largeur-pont-avance',
-  title: 'Largeur pont (mm)',
+  title: 'Largeur pont',
   isSlider: true,
   fieldMin: 'minLargeurPont',
   fieldMax: 'maxLargeurPont',
@@ -383,7 +351,7 @@ const dimensionSliders = [{
   step: 1,
 }, {
   id: 'longueur-branche-avance',
-  title: 'Longueur branche (mm)',
+  title: 'Longueur branche',
   isSlider: true,
   fieldMin: 'minLongueurBranche',
   fieldMax: 'maxLongueurBranche',
@@ -392,15 +360,16 @@ const dimensionSliders = [{
 }];
 
 const ProductFilter = () => {
-  const [searchQuery, setSearchQuery] = useState('');
-
   const [filterValues, setFilterValues] = useState(null);
   const [filterLoading, setFilterLoading] = useState(true);
-  const [filterError, setFilterError] = useState(null);
 
   const navigate = useNavigate();
 
   const [isSurMesureSelected, setIsSurMesureSelected] = useState(false);
+
+  // État pour les couleurs dynamiques
+  const [colors, setColors] = useState([]);
+  const [selectedColors, setSelectedColors] = useState([]);
 
   const [priceMin, setPriceMin] = useState(DEFAULT_FILTER_VALUES.minPrix);
   const [priceMax, setPriceMax] = useState(DEFAULT_FILTER_VALUES.maxPrix);
@@ -419,8 +388,8 @@ const ProductFilter = () => {
     const fetchFilterValues = async () => {
       try {
         setFilterLoading(true);
-        setFilterError(null);
 
+        // Charger les filtres min/max
         const data = await filtreService.getFilter();
 
         const requiredFields = [
@@ -453,9 +422,20 @@ const ProductFilter = () => {
         setLongueurBrancheMin(data.minLongueurBranche);
         setLongueurBrancheMax(data.maxLongueurBranche);
 
+        // Charger les couleurs disponibles
+        try {
+          const colorsData = await filtreService.getAllColors();
+          // Filtrer uniquement les couleurs disponibles
+          const availableColors = colorsData.filter(c => c.available);
+          setColors(availableColors);
+        } catch (colorError) {
+          console.error('Erreur lors du chargement des couleurs:', colorError);
+          // Ne pas bloquer l'affichage si les couleurs échouent
+          setColors([]);
+        }
+
       } catch (error) {
         console.error('Erreur lors du chargement des filtres:', error);
-        setFilterError(error.message);
 
         setFilterValues(DEFAULT_FILTER_VALUES);
         setPriceMin(DEFAULT_FILTER_VALUES.minPrix);
@@ -479,6 +459,17 @@ const ProductFilter = () => {
   }, [navigate]);
 
   const formatUnit = (unit, v) => unit === 'DT' ? `${v} DT` : `${v} ${unit}`;
+
+  // Gestion de la sélection des couleurs
+  const handleColorToggle = (colorName) => {
+    setSelectedColors(prev =>
+      prev.includes(colorName)
+        ? prev.filter(c => c !== colorName)
+        : [...prev, colorName]
+    );
+  };
+
+  const isColorSelected = (colorName) => selectedColors.includes(colorName);
 
   return <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -554,52 +545,6 @@ const ProductFilter = () => {
                   return { val1, val2, setVals };
                 };
 
-                const renderSlider = (sliderSection, delayOffset = 0) => {
-                  const boundsMin = filterValues?.[sliderSection.fieldMin] ?? DEFAULT_FILTER_VALUES[sliderSection.fieldMin];
-                  const boundsMax = filterValues?.[sliderSection.fieldMax] ?? DEFAULT_FILTER_VALUES[sliderSection.fieldMax];
-                  const { val1, val2, setVals } = getSliderBinding(sliderSection.id);
-
-                  return (
-                    <motion.div
-                      key={sliderSection.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.4 + delayOffset }}
-                      className="hs-accordion mt-6 first:mt-0"
-                      id={`hs-accordion-${sliderSection.id}`}
-                    >
-                      <button className="hs-accordion-toggle group inline-flex items-center justify-between gap-x-3 w-full font-semibold text-start text-default-800 dark:text-default-200 rounded-lg text-base hover:text-primary transition-colors duration-300" aria-expanded="false" aria-controls={`hs-collapse-${sliderSection.id}`}>
-                        {sliderSection.title}
-                        <div className="relative">
-                          <LuChevronDown size={18} className="text-base hs-accordion-active:hidden block group-hover:text-primary transition-colors" />
-                          <LuChevronUp size={18} className="text-base hs-accordion-active:block hidden group-hover:text-primary transition-colors" />
-                        </div>
-                      </button>
-
-                      <div id={`hs-collapse-${sliderSection.id}`} className="hs-accordion-content hidden w-full overflow-hidden transition-[height] duration-300" role="region" aria-labelledby={`hs-accordion-${sliderSection.id}`}>
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ delay: 0.5 }}
-                          className="mt-4 space-y-4"
-                        >
-                          <DoubleSlider
-                            min={typeof boundsMin === 'number' ? boundsMin : 0}
-                            max={typeof boundsMax === 'number' ? boundsMax : 100}
-                            step={typeof sliderSection.step === 'number' ? sliderSection.step : 1}
-                            value1={val1}
-                            value2={val2}
-                            onChange={(v1, v2) => setVals?.(v1, v2)}
-                            formatValue={(v) => formatUnit(sliderSection.unit, v)}
-                            ariaLabelFrom={`${sliderSection.title} min`}
-                            ariaLabelTo={`${sliderSection.title} max`}
-                          />
-                        </motion.div>
-                      </div>
-                    </motion.div>
-                  );
-                };
-
                 const boundsMin = filterValues?.[section.fieldMin] ?? DEFAULT_FILTER_VALUES[section.fieldMin];
                 const boundsMax = filterValues?.[section.fieldMax] ?? DEFAULT_FILTER_VALUES[section.fieldMax];
 
@@ -645,62 +590,83 @@ const ProductFilter = () => {
                           </motion.div>
                         ) : (
                           // Affichage normal pour les autres filtres
-                          <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-2' : 'flex-col gap-3'}`}>
-                            {section.options?.map((opt, optIndex) => opt.isColor ? (
-                              <motion.label
-                                key={opt.id}
-                                initial={{ scale: 0, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                transition={{ delay: 0.5 + optIndex * 0.05 }}
-                                className="relative cursor-pointer group"
-                                htmlFor={opt.id}
-                                title={opt.label}
-                              >
-                                <input
-                                  id={opt.id}
-                                  type="checkbox"
-                                  className="size-7 cursor-pointer rounded-md focus:ring-2 focus:ring-primary/30 transition-all duration-300 hover:scale-110 appearance-none border-2"
-                                  style={{
-                                    backgroundColor: opt.colorCode,
-                                    borderColor: opt.colorCode === '#FFFFFF' ? '#E5E7EB' : opt.colorCode
-                                  }}
-                                />
-                                <div className="absolute inset-0 rounded-md border-2 border-transparent group-hover:border-primary/50 transition-all duration-300 pointer-events-none"></div>
-                                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2 py-1 bg-default-900 dark:bg-default-100 text-white dark:text-default-900 text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
-                                  {opt.label}
-                                </div>
-                              </motion.label>
+                          <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : 'flex-col gap-3'}`}>
+                            {/* Affichage dynamique des couleurs */}
+                            {section.id === 'couleur' ? (
+                              colors.length > 0 ? (
+                                colors.map((color, colorIndex) => (
+                                  <motion.div
+                                    key={`${color.name}-${colorIndex}`}
+                                    initial={{ scale: 0, opacity: 0 }}
+                                    animate={{ scale: 1, opacity: 1 }}
+                                    transition={{ delay: 0.5 + colorIndex * 0.05 }}
+                                    className="relative cursor-pointer group z-10"
+                                    onClick={() => handleColorToggle(color.name)}
+                                    title={color.name}
+                                  >
+                                    <div
+                                      className={`w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 shadow-sm ${
+                                        isColorSelected(color.name) 
+                                          ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-md' 
+                                          : 'border-2'
+                                      }`}
+                                      style={{
+                                        backgroundColor: color.codeHex,
+                                        borderColor: color.codeHex === '#FFFFFF' || color.codeHex.toLowerCase() === '#fff' ? '#E5E7EB' : color.codeHex
+                                      }}
+                                    />
+                                    {/* Effet hover avec bordure primary */}
+                                    <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-primary/50 transition-all duration-300 pointer-events-none"></div>
+
+                                    {/* Indicateur de sélection */}
+                                    {isColorSelected(color.name) && (
+                                      <motion.div
+                                        initial={{ scale: 0 }}
+                                        animate={{ scale: 1 }}
+                                        className="absolute inset-0 flex items-center justify-center pointer-events-none"
+                                      >
+                                        <div className="w-2 h-2 bg-white rounded-full shadow-lg border border-primary"></div>
+                                      </motion.div>
+                                    )}
+                                  </motion.div>
+                                ))
+                              ) : (
+                                <div className="text-sm text-default-500 italic py-2">Aucune couleur disponible</div>
+                              )
                             ) : (
-                              <motion.div
-                                key={opt.id}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: 0.5 + optIndex * 0.05 }}
-                                className="flex gap-3 items-center group hover:bg-primary/5 rounded-lg px-2 py-1.5 transition-all duration-300"
-                              >
-                                <input
-                                  type="checkbox"
-                                  className="form-checkbox checked:bg-primary border-default-300 rounded transition-all duration-300 focus:ring-2 focus:ring-primary/30"
-                                  id={opt.id}
-                                  onChange={(e) => {
-                                    if (opt.id === 'taille-sur-mesure') {
-                                      setIsSurMesureSelected(e.target.checked);
-                                    }
-                                  }}
-                                />
-                                {opt.icon && (
-                                  <div className="flex-shrink-0">
-                                    {opt.icon}
-                                  </div>
-                                )}
-                                <label
-                                  htmlFor={opt.id}
-                                  className="text-sm text-default-700 dark:text-default-300 align-middle cursor-pointer select-none group-hover:text-default-900 dark:group-hover:text-default-100 transition-colors duration-300 flex-1"
+                              // Autres filtres (non-couleur)
+                              section.options?.map((opt, optIndex) => (
+                                <motion.div
+                                  key={opt.id}
+                                  initial={{ opacity: 0, x: -10 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ delay: 0.5 + optIndex * 0.05 }}
+                                  className="flex gap-3 items-center group hover:bg-primary/5 rounded-lg px-2 py-1.5 transition-all duration-300"
                                 >
-                                  {opt.label}
-                                </label>
-                              </motion.div>
-                            ))}
+                                  <input
+                                    type="checkbox"
+                                    className="form-checkbox checked:bg-primary border-default-300 rounded transition-all duration-300 focus:ring-2 focus:ring-primary/30"
+                                    id={opt.id}
+                                    onChange={(e) => {
+                                      if (opt.id === 'taille-sur-mesure') {
+                                        setIsSurMesureSelected(e.target.checked);
+                                      }
+                                    }}
+                                  />
+                                  {opt.icon && (
+                                    <div className="flex-shrink-0">
+                                      {opt.icon}
+                                    </div>
+                                  )}
+                                  <label
+                                    htmlFor={opt.id}
+                                    className="text-sm text-default-700 dark:text-default-300 align-middle cursor-pointer select-none group-hover:text-default-900 dark:group-hover:text-default-100 transition-colors duration-300 flex-1"
+                                  >
+                                    {opt.label}
+                                  </label>
+                                </motion.div>
+                              ))
+                            )}
                             {/* Sliders sur mesure intégrés */}
                             {section.id === 'taille' && isSurMesureSelected && (
                               <motion.div

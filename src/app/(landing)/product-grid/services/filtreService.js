@@ -28,6 +28,30 @@ class FiltreService {
       );
     }
   }
+
+  /**
+   * Récupère toutes les couleurs disponibles depuis l'API
+   * @returns {Promise<import('../types/filtre.js').GetCouleurResponse[]>}
+   * @throws {Error} Si l'appel API échoue
+   */
+  async getAllColors() {
+    try {
+      const response = await api.get('/couleur/getAll');
+
+      // Valider que la réponse contient les données nécessaires
+      if (!response?.data) {
+        throw new Error('Réponse API invalide');
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des couleurs:', error);
+      throw new Error(
+        error.response?.data?.message ||
+        'Impossible de charger les couleurs. Veuillez réessayer.'
+      );
+    }
+  }
 }
 
 // Export d'une instance unique (Singleton)
