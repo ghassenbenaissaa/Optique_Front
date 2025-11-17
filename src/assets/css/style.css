@@ -50,3 +50,18 @@ Contact: themesdesign.in@gmail.com
 #navbarMenu-backdrop {
   display: none !important;
 }
+
+/* Animation gradient pour le PromoBanner */
+@keyframes gradient {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.animate-gradient {
+  animation: gradient 3s ease infinite;
+}
+

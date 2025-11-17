@@ -121,34 +121,82 @@ class ProductService {
   }
 
   /**
+   * Calcule le solde maximal parmi toutes les variations d'un produit
+   * @param {import('../types/product.types').Product} product - Produit
+   * @returns {number} Pourcentage de solde maximal (0 si aucun solde)
+   */
+  getMaxDiscount(product) {
+    const variations = product.variations || [];
+
+    if (variations.length === 0) {
+      return 0;
+    }
+
+    const maxDiscount = variations.reduce((max, variation) => {
+      const solde = Number(variation?.solde ?? 0);
+      return isNaN(solde) ? max : Math.max(max, solde);
+    }, 0);
+
+    return maxDiscount;
+  }
+
+  /**
+   * Calcule le prix minimum parmi toutes les variations
+   * @param {import('../types/product.types').Product} product - Produit
+   * @returns {number} Prix minimum
+   */
+  getMinPrice(product) {
+    const variations = product.variations || [];
+
+    if (variations.length === 0) {
+      return product.price || product.prix || 0;
+    }
+
+    const minPrice = variations.reduce((min, variation) => {
+      const price = Number(variation?.price ?? Infinity);
+      return isNaN(price) ? min : Math.min(min, price);
+    }, Infinity);
+
+    return minPrice === Infinity ? (product.price || product.prix || 0) : minPrice;
+  }
+
+  /**
    * Normalise les données d'un produit pour l'affichage
    * @param {import('../types/product.types').Product} product - Produit brut de l'API
    * @returns {Object} Produit normalisé
    */
   normalizeProduct(product) {
     const productName = product.nom || product.name || 'Monture';
-    const productPrice = product.price || product.prix || 0;
     const productImages = product.imageUrl || product.images || [];
     const productImage = Array.isArray(productImages) ? productImages[0] : productImages;
     const productRating = product.rating || product.note || 4.5;
     const productReviews = product.reviews || product.avis || Math.floor(Math.random() * 2000);
     const productColors = this.extractUniqueColors(product);
 
-    // Calcul du prix original si promotion
-    const hasDiscount = product.discount || product.promotion;
-    const originalPrice = hasDiscount ? productPrice * 1.2 : null;
+    // Calculer le solde maximal depuis les variations
+    const maxDiscount = this.getMaxDiscount(product);
+
+    // Utiliser le prix minimum des variations comme prix affiché
+    const productPrice = this.getMinPrice(product);
+
+    // Calcul du prix original si solde existe
+    const originalPrice = maxDiscount > 0
+      ? productPrice / (1 - maxDiscount / 100)
+      : null;
 
     return {
       id: product.id,
+      reference: product.reference || product.ref || `ref-${product.id}-${productName}`,
       name: productName,
       price: productPrice,
       originalPrice,
+      maxDiscount,
       image: productImage,
       images: productImages,
       rating: productRating,
       reviews: productReviews,
       colors: productColors,
-      hasDiscount,
+      hasDiscount: maxDiscount > 0,
       description: product.description,
       category: product.categorie,
       brand: product.marque,

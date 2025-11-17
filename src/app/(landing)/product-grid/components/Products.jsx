@@ -145,9 +145,11 @@ const Products = () => {
       >
         <AnimatePresence mode="popLayout">
           {currentProducts.map((product, index) => {
+            const uniqueKey = product.reference || `product-${product.id}-${product.name}-${index}`;
+
             return (
             <motion.div
-              key={product.id}
+              key={uniqueKey}
               layout
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -170,14 +172,14 @@ const Products = () => {
                   transition={{ duration: 0.3 }}
                 >
                   {/* Badge Promotion en haut à gauche */}
-                  {product.originalPrice && (
+                  {product.maxDiscount > 0 && (
                     <motion.div
                       initial={{ x: -100, opacity: 0 }}
                       animate={{ x: 0, opacity: 1 }}
                       transition={{ delay: 0.3 + index * 0.08 }}
                       className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
                     >
-                      -{Math.round((1 - product.price / product.originalPrice) * 100)}%
+                      -{Math.round(product.maxDiscount)}%
                     </motion.div>
                   )}
 
@@ -253,7 +255,7 @@ const Products = () => {
                       <div className="flex items-center justify-center gap-2 mb-4">
                         {product.colors.slice(0, 5).map((color, colorIndex) => (
                           <div
-                            key={`color-${product.id}-${colorIndex}`}
+                            key={`color-${uniqueKey}-${colorIndex}`}
                             className="relative group/color"
                           >
                             <motion.div
@@ -278,15 +280,6 @@ const Products = () => {
                             +{product.colors.length - 5}
                           </span>
                         )}
-                      </div>
-                    )}
-
-                    {/* Prix avec prix barré si promotion */}
-                    {product.originalPrice && (
-                      <div className="text-center">
-                        <div className="text-sm text-default-500 line-through mb-1">
-                          {product.originalPrice.toFixed(2)} TND
-                        </div>
                       </div>
                     )}
                   </div>
