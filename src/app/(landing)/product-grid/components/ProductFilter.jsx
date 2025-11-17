@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import filtreService from '../services/filtreService';
 import { DEFAULT_FILTER_VALUES } from '../types/filtre';
 import { useNavigate } from 'react-router-dom';
+import { useFilterContext } from '@/context/FilterContext';
 
 const DoubleSlider = ({
   min = 0,
@@ -272,17 +273,7 @@ const dimensionSliders = [{
 }];
 
 const ProductFilter = () => {
-  const [filterValues, setFilterValues] = useState(null);
-  const [filterLoading, setFilterLoading] = useState(true);
-
-  const navigate = useNavigate();
-
-  const [isSurMesureSelected, setIsSurMesureSelected] = useState(false);
-
-  // État pour les couleurs dynamiques
-  const [colors, setColors] = useState([]);
-  const [selectedColors, setSelectedColors] = useState([]);
-
+  // États internes pour valeurs numériques des sliders (conservent l'indépendance UI)
   const [priceMin, setPriceMin] = useState(DEFAULT_FILTER_VALUES.minPrix);
   const [priceMax, setPriceMax] = useState(DEFAULT_FILTER_VALUES.maxPrix);
   const [largeurTotaleMin, setLargeurTotaleMin] = useState(DEFAULT_FILTER_VALUES.minLargeurTotale);
@@ -296,27 +287,40 @@ const ProductFilter = () => {
   const [longueurBrancheMin, setLongueurBrancheMin] = useState(DEFAULT_FILTER_VALUES.minLongueurBranche);
   const [longueurBrancheMax, setLongueurBrancheMax] = useState(DEFAULT_FILTER_VALUES.maxLongueurBranche);
 
+  const [filterValues, setFilterValues] = useState(null);
+  const [filterLoading, setFilterLoading] = useState(true);
+  const navigate = useNavigate();
+
+  const {
+    selectedTypeVerres,
+    selectedGenres,
+    selectedTailles,
+    isSurMesureSelected,
+    selectedFormes,
+    selectedColors,
+    selectedMateriaux,
+    selectedMontures,
+    initBounds,
+    toggleTypeVerre,
+    toggleGenre,
+    toggleTaille,
+    toggleForme,
+    toggleCouleur,
+    toggleMateriau,
+    toggleMonture,
+    setPriceRange,
+  } = useFilterContext();
+
+  // État pour les couleurs dynamiques
+  const [colors, setColors] = useState([]);
   const [formes, setFormes] = useState([]);
-  const [selectedFormes, setSelectedFormes] = useState([]);
   const [materiaux, setMateriaux] = useState([]);
-  const [selectedMateriaux, setSelectedMateriaux] = useState([]);
-  // Nouvel état: tailles sélectionnées pour appliquer le même design que Matériau
-  const [selectedTailles, setSelectedTailles] = useState([]);
-  // Nouvel état: genres sélectionnés pour appliquer le même design que Matériau
-  const [selectedGenres, setSelectedGenres] = useState([]);
-  // Nouvel état: types de verre sélectionnés (même design carte + checkbox)
-  const [selectedTypeVerres, setSelectedTypeVerres] = useState([]);
-  // Nouvel état: types de monture sélectionnés (même design que Forme)
-  const [selectedMontures, setSelectedMontures] = useState([]);
 
   useEffect(() => {
     const fetchFilterValues = async () => {
       try {
         setFilterLoading(true);
-
-        // Charger les filtres min/max
         const data = await filtreService.getFilter();
-
         const requiredFields = [
           'minPrix','maxPrix',
           'minLargeurTotale','maxLargeurTotale',
@@ -333,117 +337,83 @@ const ProductFilter = () => {
         }
 
         setFilterValues(data);
+        initBounds({ minPrix: data.minPrix, maxPrix: data.maxPrix });
 
-        setPriceMin(data.minPrix);
-        setPriceMax(data.maxPrix);
-        setLargeurTotaleMin(data.minLargeurTotale);
-        setLargeurTotaleMax(data.maxLargeurTotale);
-        setLargeurVerreMin(data.minLargeurVerre);
-        setLargeurVerreMax(data.maxLargeurVerre);
-        setHauteurVerreMin(data.minHauteurVerre);
-        setHauteurVerreMax(data.maxHauteurVerre);
-        setLargeurPontMin(data.minLargeurPont);
-        setLargeurPontMax(data.maxLargeurPont);
-        setLongueurBrancheMin(data.minLongueurBranche);
-        setLongueurBrancheMax(data.maxLongueurBranche);
+        // MAJ des états locaux sliders
+        setPriceMin(data.minPrix); setPriceMax(data.maxPrix); setPriceRange({ min: data.minPrix, max: data.maxPrix });
+        setLargeurTotaleMin(data.minLargeurTotale); setLargeurTotaleMax(data.maxLargeurTotale);
+        setLargeurVerreMin(data.minLargeurVerre); setLargeurVerreMax(data.maxLargeurVerre);
+        setHauteurVerreMin(data.minHauteurVerre); setHauteurVerreMax(data.maxHauteurVerre);
+        setLargeurPontMin(data.minLargeurPont); setLargeurPontMax(data.maxLargeurPont);
+        setLongueurBrancheMin(data.minLongueurBranche); setLongueurBrancheMax(data.maxLongueurBranche);
 
-        // Charger les couleurs disponibles
+        // Couleurs
         try {
           const colorsData = await filtreService.getAllColors();
-          // Filtrer uniquement les couleurs disponibles
-          const availableColors = colorsData.filter(c => c.available);
-          setColors(availableColors);
+          setColors(colorsData.filter(c => c.available));
         } catch (colorError) {
           console.error('Erreur lors du chargement des couleurs:', colorError);
-          // Ne pas bloquer l'affichage si les couleurs échouent
           setColors([]);
         }
-
-        // Charger les formes
+        // Formes
         try {
           const formesData = await filtreService.getAllFormes();
-          const availableFormes = (formesData || []).filter(f => f.isAvailable && f.name && f.imageUrl);
-          setFormes(availableFormes);
+          setFormes((formesData || []).filter(f => f.isAvailable && f.name && f.imageUrl));
         } catch (formeError) {
           console.error('Erreur lors du chargement des formes:', formeError);
           setFormes([]);
         }
-
-        // Charger les matériaux
+        // Matériaux
         try {
           const materiauxData = await filtreService.getMateriaux();
-          const availableMateriaux = (materiauxData || []).filter(m => (m.isAvailable ?? m.available) && m.name);
-          setMateriaux(availableMateriaux);
+          setMateriaux((materiauxData || []).filter(m => (m.isAvailable ?? m.available) && m.name));
         } catch (materiauError) {
           console.error('Erreur lors du chargement des matériaux:', materiauError);
           setMateriaux([]);
         }
-
       } catch (error) {
         console.error('Erreur lors du chargement des filtres:', error);
-
         setFilterValues(DEFAULT_FILTER_VALUES);
-        setPriceMin(DEFAULT_FILTER_VALUES.minPrix);
-        setPriceMax(DEFAULT_FILTER_VALUES.maxPrix);
-        setLargeurTotaleMin(DEFAULT_FILTER_VALUES.minLargeurTotale);
-        setLargeurTotaleMax(DEFAULT_FILTER_VALUES.maxLargeurTotale);
-        setLargeurVerreMin(DEFAULT_FILTER_VALUES.minLargeurVerre);
-        setLargeurVerreMax(DEFAULT_FILTER_VALUES.maxLargeurVerre);
-        setHauteurVerreMin(DEFAULT_FILTER_VALUES.minHauteurVerre);
-        setHauteurVerreMax(DEFAULT_FILTER_VALUES.maxHauteurVerre);
-        setLargeurPontMin(DEFAULT_FILTER_VALUES.minLargeurPont);
-        setLargeurPontMax(DEFAULT_FILTER_VALUES.maxLargeurPont);
-        setLongueurBrancheMin(DEFAULT_FILTER_VALUES.minLongueurBranche);
-        setLongueurBrancheMax(DEFAULT_FILTER_VALUES.maxLongueurBranche);
+        // Reset aux defaults
+        setPriceMin(DEFAULT_FILTER_VALUES.minPrix); setPriceMax(DEFAULT_FILTER_VALUES.maxPrix); setPriceRange({ min: DEFAULT_FILTER_VALUES.minPrix, max: DEFAULT_FILTER_VALUES.maxPrix });
+        setLargeurTotaleMin(DEFAULT_FILTER_VALUES.minLargeurTotale); setLargeurTotaleMax(DEFAULT_FILTER_VALUES.maxLargeurTotale);
+        setLargeurVerreMin(DEFAULT_FILTER_VALUES.minLargeurVerre); setLargeurVerreMax(DEFAULT_FILTER_VALUES.maxLargeurVerre);
+        setHauteurVerreMin(DEFAULT_FILTER_VALUES.minHauteurVerre); setHauteurVerreMax(DEFAULT_FILTER_VALUES.maxHauteurVerre);
+        setLargeurPontMin(DEFAULT_FILTER_VALUES.minLargeurPont); setLargeurPontMax(DEFAULT_FILTER_VALUES.maxLargeurPont);
+        setLongueurBrancheMin(DEFAULT_FILTER_VALUES.minLongueurBranche); setLongueurBrancheMax(DEFAULT_FILTER_VALUES.maxLongueurBranche);
       } finally {
         setFilterLoading(false);
       }
     };
-
     fetchFilterValues();
-  }, [navigate]);
+  }, [navigate, initBounds, setPriceRange]);
 
   const formatUnit = (unit, v) => unit === 'DT' ? `${v} DT` : `${v} ${unit}`;
-
-  // Gestion de la sélection des couleurs
-  const handleColorToggle = (colorName) => {
-    setSelectedColors(prev =>
-      prev.includes(colorName)
-        ? prev.filter(c => c !== colorName)
-        : [...prev, colorName]
-    );
-  };
-
-  const isColorSelected = (colorName) => selectedColors.includes(colorName);
-
-  // Gestion de la sélection des formes
-  const handleToggleForme = (name) => {
-    setSelectedFormes(prev => prev.includes(name) ? prev.filter(f => f !== name) : [...prev, name]);
-  };
-
-  const isFormeSelected = (name) => selectedFormes.includes(name);
-
-  const handleToggleMateriau = (name) => {
-    setSelectedMateriaux(prev => prev.includes(name) ? prev.filter(m => m !== name) : [...prev, name]);
-  };
-
-  const isMateriauSelected = (name) => selectedMateriaux.includes(name);
-
-  // Helper pour générer un id unique pour les formes (sans utiliser l'id API qui peut être null)
   const slugify = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$|/g, '').replace(/-+/g,'-');
 
-  // Gestion monture
-  const handleToggleMonture = (id) => {
-    setSelectedMontures((prev) =>
-      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
-    );
+  const getSliderBinding = (sliderId) => {
+    let val1, val2, setVals;
+    if (sliderId === 'prix-avance') {
+      val1 = priceMin; val2 = priceMax; setVals = (a, b) => { setPriceMin(a); setPriceMax(b); };
+    } else if (sliderId === 'largeur-totale-avance') {
+      val1 = largeurTotaleMin; val2 = largeurTotaleMax; setVals = (a, b) => { setLargeurTotaleMin(a); setLargeurTotaleMax(b); };
+    } else if (sliderId === 'largeur-verre-avance') {
+      val1 = largeurVerreMin; val2 = largeurVerreMax; setVals = (a, b) => { setLargeurVerreMin(a); setLargeurVerreMax(b); };
+    } else if (sliderId === 'hauteur-verre-avance') {
+      val1 = hauteurVerreMin; val2 = hauteurVerreMax; setVals = (a, b) => { setHauteurVerreMin(a); setHauteurVerreMax(b); };
+    } else if (sliderId === 'largeur-pont-avance') {
+      val1 = largeurPontMin; val2 = largeurPontMax; setVals = (a, b) => { setLargeurPontMin(a); setLargeurPontMax(b); };
+    } else if (sliderId === 'longueur-branche-avance') {
+      val1 = longueurBrancheMin; val2 = longueurBrancheMax; setVals = (a, b) => { setLongueurBrancheMin(a); setLongueurBrancheMax(b); };
+    }
+    return { val1, val2, setVals };
   };
-  const isMontureSelected = (id) => selectedMontures.includes(id);
 
+  // Icône monture (manquante après refactor)
   const MontureIcon = ({ type, selected }) => {
     const strokeColor = 'currentColor';
     const strokeWidth = selected ? 2.2 : 1.8;
-    const dashed = selected ? '4 3' : '3 3'; // motif dash (légèrement différent si sélectionné)
+    const dashed = selected ? '4 3' : '3 3';
     const common = {
       fill: 'none',
       stroke: strokeColor,
@@ -473,10 +443,8 @@ const ProductFilter = () => {
         <svg viewBox="0 0 64 28" className="w-11 h-11" aria-hidden="true" focusable="false">
           <title>Monture demi-cerclée</title>
           <g {...common}>
-            {/* Arcs supérieurs pleins */}
             <path d="M8 14c0-8 20-8 20 0" fill={fillOverlay} />
             <path d="M36 14c0-8 20-8 20 0" fill={fillOverlay} />
-            {/* Arcs inférieurs en pointillés pour partie non cadrée */}
             <path d="M8 14c0 8 20 8 20 0" strokeDasharray={dashed} opacity={0.85} />
             <path d="M36 14c0 8 20 8 20 0" strokeDasharray={dashed} opacity={0.85} />
             <path d="M28 14h8" />
@@ -487,16 +455,13 @@ const ProductFilter = () => {
         </svg>
       );
     }
-    // Sans monture : cercles en pointillés pour représenter verres sans cadre
     return (
       <svg viewBox="0 0 64 28" className="w-11 h-11" aria-hidden="true" focusable="false">
         <title>Monture sans monture</title>
         <g {...common} transform="translate(0,0.3)">
           <circle cx="18" cy="14" r="7.5" strokeDasharray={dashed} />
           <circle cx="46" cy="14" r="7.5" strokeDasharray={dashed} />
-          {/* Pont discret sur l'écart complet */}
           <path d="M26 14h12" />
-          {/* Accent pont centré */}
           <path d="M29.8 13.2c1-.55 2.4-.55 3.4 0" strokeWidth={strokeWidth * 0.7} />
         </g>
       </svg>
@@ -559,28 +524,10 @@ const ProductFilter = () => {
               {filterConfig.map((section, index) => {
                 const isSlider = !!section.isSlider;
 
-                const getSliderBinding = (sliderId) => {
-                  let val1, val2, setVals;
-                  if (sliderId === 'prix-avance') {
-                    val1 = priceMin; val2 = priceMax; setVals = (a, b) => { setPriceMin(a); setPriceMax(b); };
-                  } else if (sliderId === 'largeur-totale-avance') {
-                    val1 = largeurTotaleMin; val2 = largeurTotaleMax; setVals = (a, b) => { setLargeurTotaleMin(a); setLargeurTotaleMax(b); };
-                  } else if (sliderId === 'largeur-verre-avance') {
-                    val1 = largeurVerreMin; val2 = largeurVerreMax; setVals = (a, b) => { setLargeurVerreMin(a); setLargeurVerreMax(b); };
-                  } else if (sliderId === 'hauteur-verre-avance') {
-                    val1 = hauteurVerreMin; val2 = hauteurVerreMax; setVals = (a, b) => { setHauteurVerreMin(a); setHauteurVerreMax(b); };
-                  } else if (sliderId === 'largeur-pont-avance') {
-                    val1 = largeurPontMin; val2 = largeurPontMax; setVals = (a, b) => { setLargeurPontMin(a); setLargeurPontMax(b); };
-                  } else if (sliderId === 'longueur-branche-avance') {
-                    val1 = longueurBrancheMin; val2 = longueurBrancheMax; setVals = (a, b) => { setLongueurBrancheMin(a); setLongueurBrancheMax(b); };
-                  }
-                  return { val1, val2, setVals };
-                };
+                const { val1, val2, setVals } = getSliderBinding(section.id);
 
                 const boundsMin = filterValues?.[section.fieldMin] ?? DEFAULT_FILTER_VALUES[section.fieldMin];
                 const boundsMax = filterValues?.[section.fieldMax] ?? DEFAULT_FILTER_VALUES[section.fieldMax];
-
-                const { val1, val2, setVals } = getSliderBinding(section.id);
 
                 return (
                   <motion.div
@@ -613,7 +560,7 @@ const ProductFilter = () => {
                             step={typeof section.step === 'number' ? section.step : 1}
                             value1={val1}
                             value2={val2}
-                            onChange={(v1, v2) => setVals?.(v1, v2)}
+                            onChange={(v1, v2) => { setVals?.(v1, v2); if(section.id==='prix-avance'){ setPriceRange({ min: v1, max: v2 }); } }}
                             formatValue={(v) => formatUnit(section.unit, v)}
                             ariaLabelFrom={`${section.title} min`}
                             ariaLabelTo={`${section.title} max`}
@@ -630,12 +577,12 @@ const ProductFilter = () => {
                                   animate={{ scale: 1, opacity: 1 }}
                                   transition={{ delay: 0.5 + colorIndex * 0.05 }}
                                   className="relative cursor-pointer group z-10"
-                                  onClick={() => handleColorToggle(color.name)}
+                                  onClick={() => toggleCouleur(color.name)}
                                   title={color.name}
                                 >
                                   <div
                                     className={`w-7 h-7 rounded-full transition-all duration-300 hover:scale-110 shadow-sm ${
-                                      isColorSelected(color.name) ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-md' : 'border-2'
+                                      selectedColors.includes(color.name) ? 'ring-2 ring-primary ring-offset-2 scale-110 shadow-md' : 'border-2'
                                     }`}
                                     style={{
                                       backgroundColor: color.codeHex,
@@ -643,7 +590,7 @@ const ProductFilter = () => {
                                     }}
                                   />
                                   <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-primary/50 transition-all duration-300 pointer-events-none" />
-                                  {isColorSelected(color.name) && (
+                                  {selectedColors.includes(color.name) && (
                                     <motion.div
                                       initial={{ scale: 0 }}
                                       animate={{ scale: 1 }}
@@ -662,7 +609,7 @@ const ProductFilter = () => {
                               <div className="flex flex-col gap-3 w-full">
                                 {formes.map((forme, formeIndex) => {
                                   const formeId = `forme-${slugify(forme.name)}-${formeIndex}`;
-                                  const selected = isFormeSelected(forme.name);
+                                  const selected = selectedFormes.includes(forme.name);
                                   return (
                                     <motion.div
                                       key={formeId}
@@ -675,7 +622,7 @@ const ProductFilter = () => {
                                         type="checkbox"
                                         id={formeId}
                                         checked={selected}
-                                        onChange={() => handleToggleForme(forme.name)}
+                                        onChange={() => toggleForme(forme.name)}
                                         className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                       />
                                       <label htmlFor={formeId} className="flex items-center gap-3 cursor-pointer select-none flex-1">
@@ -705,7 +652,7 @@ const ProductFilter = () => {
                               <div className="flex flex-col gap-3 w-full">
                                 {materiaux.map((materiau, matIndex) => {
                                   const materiauId = `materiau-${slugify(materiau.name)}-${matIndex}`;
-                                  const selected = isMateriauSelected(materiau.name);
+                                  const selected = selectedMateriaux.includes(materiau.name);
                                   return (
                                     <motion.div
                                       key={materiauId}
@@ -718,7 +665,7 @@ const ProductFilter = () => {
                                         type="checkbox"
                                         id={materiauId}
                                         checked={selected}
-                                        onChange={() => handleToggleMateriau(materiau.name)}
+                                        onChange={() => toggleMateriau(materiau.name)}
                                         className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                       />
                                       <label htmlFor={materiauId} className="flex items-center gap-2 cursor-pointer select-none flex-1">
@@ -748,13 +695,7 @@ const ProductFilter = () => {
                                       type="checkbox"
                                       id={opt.id}
                                       checked={selected}
-                                      onChange={() => {
-                                        setSelectedGenres((prev) =>
-                                          prev.includes(opt.id)
-                                            ? prev.filter((id) => id !== opt.id)
-                                            : [...prev, opt.id]
-                                        );
-                                      }}
+                                      onChange={() => { toggleGenre(opt.id); }}
                                       className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                     />
                                     <label htmlFor={opt.id} className="flex items-center gap-2 cursor-pointer select-none flex-1">
@@ -781,13 +722,7 @@ const ProductFilter = () => {
                                       type="checkbox"
                                       id={opt.id}
                                       checked={selected}
-                                      onChange={() => {
-                                        setSelectedTypeVerres((prev) =>
-                                          prev.includes(opt.id)
-                                            ? prev.filter((id) => id !== opt.id)
-                                            : [...prev, opt.id]
-                                        );
-                                      }}
+                                      onChange={() => { toggleTypeVerre(opt.id); }}
                                       className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                     />
                                     <label htmlFor={opt.id} className="flex items-center gap-2 cursor-pointer select-none flex-1">
@@ -801,7 +736,7 @@ const ProductFilter = () => {
                             // Section "Type de monture" avec design comme "Forme"
                             <div className="flex flex-col gap-3 w-full">
                               {section.options?.map((opt, optIndex) => {
-                                const selected = isMontureSelected(opt.id);
+                                const selected = selectedMontures.includes(opt.id);
                                 const inputId = `monture-${opt.id}`;
                                 return (
                                   <motion.div
@@ -815,7 +750,7 @@ const ProductFilter = () => {
                                       type="checkbox"
                                       id={inputId}
                                       checked={selected}
-                                      onChange={() => handleToggleMonture(opt.id)}
+                                      onChange={() => toggleMonture(opt.id)}
                                       className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                     />
                                     <label htmlFor={inputId} className="flex items-center gap-3 cursor-pointer select-none flex-1">
@@ -845,16 +780,7 @@ const ProductFilter = () => {
                                       type="checkbox"
                                       id={opt.id}
                                       checked={selected}
-                                      onChange={(e) => {
-                                        setSelectedTailles((prev) =>
-                                          prev.includes(opt.id)
-                                            ? prev.filter((id) => id !== opt.id)
-                                            : [...prev, opt.id]
-                                        );
-                                        if (opt.id === 'taille-sur-mesure') {
-                                          setIsSurMesureSelected(e.target.checked);
-                                        }
-                                      }}
+                                      onChange={() => { toggleTaille(opt.id); }}
                                       className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
                                     />
                                     <label htmlFor={opt.id} className="flex items-center gap-2 cursor-pointer select-none flex-1">
@@ -877,11 +803,6 @@ const ProductFilter = () => {
                                   type="checkbox"
                                   className="form-checkbox bg-white dark:bg-default-800 border border-default-300 rounded transition-all duration-300 checked:bg-primary checked:border-primary focus:ring-2 focus:ring-primary/30"
                                   id={opt.id}
-                                  onChange={(e) => {
-                                    if (opt.id === 'taille-sur-mesure') {
-                                      setIsSurMesureSelected(e.target.checked);
-                                    }
-                                  }}
                                 />
                                 {opt.icon && <div className="flex-shrink-0">{opt.icon}</div>}
                                 <label

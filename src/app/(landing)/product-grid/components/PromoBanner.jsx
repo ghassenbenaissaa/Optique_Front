@@ -1,6 +1,6 @@
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { LuSparkles } from 'react-icons/lu';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 
 /**
  * PromoBanner - Bannière promotionnelle animée
@@ -14,110 +14,100 @@ const PromoBanner = () => {
   const barRef = useRef(null);
   const ticking = useRef(false);
   const scrollTimeout = useRef(null);
+  const heightRef = useRef(0);
+  const prefersReducedMotion = useReducedMotion();
 
-  // Met à jour la variable CSS globale selon la visibilité et la hauteur mesurée
-  const updateOffsetVar = () => {
+  // Génère une liste stable de particules (moins nombreuses) une fois pour toutes
+  const particles = useMemo(() => {
+    const count = prefersReducedMotion ? 0 : 8; // réduire drastiquement le coût
+    return Array.from({ length: count }).map((_, i) => ({
+      key: `p-${i}-${Math.random().toString(36).slice(2)}`,
+      left: `${Math.random() * 100}%`,
+      top: `${Math.random() * 100}%`,
+      duration: 2 + Math.random() * 2,
+      delay: Math.random() * 2,
+    }));
+  }, [prefersReducedMotion]);
+
+  // Met à jour la variable CSS globale depuis la hauteur mémorisée
+  const writeOffsetVar = (h) => {
     const root = document.documentElement;
-    const h = barRef.current?.offsetHeight || 0;
     root.style.setProperty('--promo-offset', visible ? `${h}px` : '0px');
     root.style.setProperty('--promo-transition-duration', '300ms');
   };
 
+  // Observer de taille sans forcer reflow au scroll
+  useEffect(() => {
+    if (!barRef.current) return;
+    const el = barRef.current;
+    const ro = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const h = Math.ceil(entry.contentRect.height || 0);
+        if (h !== heightRef.current) {
+          heightRef.current = h;
+          requestAnimationFrame(() => writeOffsetVar(h));
+        }
+      }
+    });
+    ro.observe(el);
+    // écrire une fois à l'init
+    requestAnimationFrame(() => writeOffsetVar(heightRef.current));
+    return () => ro.disconnect();
+  }, [visible]);
+
   useEffect(() => {
     const onScroll = () => {
-      // Debounce avec requestAnimationFrame pour éviter les calculs multiples
       if (!ticking.current) {
+        ticking.current = true;
         window.requestAnimationFrame(() => {
           const currentY = window.scrollY || 0;
-
-          // Zone de sécurité en haut : toujours visible
           if (currentY < 10) {
             if (!visible) setVisible(true);
             lastScrollY.current = currentY;
             ticking.current = false;
             return;
           }
-
-          // Calculer le delta de scroll
           const delta = currentY - lastScrollY.current;
-
-          // Seuil de déclenchement augmenté pour éviter les micro-scrolls
-          if (Math.abs(delta) < 20) {
+          if (Math.abs(delta) < 30) {
             ticking.current = false;
             return;
           }
-
-          // Clearner le timeout précédent
-          if (scrollTimeout.current) {
-            clearTimeout(scrollTimeout.current);
-          }
-
-          // Délai de stabilisation : attendre que le scroll soit stable
+          if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
           scrollTimeout.current = setTimeout(() => {
             const finalY = window.scrollY || 0;
             const finalDelta = finalY - lastScrollY.current;
-
-            // Scroll vers le bas : cacher
-            if (finalDelta > 20) {
-              setVisible(false);
-            }
-            // Scroll vers le haut : montrer (mais seulement si on a scrollé suffisamment)
-            else if (finalDelta < -20) {
-              setVisible(true);
-            }
-
+            if (finalDelta > 20) setVisible(false);
+            else if (finalDelta < -20) setVisible(true);
             lastScrollY.current = finalY;
-          }, 100); // Attendre 100ms de stabilité
-
+          }, 120);
           ticking.current = false;
         });
-
-        ticking.current = true;
       }
     };
 
-    // Initialisation
     lastScrollY.current = window.scrollY || 0;
     if (lastScrollY.current > 50) setVisible(false);
-
     window.addEventListener('scroll', onScroll, { passive: true });
-
     return () => {
       window.removeEventListener('scroll', onScroll);
-      if (scrollTimeout.current) {
-        clearTimeout(scrollTimeout.current);
-      }
+      if (scrollTimeout.current) clearTimeout(scrollTimeout.current);
     };
   }, [visible]);
 
-  useEffect(() => {
-    // Mesurer la hauteur à l'affichage et lors des resize
-    updateOffsetVar();
-    const onResize = () => {
-      requestAnimationFrame(updateOffsetVar);
-    };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, [visible]);
-
-  // Observer la variable CSS pour détecter l'ouverture du menu mobile
+  // Surveille uniquement les changements de la variable css concernée (optimisé)
   useEffect(() => {
     const checkMenuState = () => {
-      const isOpen = document.documentElement.style.getPropertyValue('--mobile-menu-open') === '1';
-      setMobileMenuOpen(isOpen);
+      const val = document.documentElement.style.getPropertyValue('--mobile-menu-open');
+      setMobileMenuOpen(val === '1');
     };
-
-    // Observer les changements de style sur documentElement
-    const observer = new MutationObserver(checkMenuState);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['style']
+    const obs = new MutationObserver((mutations) => {
+      for (const m of mutations) {
+        if (m.attributeName === 'style') checkMenuState();
+      }
     });
-
-    // Vérification initiale
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ['style'] });
     checkMenuState();
-
-    return () => observer.disconnect();
+    return () => obs.disconnect();
   }, []);
 
   if (!isVisible) return null;
@@ -128,59 +118,36 @@ const PromoBanner = () => {
       role="region"
       aria-label="Promotion"
       initial={{ y: -100, opacity: 0 }}
-      animate={{
-        y: visible && !mobileMenuOpen ? 0 : -100,
-        opacity: visible && !mobileMenuOpen ? 1 : 0
-      }}
+      animate={{ y: visible && !mobileMenuOpen ? 0 : -100, opacity: visible && !mobileMenuOpen ? 1 : 0 }}
       exit={{ y: -100, opacity: 0 }}
-      transition={{ type: 'spring', stiffness: 100, damping: 15 }}
-      className="fixed inset-x-0 top-0 z-[60] overflow-hidden bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] animate-gradient"
+      transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 18 }}
+      className="fixed inset-x-0 top-0 z-[60] overflow-hidden bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] will-change-transform"
     >
-      {/* Animation de fond avec points lumineux */}
-      <div className="absolute inset-0 opacity-20">
-        {[...Array(20)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute size-1 bg-white rounded-full"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              scale: [0, 1, 0],
-              opacity: [0, 1, 0],
-            }}
-            transition={{
-              duration: 2 + Math.random() * 2,
-              repeat: Infinity,
-              delay: Math.random() * 2,
-            }}
-          />
-        ))}
-      </div>
+      {!prefersReducedMotion && (
+        <div className="absolute inset-0 opacity-15 pointer-events-none">
+          {particles.map((p) => (
+            <motion.div
+              key={p.key}
+              className="absolute size-1.5 bg-white rounded-full"
+              style={{ left: p.left, top: p.top }}
+              animate={{ scale: [0, 1, 0], opacity: [0, 1, 0] }}
+              transition={{ duration: p.duration, repeat: Infinity, delay: p.delay }}
+            />
+          ))}
+        </div>
+      )}
 
-      <div className="container relative z-10 py-3">
+      <div className="container relative z-10 py-2.5">
         <div className="flex items-center justify-center gap-3 text-white">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-          >
-            <LuSparkles className="size-5" />
-          </motion.div>
-
-          <motion.p
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 0.3 }}
-            className="text-sm md:text-base font-medium text-center"
-          >
+          {!prefersReducedMotion && (
+            <motion.div animate={{ rotate: 360 }} transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}>
+              <LuSparkles className="size-5" />
+            </motion.div>
+          )}
+          <p className="text-sm md:text-base font-medium text-center">
             <span className="font-bold">Offre spéciale :</span> -20% sur toute la collection avec le code{' '}
-            <motion.span
-              className="inline-block font-bold bg-white text-primary px-2 py-0.5 rounded-md mx-1"
-            >
-              LUNETTES20
-            </motion.span>
-          </motion.p>
+            <span className="inline-block font-bold bg-white text-primary px-2 py-0.5 rounded-md mx-1">LUNETTES20</span>
+          </p>
         </div>
       </div>
     </motion.div>
@@ -188,4 +155,3 @@ const PromoBanner = () => {
 };
 
 export default PromoBanner;
-

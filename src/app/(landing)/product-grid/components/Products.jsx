@@ -1,11 +1,11 @@
-import { LuChevronDown, LuChevronLeft, LuChevronRight, LuHeart, LuLayoutGrid, LuShoppingCart, LuX } from 'react-icons/lu';
+import { LuChevronLeft, LuChevronRight, LuHeart, LuShoppingCart, LuX } from 'react-icons/lu';
 import { Link } from 'react-router';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
+import { useState, memo } from 'react';
 import useProducts from '../hooks/useProducts';
+import { useFilterContext } from '@/context/FilterContext';
 
 const Products = () => {
-  const [viewMode, setViewMode] = useState('grid');
   const [hoveredProduct, setHoveredProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
@@ -17,6 +17,9 @@ const Products = () => {
     error,
     refetch
   } = useProducts();
+
+  const { tags, removeTag, clearAll } = useFilterContext();
+  const prefersReducedMotion = useReducedMotion();
 
   // Calculer les produits de la page actuelle
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -69,31 +72,52 @@ const Products = () => {
         transition={{ duration: 0.4, delay: 0.2 }}
         className="flex items-center mt-4 gap-2 flex-wrap"
       >
-        {['Prix décroissant', 'Nouveau', 'Bestseller'].map((tag, idx) => (
+        {tags.length === 0 && (
           <motion.span
-            key={tag}
             initial={{ scale: 0, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3 + idx * 0.1 }}
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-primary/10 border border-primary/20 text-xs font-medium text-primary"
+            transition={{ delay: 0.3 }}
+            className="px-3 py-1.5 rounded-full text-xs font-medium bg-default-100 dark:bg-default-800 text-default-500"
           >
-            {tag}
-            <Link to="#" className="hover:text-danger transition-colors duration-200">
+            Aucun filtre appliqué
+          </motion.span>
+        )}
+        {tags.map((tag, idx) => (
+          <motion.span
+            key={tag.key}
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.8, opacity: 0 }}
+            transition={{ delay: 0.3 + idx * 0.05 }}
+            whileHover={{ scale: 1.05 }}
+            className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-primary/10 border border-primary/20 text-xs font-medium text-primary shadow-sm backdrop-blur-sm"
+          >
+            <span className="truncate max-w-[140px]" title={`${tag.category}: ${tag.value}`}>{tag.value}</span>
+            <button
+              type="button"
+              onClick={() => removeTag(tag.key)}
+              className="hover:text-danger transition-colors duration-200"
+              aria-label={`Supprimer le filtre ${tag.value}`}
+            >
               <LuX className="size-3" />
-            </Link>
+            </button>
           </motion.span>
         ))}
-
-        <motion.span
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.6 }}
-        >
-          <Link to="#" className="py-1.5 px-3 text-xs font-medium rounded-full transition-all duration-300 hover:bg-danger/10 hover:text-danger text-default-600">
-            Tout effacer
-          </Link>
-        </motion.span>
+        {tags.length > 0 && (
+          <motion.span
+            initial={{ scale: 0, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ delay: 0.3 + tags.length * 0.05 }}
+          >
+            <button
+              type="button"
+              onClick={clearAll}
+              className="py-1.5 px-3 text-xs font-medium rounded-full transition-all duration-300 hover:bg-danger/10 hover:text-danger text-default-600"
+            >
+              Tout effacer
+            </button>
+          </motion.span>
+        )}
       </motion.div>
 
       {/* État de chargement */}
@@ -141,7 +165,7 @@ const Products = () => {
         <>
       <motion.div
         layout
-        className={`grid ${viewMode === 'grid' ? 'lg:grid-cols-3 md:grid-cols-2 grid-cols-1' : 'grid-cols-1'} gap-6 md:gap-8 mt-6`}
+        className={`grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6 md:gap-8 mt-6`}
       >
         <AnimatePresence mode="popLayout">
           {currentProducts.map((product, index) => {
@@ -173,14 +197,20 @@ const Products = () => {
                 >
                   {/* Badge Promotion en haut à gauche */}
                   {product.maxDiscount > 0 && (
-                    <motion.div
-                      initial={{ x: -100, opacity: 0 }}
-                      animate={{ x: 0, opacity: 1 }}
-                      transition={{ delay: 0.3 + index * 0.08 }}
-                      className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
-                    >
-                      -{Math.round(product.maxDiscount)}%
-                    </motion.div>
+                    prefersReducedMotion ? (
+                      <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10">
+                        -{Math.round(product.maxDiscount)}%
+                      </div>
+                    ) : (
+                      <motion.div
+                        initial={{ x: -100, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: 0.3 + index * 0.08 }}
+                        className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
+                      >
+                        -{Math.round(product.maxDiscount)}%
+                      </motion.div>
+                    )
                   )}
 
                   {/* Container image avec aspect ratio optimal */}
@@ -190,8 +220,10 @@ const Products = () => {
                         <motion.img
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110"
+                          className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110 will-change-transform"
                           loading="lazy"
+                          decoding="async"
+                          fetchpriority="low"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
@@ -215,32 +247,34 @@ const Products = () => {
                     </div>
 
                     {/* Actions rapides au survol - en bas à gauche */}
+                    {(!prefersReducedMotion) && (
                     <motion.div
                       initial={{ opacity: 0, y: 20 }}
                       animate={{
                         opacity: hoveredProduct === product.id ? 1 : 0,
                         y: hoveredProduct === product.id ? 0 : 20
                       }}
-                      transition={{ duration: 0.3 }}
+                      transition={{ duration: 0.2 }}
                       className="absolute bottom-4 left-4 flex gap-2"
                     >
                       <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={(e) => e.preventDefault()}
-                        className="w-10 h-10 rounded-full bg-white/90 dark:bg-default-800/90 backdrop-blur-sm flex items-center justify-center text-default-700 dark:text-default-300 hover:bg-primary hover:text-white transition-all duration-300 shadow-lg"
+                        className="w-10 h-10 rounded-full bg-white/90 dark:bg-default-800/90 backdrop-blur-sm flex items-center justify-center text-default-700 dark:text-default-300 hover:bg-primary hover:text-white transition-all duration-200 shadow-lg"
                       >
                         <LuShoppingCart className="w-4 h-4" />
                       </motion.button>
                       <motion.button
-                        whileHover={{ scale: 1.15 }}
-                        whileTap={{ scale: 0.95 }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.98 }}
                         onClick={(e) => e.preventDefault()}
-                        className="w-10 h-10 rounded-full bg-white/90 dark:bg-default-800/90 backdrop-blur-sm flex items-center justify-center text-default-700 dark:text-default-300 hover:bg-danger hover:text-white transition-all duration-300 shadow-lg"
+                        className="w-10 h-10 rounded-full bg-white/90 dark:bg-default-800/90 backdrop-blur-sm flex items-center justify-center text-default-700 dark:text-default-300 hover:bg-danger hover:text-white transition-all duration-200 shadow-lg"
                       >
                         <LuHeart className="w-4 h-4" />
                       </motion.button>
                     </motion.div>
+                    )}
                   </div>
 
                   {/* Informations produit avec design épuré */}

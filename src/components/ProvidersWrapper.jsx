@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import LayoutProvider from '@/context/useLayoutContext';
 import { useLocation } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
+import { FilterProvider } from '@/context/FilterContext';
 
 const ProvidersWrapper = ({
   children
@@ -34,7 +35,9 @@ const ProvidersWrapper = ({
   return (
     <AuthProvider>
       <LayoutProvider>
-        {children}
+        <FilterProvider>
+          {children}
+        </FilterProvider>
       </LayoutProvider>
     </AuthProvider>
   );
