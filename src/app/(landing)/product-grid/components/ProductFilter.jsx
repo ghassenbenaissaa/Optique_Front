@@ -300,6 +300,14 @@ const ProductFilter = () => {
   const [selectedFormes, setSelectedFormes] = useState([]);
   const [materiaux, setMateriaux] = useState([]);
   const [selectedMateriaux, setSelectedMateriaux] = useState([]);
+  // Nouvel état: tailles sélectionnées pour appliquer le même design que Matériau
+  const [selectedTailles, setSelectedTailles] = useState([]);
+  // Nouvel état: genres sélectionnés pour appliquer le même design que Matériau
+  const [selectedGenres, setSelectedGenres] = useState([]);
+  // Nouvel état: types de verre sélectionnés (même design carte + checkbox)
+  const [selectedTypeVerres, setSelectedTypeVerres] = useState([]);
+  // Nouvel état: types de monture sélectionnés (même design que Forme)
+  const [selectedMontures, setSelectedMontures] = useState([]);
 
   useEffect(() => {
     const fetchFilterValues = async () => {
@@ -424,6 +432,59 @@ const ProductFilter = () => {
   // Helper pour générer un id unique pour les formes (sans utiliser l'id API qui peut être null)
   const slugify = (str) => (str || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$|/g, '').replace(/-+/g,'-');
 
+  // Gestion monture
+  const handleToggleMonture = (id) => {
+    setSelectedMontures((prev) =>
+      prev.includes(id) ? prev.filter((m) => m !== id) : [...prev, id]
+    );
+  };
+  const isMontureSelected = (id) => selectedMontures.includes(id);
+
+  const MontureIcon = ({ type }) => {
+    const common = {
+      fill: 'none',
+      stroke: 'currentColor',
+      strokeWidth: 1.8,
+      strokeLinecap: 'round',
+      strokeLinejoin: 'round',
+    };
+    if (type === 'monture-cerclee') {
+      return (
+        <svg viewBox="0 0 48 24" className="w-11 h-11" aria-hidden="true" focusable="false">
+          <g {...common}>
+            <circle cx="12" cy="12" r="7" />
+            <circle cx="36" cy="12" r="7" />
+            <path d="M19 12h10" />
+            <path d="M3 12h3M42 12h3" />
+          </g>
+        </svg>
+      );
+    }
+    if (type === 'monture-demi-cerclee') {
+      return (
+        <svg viewBox="0 0 48 24" className="w-11 h-11" aria-hidden="true" focusable="false">
+          <g {...common}>
+            <path d="M5 12a7 7 0 0 1 14 0" />
+            <path d="M29 12a7 7 0 0 1 14 0" />
+            <path d="M19 12h10" />
+            <path d="M3 12h3M42 12h3" />
+          </g>
+        </svg>
+      );
+    }
+    // sans monture
+    return (
+      <svg viewBox="0 0 48 24" className="w-11 h-11" aria-hidden="true" focusable="false">
+        <g {...common}>
+          <path d="M10 12h6" />
+          <path d="M32 12h6" />
+          <path d="M19 12h10" />
+          <path d="M8 12h1M39 12h1" />
+        </g>
+      </svg>
+    );
+  };
+
   return <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -541,7 +602,7 @@ const ProductFilter = () => {
                           />
                         </motion.div>
                       ) : (
-                        <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : section.id === 'forme' ? 'flex-wrap gap-4 p-2' : section.id === 'materiau-dynamique' ? 'flex-col gap-3' : 'flex-col gap-3'}`}>
+                        <div className={`mt-4 flex ${section.id === 'couleur' ? 'flex-wrap gap-4 p-2' : section.id === 'forme' ? 'flex-wrap gap-4 p-2' : section.id === 'materiau-dynamique' ? 'flex-col gap-3' : section.id === 'genre' ? 'flex-col gap-3' : section.id === 'type-verre' ? 'flex-col gap-3' : section.id === 'type-monture' ? 'flex-col gap-3' : 'flex-col gap-3'}`}>
                           {section.id === 'couleur' ? (
                             colors.length > 0 ? (
                               colors.map((color, colorIndex) => (
@@ -652,6 +713,139 @@ const ProductFilter = () => {
                             ) : (
                               <div className="text-sm text-default-500 italic py-2">Aucun matériau disponible</div>
                             )
+                          ) : section.id === 'genre' ? (
+                            // Section "Genre" avec le même design que "Matériau"
+                            <div className="flex flex-col gap-3 w-full">
+                              {section.options?.map((opt, optIndex) => {
+                                const selected = selectedGenres.includes(opt.id);
+                                return (
+                                  <motion.div
+                                    key={opt.id}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 + optIndex * 0.05 }}
+                                    className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={opt.id}
+                                      checked={selected}
+                                      onChange={() => {
+                                        setSelectedGenres((prev) =>
+                                          prev.includes(opt.id)
+                                            ? prev.filter((id) => id !== opt.id)
+                                            : [...prev, opt.id]
+                                        );
+                                      }}
+                                      className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
+                                    />
+                                    <label htmlFor={opt.id} className="flex items-center gap-2 cursor-pointer select-none flex-1">
+                                      <span className={`text-sm font-medium ${selected ? 'text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{opt.label}</span>
+                                    </label>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          ) : section.id === 'type-verre' ? (
+                            // Section "Type de verre" avec le même design que "Matériau"
+                            <div className="flex flex-col gap-3 w-full">
+                              {section.options?.map((opt, optIndex) => {
+                                const selected = selectedTypeVerres.includes(opt.id);
+                                return (
+                                  <motion.div
+                                    key={opt.id}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 + optIndex * 0.05 }}
+                                    className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={opt.id}
+                                      checked={selected}
+                                      onChange={() => {
+                                        setSelectedTypeVerres((prev) =>
+                                          prev.includes(opt.id)
+                                            ? prev.filter((id) => id !== opt.id)
+                                            : [...prev, opt.id]
+                                        );
+                                      }}
+                                      className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
+                                    />
+                                    <label htmlFor={opt.id} className="flex items-center gap-2 cursor-pointer select-none flex-1">
+                                      <span className={`text-sm font-medium ${selected ? 'text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{opt.label}</span>
+                                    </label>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          ) : section.id === 'type-monture' ? (
+                            // Section "Type de monture" avec design comme "Forme"
+                            <div className="flex flex-col gap-3 w-full">
+                              {section.options?.map((opt, optIndex) => {
+                                const selected = isMontureSelected(opt.id);
+                                const inputId = `monture-${opt.id}`;
+                                return (
+                                  <motion.div
+                                    key={opt.id}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 + optIndex * 0.05 }}
+                                    className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={inputId}
+                                      checked={selected}
+                                      onChange={() => handleToggleMonture(opt.id)}
+                                      className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
+                                    />
+                                    <label htmlFor={inputId} className="flex items-center gap-3 cursor-pointer select-none flex-1">
+                                      <div className={`w-12 h-12 flex items-center justify-center rounded-md overflow-hidden bg-white dark:bg-default-800 border ${selected ? 'border-primary ring-2 ring-primary/30 text-primary' : 'border-default-200 dark:border-default-600 text-default-500'}`}>
+                                        <MontureIcon type={opt.id} />
+                                      </div>
+                                      <span className={`text-sm ${selected ? 'font-medium text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{opt.label}</span>
+                                    </label>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
+                          ) : section.id === 'taille' ? (
+                            // Section "Taille" avec le même design que "Matériau"
+                            <div className="flex flex-col gap-3 w-full">
+                              {section.options?.map((opt, optIndex) => {
+                                const selected = selectedTailles.includes(opt.id);
+                                return (
+                                  <motion.div
+                                    key={opt.id}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: 0.5 + optIndex * 0.05 }}
+                                    className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      id={opt.id}
+                                      checked={selected}
+                                      onChange={(e) => {
+                                        setSelectedTailles((prev) =>
+                                          prev.includes(opt.id)
+                                            ? prev.filter((id) => id !== opt.id)
+                                            : [...prev, opt.id]
+                                        );
+                                        if (opt.id === 'taille-sur-mesure') {
+                                          setIsSurMesureSelected(e.target.checked);
+                                        }
+                                      }}
+                                      className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
+                                    />
+                                    <label htmlFor={opt.id} className="flex items-center gap-2 cursor-pointer select-none flex-1">
+                                      <span className={`text-sm font-medium ${selected ? 'text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{opt.label}</span>
+                                    </label>
+                                  </motion.div>
+                                );
+                              })}
+                            </div>
                           ) : (
                             section.options?.map((opt, optIndex) => (
                               <motion.div
