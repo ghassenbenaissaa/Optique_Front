@@ -27,11 +27,17 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
   const [variations, setVariations] = useState([
     { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '' }
   ]);
+  // Touched state pour variations (validation dynamique)
+  const [variationsTouched, setVariationsTouched] = useState([
+    { couleur: false, materiauProduit: false, quantity: false }
+  ]);
 
   // Révélation d'erreurs par étape (pour afficher les messages inline)
   const [showErrors, setShowErrors] = useState({ 1: false, 2: false, 3: false, 4: false });
 
-  const { register, handleSubmit, trigger, formState: { errors }, setError, clearErrors } = useForm({
+  const { register, handleSubmit, trigger, formState: { errors, touchedFields }, setError, clearErrors } = useForm({
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
     defaultValues: monture ? {
       name: monture.name,
       description: monture.description,
@@ -69,6 +75,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
           priceOverride: v.price || '',
           solde: v.solde || '',
         })));
+        setVariationsTouched(monture.variations.map(() => ({ couleur: false, materiauProduit: false, quantity: false })));
       }
       // Charger les images existantes
       if (monture.imageUrl && monture.imageUrl.length > 0) {
@@ -127,16 +134,27 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
   // Gestion des variations
   const addVariation = () => {
     setVariations([...variations, { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '' }]);
+    setVariationsTouched([...variationsTouched, { couleur: false, materiauProduit: false, quantity: false }]);
   };
 
   const removeVariation = (index) => {
     setVariations(variations.filter((_, i) => i !== index));
+    setVariationsTouched(variationsTouched.filter((_, i) => i !== index));
   };
 
   const updateVariation = (index, field, value) => {
     const newVariations = [...variations];
     newVariations[index][field] = value;
     setVariations(newVariations);
+  };
+
+  const markVariationTouched = (index, field) => {
+    setVariationsTouched(prev => {
+      const next = [...prev];
+      if (!next[index]) next[index] = { couleur: false, materiauProduit: false, quantity: false };
+      next[index][field] = true;
+      return next;
+    });
   };
 
   // Navigation
@@ -341,10 +359,10 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 <input
                   {...register('name', { required: 'Le nom du produit est requis' })}
                   type="text"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name && (touchedFields.name || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="Ex: Ray-Ban Aviator Classic"
                 />
-                {errors.name && showErrors[1] && (
+                {errors.name && (touchedFields.name || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
                 )}
               </div>
@@ -357,10 +375,10 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 <textarea
                   {...register('description', { required: 'La description est requise' })}
                   rows={4}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.description && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.description && (touchedFields.description || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="Décrivez le produit..."
                 />
-                {errors.description && showErrors[1] && (
+                {errors.description && (touchedFields.description || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.description.message}</p>
                 )}
               </div>
@@ -371,13 +389,17 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   Prix de base (TND) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('price', { required: 'Le prix est requis', min: { value: 0, message: 'Le prix doit être supérieur ou égal à 0' } })}
+                  {...register('price', {
+                    required: 'Le prix est requis',
+                    setValueAs: v => (v === '' || v === null ? undefined : parseFloat(v)),
+                    min: { value: 0, message: 'Le prix doit être supérieur ou égal à 0' }
+                  })}
                   type="number"
                   step="0.01"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.price && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.price && (touchedFields.price || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="0.00"
                 />
-                {errors.price && showErrors[1] && (
+                {errors.price && (touchedFields.price || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.price.message}</p>
                 )}
               </div>
@@ -389,14 +411,15 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 </label>
                 <select
                   {...register('marque', { required: 'La marque est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.marque && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  onBlur={() => {/* RHF gère touchedFields */}}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.marque && (touchedFields.marque || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Sélectionner une marque</option>
                   {marques.map((m) => (
                     <option key={m.id} value={m.name}>{m.name}</option>
                   ))}
                 </select>
-                {errors.marque && showErrors[1] && (
+                {errors.marque && (touchedFields.marque || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.marque.message}</p>
                 )}
               </div>
@@ -408,14 +431,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 </label>
                 <select
                   {...register('categorie', { required: 'La catégorie est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.categorie && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.categorie && (touchedFields.categorie || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Sélectionner une catégorie</option>
                   {Object.values(CategorieProduit).map((cat) => (
                     <option key={cat} value={cat}>{cat.replace(/_/g, ' ')}</option>
                   ))}
                 </select>
-                {errors.categorie && showErrors[1] && (
+                {errors.categorie && (touchedFields.categorie || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.categorie.message}</p>
                 )}
               </div>
@@ -427,14 +450,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 </label>
                 <select
                   {...register('gender', { required: 'Le genre est requis' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.gender && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.gender && (touchedFields.gender || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Sélectionner un genre</option>
                   {Object.values(GenderProduit).map((gender) => (
                     <option key={gender} value={gender}>{gender}</option>
                   ))}
                 </select>
-                {errors.gender && showErrors[1] && (
+                {errors.gender && (touchedFields.gender || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.gender.message}</p>
                 )}
               </div>
@@ -446,14 +469,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 </label>
                 <select
                   {...register('taille', { required: 'La taille est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.taille && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.taille && (touchedFields.taille || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Sélectionner une taille</option>
                   {Object.values(TailleProduit).map((taille) => (
                     <option key={taille} value={taille}>{taille.replace(/_/g, ' ')}</option>
                   ))}
                 </select>
-                {errors.taille && showErrors[1] && (
+                {errors.taille && (touchedFields.taille || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.taille.message}</p>
                 )}
               </div>
@@ -465,14 +488,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 </label>
                 <select
                   {...register('typeMonture', { required: 'Le type de monture est requis' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.typeMonture && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.typeMonture && (touchedFields.typeMonture || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Sélectionner un type</option>
                   {Object.values(TypeMonture).map((type) => (
                     <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
                   ))}
                 </select>
-                {errors.typeMonture && showErrors[1] && (
+                {errors.typeMonture && (touchedFields.typeMonture || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.typeMonture.message}</p>
                 )}
               </div>
@@ -484,14 +507,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 </label>
                 <select
                   {...register('formeProduit', { required: 'La forme est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.formeProduit && showErrors[1] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.formeProduit && (touchedFields.formeProduit || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
                 >
                   <option value="">Sélectionner une forme</option>
                   {formes.map((f) => (
                     <option key={f.id} value={f.name}>{f.name}</option>
                   ))}
                 </select>
-                {errors.formeProduit && showErrors[1] && (
+                {errors.formeProduit && (touchedFields.formeProduit || showErrors[1]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.formeProduit.message}</p>
                 )}
               </div>
@@ -512,14 +535,19 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   Largeur totale (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('largeurTotale', { valueAsNumber: true, required: 'La largeur totale est requise', min: { value: 0.1, message: 'La valeur doit être strictement positive (> 0)' } })}
+                  {...register('largeurTotale', {
+                    required: 'La largeur totale est requise',
+                    setValueAs: v => (v === '' || v === null ? undefined : parseFloat(v)),
+                    valueAsNumber: true,
+                    validate: (v) => (typeof v === 'number' && v > 0) || 'La valeur doit être strictement positive (> 0)'
+                  })}
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurTotale && showErrors[2] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurTotale && (touchedFields.largeurTotale || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="0.0"
                 />
-                {errors.largeurTotale && showErrors[2] && (
+                {errors.largeurTotale && (touchedFields.largeurTotale || showErrors[2]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.largeurTotale.message}</p>
                 )}
               </div>
@@ -530,14 +558,19 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   Largeur verre (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('largeurVerre', { valueAsNumber: true, required: 'La largeur du verre est requise', min: { value: 0.1, message: 'La valeur doit être strictement positive (> 0)' } })}
+                  {...register('largeurVerre', {
+                    required: 'La largeur du verre est requise',
+                    setValueAs: v => (v === '' || v === null ? undefined : parseFloat(v)),
+                    valueAsNumber: true,
+                    validate: (v) => (typeof v === 'number' && v > 0) || 'La valeur doit être strictement positive (> 0)'
+                  })}
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurVerre && showErrors[2] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurVerre && (touchedFields.largeurVerre || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="0.0"
                 />
-                {errors.largeurVerre && showErrors[2] && (
+                {errors.largeurVerre && (touchedFields.largeurVerre || showErrors[2]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.largeurVerre.message}</p>
                 )}
               </div>
@@ -548,14 +581,19 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   Hauteur verre (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('hauteurVerre', { valueAsNumber: true, required: "La hauteur du verre est requise", min: { value: 0.1, message: 'La valeur doit être strictement positive (> 0)' } })}
+                  {...register('hauteurVerre', {
+                    required: 'La hauteur du verre est requise',
+                    setValueAs: v => (v === '' || v === null ? undefined : parseFloat(v)),
+                    valueAsNumber: true,
+                    validate: (v) => (typeof v === 'number' && v > 0) || 'La valeur doit être strictement positive (> 0)'
+                  })}
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.hauteurVerre && showErrors[2] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.hauteurVerre && (touchedFields.hauteurVerre || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="0.0"
                 />
-                {errors.hauteurVerre && showErrors[2] && (
+                {errors.hauteurVerre && (touchedFields.hauteurVerre || showErrors[2]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.hauteurVerre.message}</p>
                 )}
               </div>
@@ -566,14 +604,19 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   Largeur pont (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('largeurPont', { valueAsNumber: true, required: 'La largeur du pont est requise', min: { value: 0.1, message: 'La valeur doit être strictement positive (> 0)' } })}
+                  {...register('largeurPont', {
+                    required: 'La largeur du pont est requise',
+                    setValueAs: v => (v === '' || v === null ? undefined : parseFloat(v)),
+                    valueAsNumber: true,
+                    validate: (v) => (typeof v === 'number' && v > 0) || 'La valeur doit être strictement positive (> 0)'
+                  })}
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurPont && showErrors[2] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurPont && (touchedFields.largeurPont || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="0.0"
                 />
-                {errors.largeurPont && showErrors[2] && (
+                {errors.largeurPont && (touchedFields.largeurPont || showErrors[2]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.largeurPont.message}</p>
                 )}
               </div>
@@ -584,14 +627,19 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   Longueur branche (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
-                  {...register('longueurBranche', { valueAsNumber: true, required: 'La longueur de branche est requise', min: { value: 0.1, message: 'La valeur doit être strictement positive (> 0)' } })}
+                  {...register('longueurBranche', {
+                    required: 'La longueur de branche est requise',
+                    setValueAs: v => (v === '' || v === null ? undefined : parseFloat(v)),
+                    valueAsNumber: true,
+                    validate: (v) => (typeof v === 'number' && v > 0) || 'La valeur doit être strictement positive (> 0)'
+                  })}
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.longueurBranche && showErrors[2] ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.longueurBranche && (touchedFields.longueurBranche || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="0.0"
                 />
-                {errors.longueurBranche && showErrors[2] && (
+                {errors.longueurBranche && (touchedFields.longueurBranche || showErrors[2]) && (
                   <p className="text-sm text-red-600 mt-1">{errors.longueurBranche.message}</p>
                 )}
               </div>
@@ -677,9 +725,10 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
             <div className="space-y-4">
               {variations.map((variation, index) => {
-                const colorError = showErrors[4] && !variation.couleur;
-                const matError = showErrors[4] && !variation.materiauProduit;
-                const qtyError = showErrors[4] && (variation.quantity === '' || Number(variation.quantity) < 0);
+                const colorError = (!variation.couleur) && (variationsTouched[index]?.couleur || showErrors[4]);
+                const matError = (!variation.materiauProduit) && (variationsTouched[index]?.materiauProduit || showErrors[4]);
+                const qtyInvalid = variation.quantity === '' || Number(variation.quantity) < 0;
+                const qtyError = qtyInvalid && (variationsTouched[index]?.quantity || showErrors[4]);
 
                 // Trouver une correspondance de couleur (insensible à la casse)
                 const colorMatch = couleurs.find(c => (c.name || '').toLowerCase().trim() === (variation.couleur || '').toLowerCase().trim());
@@ -713,6 +762,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                         <select
                           value={selectedColor}
                           onChange={(e) => updateVariation(index, 'couleur', e.target.value)}
+                          onBlur={() => markVariationTouched(index, 'couleur')}
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${colorError ? 'border-red-500' : 'border-gray-300'}`}
                         >
                           <option value="">Sélectionner</option>
@@ -736,6 +786,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                         <select
                           value={selectedMat}
                           onChange={(e) => updateVariation(index, 'materiauProduit', e.target.value)}
+                          onBlur={() => markVariationTouched(index, 'materiauProduit')}
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${matError ? 'border-red-500' : 'border-gray-300'}`}
                         >
                           <option value="">Sélectionner</option>
@@ -760,6 +811,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                           type="number"
                           value={variation.quantity}
                           onChange={(e) => updateVariation(index, 'quantity', e.target.value)}
+                          onBlur={() => markVariationTouched(index, 'quantity')}
                           min="0"
                           className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${qtyError ? 'border-red-500' : 'border-gray-300'}`}
                         />
