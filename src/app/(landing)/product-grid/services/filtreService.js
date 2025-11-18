@@ -94,6 +94,27 @@ class FiltreService {
       );
     }
   }
+
+  /**
+   * Récupère toutes les marques disponibles depuis l'API
+   * @returns {Promise<import('../types/filtre.js').GetMarqueResponse[]>}
+   * @throws {Error} Si l'appel échoue
+   */
+  async getMarques() {
+    try {
+      const response = await api.get('/marque/getAll');
+      if (!response?.data) {
+        throw new Error('Réponse API invalide');
+      }
+      return response.data;
+    } catch (error) {
+      console.error('Erreur lors de la récupération des marques:', error);
+      throw new Error(
+        error.response?.data?.message ||
+        'Impossible de charger les marques. Veuillez réessayer.'
+      );
+    }
+  }
 }
 
 // Export d'une instance unique (Singleton)

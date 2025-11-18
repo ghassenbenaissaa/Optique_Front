@@ -1,6 +1,8 @@
 // filepath: d:\GHASSEN\Projet Optique\OptiqueFront\src\app\(landing)\product-landing\components\navbar\BrandsDropdown.jsx
 import React, { useEffect, useMemo, useState } from 'react';
 import api from '@/lib/axios';
+import { useNavigate } from 'react-router-dom';
+import { useFilterContext } from '@/context/FilterContext';
 
 /**
  * BrandsDropdown
@@ -12,6 +14,8 @@ const BrandsDropdown = () => {
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const { setSelectedMarques, clearAll } = useFilterContext();
 
   useEffect(() => {
     let active = true;
@@ -50,6 +54,14 @@ const BrandsDropdown = () => {
     return { items, cols };
   }, [brands]);
 
+  const handlePickBrand = (name) => (e) => {
+    e.preventDefault();
+    // Réinitialiser tous les filtres puis appliquer uniquement la marque choisie
+    clearAll();
+    setSelectedMarques([name]);
+    navigate('/product');
+  };
+
   return (
     <div className="absolute left-1/2 -translate-x-1/2 mt-3 w-[min(92vw,56rem)]">
       <div className="rounded-xl border border-default-200/70 bg-card shadow-lg ring-1 ring-black/5 p-4 md:p-5">
@@ -67,7 +79,8 @@ const BrandsDropdown = () => {
             {computed.items.map((b) => (
               <a
                 key={b.uniqueKey}
-                href="#product"
+                href="/product"
+                onClick={handlePickBrand(b.name)}
                 className="group w-full max-w-[140px] rounded-lg border border-default-200/70 hover:border-primary/50 bg-default-50 dark:bg-default-50/10 p-3 flex flex-col items-center text-center transition-colors shadow-sm hover:shadow-md"
               >
                 {b.img ? (

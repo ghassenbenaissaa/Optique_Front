@@ -1,5 +1,7 @@
 // filepath: d:\GHASSEN\Projet Optique\OptiqueFront\src\app\(landing)\product-landing\components\navbar\CategoryDropdown.jsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useFilterContext } from '@/context/FilterContext';
 
 /**
  * CategoryDropdown
@@ -9,19 +11,48 @@ import React from 'react';
  */
 const CategoryDropdown = ({ variant = 'eyeglasses' }) => {
   const isSunglasses = variant === 'sunglasses';
+  const navigate = useNavigate();
+  const { setSelectedGenres, setSelectedTypeVerres, setSelectedTailles, setIsSurMesureSelected } = useFilterContext();
+
+  const handleClick = (key) => (e) => {
+    e.preventDefault();
+    // Reset rapides des catégories pertinentes
+    setSelectedGenres([]);
+    setSelectedTailles([]);
+    setIsSurMesureSelected(false);
+    // Type de verre
+    if (isSunglasses) {
+      setSelectedTypeVerres(['type-soleil']);
+    } else {
+      setSelectedTypeVerres(['type-vue']);
+    }
+    // Genre
+    if (key === 'men') {
+      setSelectedGenres(['genre-homme']);
+    } else if (key === 'women') {
+      setSelectedGenres(['genre-femme']);
+    } else if (key === 'kids') {
+      // "enfant" s’ajoute en plus (on inclut juste enfant, laisser l’utilisateur cocher homme/femme ensuite si besoin)
+      setSelectedGenres(['genre-enfant']);
+    } else if (key === 'all') {
+      // Tous: pas de genre, juste type de verre
+      setSelectedGenres([]);
+    }
+    navigate('/product');
+  };
 
   const items = isSunglasses
     ? [
-        { key: 'men', label: 'Homme', href: '#product' },
-        { key: 'women', label: 'Femme', href: '#product' },
-        { key: 'kids', label: 'Enfant', href: '#product' },
-        { key: 'all', label: 'Tous les solaires', href: '#product' },
+        { key: 'men', label: 'Homme', href: '/product' },
+        { key: 'women', label: 'Femme', href: '/product' },
+        { key: 'kids', label: 'Enfant', href: '/product' },
+        { key: 'all', label: 'Tous les solaires', href: '/product' },
       ]
     : [
-        { key: 'men', label: 'Homme', href: '#product' },
-        { key: 'women', label: 'Femme', href: '#product' },
-        { key: 'kids', label: 'Enfant', href: '#product' },
-        { key: 'all', label: 'Tous les optiques', href: '#product' },
+        { key: 'men', label: 'Homme', href: '/product' },
+        { key: 'women', label: 'Femme', href: '/product' },
+        { key: 'kids', label: 'Enfant', href: '/product' },
+        { key: 'all', label: 'Tous les optiques', href: '/product' },
       ];
 
   const imagesEyeglasses = {
@@ -53,6 +84,7 @@ const CategoryDropdown = ({ variant = 'eyeglasses' }) => {
             <a
               key={it.key}
               href={it.href}
+              onClick={handleClick(it.key)}
               className="group rounded-xl overflow-hidden border border-default-200/70 hover:border-primary/50 transition-colors shadow-sm hover:shadow-md bg-default-50 dark:bg-default-50/10"
             >
               <div className="aspect-[16/9] bg-gradient-to-br from-default-100 to-default-200 dark:from-default-50/10 dark:to-default-100/10">

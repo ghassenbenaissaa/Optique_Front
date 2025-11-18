@@ -122,6 +122,7 @@ const PromoBanner = () => {
       exit={{ y: -100, opacity: 0 }}
       transition={prefersReducedMotion ? { duration: 0 } : { type: 'spring', stiffness: 120, damping: 18 }}
       className="fixed inset-x-0 top-0 z-[60] overflow-hidden bg-gradient-to-r from-primary via-purple-600 to-primary bg-[length:200%_100%] will-change-transform"
+      style={{ contain: 'paint' }}
     >
       {!prefersReducedMotion && (
         <div className="absolute inset-0 opacity-15 pointer-events-none">

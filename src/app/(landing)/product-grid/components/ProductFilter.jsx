@@ -198,6 +198,11 @@ const filterConfig = [{
   title: 'Genre',
   options: [{ id: 'genre-homme', label: 'Homme' }, { id: 'genre-femme', label: 'Femme' }, { id: 'genre-unisex', label: 'Unisexe' }, { id: 'genre-enfant', label: 'Enfant' }]
 }, {
+  id: 'marque',
+  title: 'Marque',
+  isDynamicMarque: true,
+  options: []
+}, {
   id: 'taille',
   title: 'Taille',
   options: [{ id: 'taille-extra-petit', label: 'Extra Petit' }, { id: 'taille-petit', label: 'Petit' }, { id: 'taille-moyen', label: 'Moyen' }, { id: 'taille-grand', label: 'Grand' }, { id: 'taille-extra-grand', label: 'Extra Grand' }, { id: 'taille-sur-mesure', label: 'Sur mesure', isCustomSize: true }]
@@ -300,6 +305,7 @@ const ProductFilter = () => {
     selectedColors,
     selectedMateriaux,
     selectedMontures,
+    selectedMarques,
     initBounds,
     toggleTypeVerre,
     toggleGenre,
@@ -308,6 +314,7 @@ const ProductFilter = () => {
     toggleCouleur,
     toggleMateriau,
     toggleMonture,
+    toggleMarque,
     setPriceRange,
   } = useFilterContext();
 
@@ -315,37 +322,41 @@ const ProductFilter = () => {
   const [colors, setColors] = useState([]);
   const [formes, setFormes] = useState([]);
   const [materiaux, setMateriaux] = useState([]);
+  const [marques, setMarques] = useState([]);
 
   useEffect(() => {
     const fetchFilterValues = async () => {
       try {
         setFilterLoading(true);
         const data = await filtreService.getFilter();
-        const requiredFields = [
-          'minPrix','maxPrix',
-          'minLargeurTotale','maxLargeurTotale',
-          'minLargeurVerre','maxLargeurVerre',
-          'minHauteurVerre','maxHauteurVerre',
-          'minLargeurPont','maxLargeurPont',
-          'minLongueurBranche','maxLongueurBranche'
-        ];
-        const hasNull = requiredFields.some((f) => data[f] == null);
-        if (hasNull) {
-          setFilterLoading(false);
-          navigate('/404', { replace: true });
-          return;
-        }
 
-        setFilterValues(data);
-        initBounds({ minPrix: data.minPrix, maxPrix: data.maxPrix });
+        // Normaliser les valeurs nulles avec des défauts pour éviter toute redirection 404
+        const safe = (v, def) => (v == null ? def : v);
+        const norm = {
+          minPrix: safe(data?.minPrix, DEFAULT_FILTER_VALUES.minPrix),
+          maxPrix: safe(data?.maxPrix, DEFAULT_FILTER_VALUES.maxPrix),
+          minLargeurTotale: safe(data?.minLargeurTotale, DEFAULT_FILTER_VALUES.minLargeurTotale),
+          maxLargeurTotale: safe(data?.maxLargeurTotale, DEFAULT_FILTER_VALUES.maxLargeurTotale),
+          minLargeurVerre: safe(data?.minLargeurVerre, DEFAULT_FILTER_VALUES.minLargeurVerre),
+          maxLargeurVerre: safe(data?.maxLargeurVerre, DEFAULT_FILTER_VALUES.maxLargeurVerre),
+          minHauteurVerre: safe(data?.minHauteurVerre, DEFAULT_FILTER_VALUES.minHauteurVerre),
+          maxHauteurVerre: safe(data?.maxHauteurVerre, DEFAULT_FILTER_VALUES.maxHauteurVerre),
+          minLargeurPont: safe(data?.minLargeurPont, DEFAULT_FILTER_VALUES.minLargeurPont),
+          maxLargeurPont: safe(data?.maxLargeurPont, DEFAULT_FILTER_VALUES.maxLargeurPont),
+          minLongueurBranche: safe(data?.minLongueurBranche, DEFAULT_FILTER_VALUES.minLongueurBranche),
+          maxLongueurBranche: safe(data?.maxLongueurBranche, DEFAULT_FILTER_VALUES.maxLongueurBranche),
+        };
 
-        // MAJ des états locaux sliders
-        setPriceMin(data.minPrix); setPriceMax(data.maxPrix); setPriceRange({ min: data.minPrix, max: data.maxPrix });
-        setLargeurTotaleMin(data.minLargeurTotale); setLargeurTotaleMax(data.maxLargeurTotale);
-        setLargeurVerreMin(data.minLargeurVerre); setLargeurVerreMax(data.maxLargeurVerre);
-        setHauteurVerreMin(data.minHauteurVerre); setHauteurVerreMax(data.maxHauteurVerre);
-        setLargeurPontMin(data.minLargeurPont); setLargeurPontMax(data.maxLargeurPont);
-        setLongueurBrancheMin(data.minLongueurBranche); setLongueurBrancheMax(data.maxLongueurBranche);
+        setFilterValues(norm);
+        initBounds({ minPrix: norm.minPrix, maxPrix: norm.maxPrix });
+
+        // MAJ des états locaux sliders avec valeurs normalisées
+        setPriceMin(norm.minPrix); setPriceMax(norm.maxPrix); setPriceRange({ min: norm.minPrix, max: norm.maxPrix });
+        setLargeurTotaleMin(norm.minLargeurTotale); setLargeurTotaleMax(norm.maxLargeurTotale);
+        setLargeurVerreMin(norm.minLargeurVerre); setLargeurVerreMax(norm.maxLargeurVerre);
+        setHauteurVerreMin(norm.minHauteurVerre); setHauteurVerreMax(norm.maxHauteurVerre);
+        setLargeurPontMin(norm.minLargeurPont); setLargeurPontMax(norm.maxLargeurPont);
+        setLongueurBrancheMin(norm.minLongueurBranche); setLongueurBrancheMax(norm.maxLongueurBranche);
 
         // Couleurs
         try {
@@ -371,16 +382,26 @@ const ProductFilter = () => {
           console.error('Erreur lors du chargement des matériaux:', materiauError);
           setMateriaux([]);
         }
+        // Marques
+        try {
+          const marquesData = await filtreService.getMarques();
+          const availableMarques = (marquesData || []).filter(m => (m.isAvailable ?? m.available) && m.name);
+          setMarques(availableMarques);
+        } catch (marqueError) {
+          console.error('Erreur lors du chargement des marques:', marqueError);
+          setMarques([]);
+        }
       } catch (error) {
         console.error('Erreur lors du chargement des filtres:', error);
-        setFilterValues(DEFAULT_FILTER_VALUES);
+        const d = DEFAULT_FILTER_VALUES;
+        setFilterValues(d);
         // Reset aux defaults
-        setPriceMin(DEFAULT_FILTER_VALUES.minPrix); setPriceMax(DEFAULT_FILTER_VALUES.maxPrix); setPriceRange({ min: DEFAULT_FILTER_VALUES.minPrix, max: DEFAULT_FILTER_VALUES.maxPrix });
-        setLargeurTotaleMin(DEFAULT_FILTER_VALUES.minLargeurTotale); setLargeurTotaleMax(DEFAULT_FILTER_VALUES.maxLargeurTotale);
-        setLargeurVerreMin(DEFAULT_FILTER_VALUES.minLargeurVerre); setLargeurVerreMax(DEFAULT_FILTER_VALUES.maxLargeurVerre);
-        setHauteurVerreMin(DEFAULT_FILTER_VALUES.minHauteurVerre); setHauteurVerreMax(DEFAULT_FILTER_VALUES.maxHauteurVerre);
-        setLargeurPontMin(DEFAULT_FILTER_VALUES.minLargeurPont); setLargeurPontMax(DEFAULT_FILTER_VALUES.maxLargeurPont);
-        setLongueurBrancheMin(DEFAULT_FILTER_VALUES.minLongueurBranche); setLongueurBrancheMax(DEFAULT_FILTER_VALUES.maxLongueurBranche);
+        setPriceMin(d.minPrix); setPriceMax(d.maxPrix); setPriceRange({ min: d.minPrix, max: d.maxPrix });
+        setLargeurTotaleMin(d.minLargeurTotale); setLargeurTotaleMax(d.maxLargeurTotale);
+        setLargeurVerreMin(d.minLargeurVerre); setLargeurVerreMax(d.maxLargeurVerre);
+        setHauteurVerreMin(d.minHauteurVerre); setHauteurVerreMax(d.maxHauteurVerre);
+        setLargeurPontMin(d.minLargeurPont); setLargeurPontMax(d.maxLargeurPont);
+        setLongueurBrancheMin(d.minLongueurBranche); setLongueurBrancheMax(d.maxLongueurBranche);
       } finally {
         setFilterLoading(false);
       }
@@ -646,6 +667,49 @@ const ProductFilter = () => {
                               </div>
                             ) : (
                               <div className="text-sm text-default-500 italic py-2">Aucune forme disponible</div>
+                            )
+                          ) : section.id === 'marque' ? (
+                            marques.length > 0 ? (
+                              <div className="flex flex-col gap-3 w-full">
+                                {marques.map((marque, marqueIndex) => {
+                                  const marqueId = `marque-${slugify(marque.name)}-${marqueIndex}`;
+                                  const selected = selectedMarques.includes(marque.name);
+                                  return (
+                                    <motion.div
+                                      key={marqueId}
+                                      initial={{ opacity: 0, y: 6 }}
+                                      animate={{ opacity: 1, y: 0 }}
+                                      transition={{ delay: 0.45 + marqueIndex * 0.05 }}
+                                      className={`flex items-center gap-3 p-2 rounded-md border transition-all duration-200 ${selected ? 'border-primary bg-primary/5 shadow-sm' : 'border-default-200 dark:border-default-700 hover:bg-default-50 dark:hover:bg-default-800/40'}`}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        id={marqueId}
+                                        checked={selected}
+                                        onChange={() => toggleMarque(marque.name)}
+                                        className="form-checkbox h-4 w-4 rounded bg-white dark:bg-default-800 border border-default-300 dark:border-default-600 checked:bg-primary checked:border-primary focus:ring-primary/40 transition-colors"
+                                      />
+                                      <label htmlFor={marqueId} className="flex items-center gap-3 cursor-pointer select-none flex-1">
+                                        <div className={`w-12 h-12 flex items-center justify-center rounded-md overflow-hidden bg-white dark:bg-default-800 border ${selected ? 'border-primary ring-2 ring-primary/30' : 'border-default-200 dark:border-default-600'}`}>
+                                          {marque.imageUrl ? (
+                                            <img
+                                              src={marque.imageUrl}
+                                              alt={marque.name}
+                                              className="w-10 h-10 object-contain"
+                                              loading="lazy"
+                                            />
+                                          ) : (
+                                            <span className="text-xs text-default-500">N/A</span>
+                                          )}
+                                        </div>
+                                        <span className={`text-sm ${selected ? 'font-medium text-default-900 dark:text-default-100' : 'text-default-700 dark:text-default-300'}`}>{marque.name}</span>
+                                      </label>
+                                    </motion.div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="text-sm text-default-500 italic py-2">Aucune marque disponible</div>
                             )
                           ) : section.id === 'materiau-dynamique' ? (
                             materiaux.length > 0 ? (

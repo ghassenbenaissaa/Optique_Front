@@ -13,6 +13,7 @@ export const FilterProvider = ({ children }) => {
   const [selectedColors, setSelectedColors] = useState([]); // names
   const [selectedMateriaux, setSelectedMateriaux] = useState([]); // names
   const [selectedMontures, setSelectedMontures] = useState([]); // ids
+  const [selectedMarques, setSelectedMarques] = useState([]); // names
 
   // Bornes initiales (définies après appel API dans ProductFilter)
   const [initialBounds, setInitialBounds] = useState({
@@ -55,6 +56,7 @@ export const FilterProvider = ({ children }) => {
     selectedColors.forEach((v) => pushTag('Couleur', v));
     selectedMateriaux.forEach((v) => pushTag('Matériau', v));
     selectedMontures.forEach((v) => pushTag('Type de monture', v));
+    selectedMarques.forEach((v) => pushTag('Marque', v));
 
     // Tag prix si modifié
     if (initialBounds.minPrix != null && initialBounds.maxPrix != null && priceRange.min != null && priceRange.max != null) {
@@ -65,7 +67,7 @@ export const FilterProvider = ({ children }) => {
     }
 
     return list;
-  }, [selectedTypeVerres, selectedGenres, selectedTailles, selectedFormes, selectedColors, selectedMateriaux, selectedMontures, initialBounds, priceRange]);
+  }, [selectedTypeVerres, selectedGenres, selectedTailles, selectedFormes, selectedColors, selectedMateriaux, selectedMontures, selectedMarques, initialBounds, priceRange]);
 
   // Suppression d’un tag par sa clé
   const removeTag = useCallback((key) => {
@@ -100,6 +102,9 @@ export const FilterProvider = ({ children }) => {
       case 'Type de monture':
         removeValue(setSelectedMontures)(value);
         break;
+      case 'Marque':
+        removeValue(setSelectedMarques)(value);
+        break;
       default:
         break;
     }
@@ -114,6 +119,7 @@ export const FilterProvider = ({ children }) => {
     setSelectedColors([]);
     setSelectedMateriaux([]);
     setSelectedMontures([]);
+    setSelectedMarques([]);
     if (initialBounds.minPrix != null && initialBounds.maxPrix != null) {
       setPriceRange({ min: initialBounds.minPrix, max: initialBounds.maxPrix });
     }
@@ -129,6 +135,7 @@ export const FilterProvider = ({ children }) => {
     selectedColors,
     selectedMateriaux,
     selectedMontures,
+    selectedMarques,
     priceRange,
     initialBounds,
     // setters / toggles
@@ -140,20 +147,41 @@ export const FilterProvider = ({ children }) => {
     setSelectedColors,
     setSelectedMateriaux,
     setSelectedMontures,
+    setSelectedMarques,
     setPriceRange,
     initBounds,
     toggleTypeVerre: toggleValue(setSelectedTypeVerres),
     toggleGenre: toggleValue(setSelectedGenres),
     toggleTaille: (val) => {
-      toggleValue(setSelectedTailles)(val);
-      if (val === 'taille-sur-mesure') {
-        setIsSurMesureSelected((prev) => !prev);
-      }
+      setSelectedTailles((prev) => {
+        // si on clique sur Sur mesure
+        if (val === 'taille-sur-mesure') {
+          const already = prev.includes(val);
+          // on garde uniquement sur-mesure si on l'active; sinon vide
+          const next = already ? [] : ['taille-sur-mesure'];
+          setIsSurMesureSelected(!already);
+          return next;
+        }
+        // si on clique une taille ordinaire, enlever sur-mesure
+        const base = prev.filter((v) => v !== 'taille-sur-mesure');
+        if (base.includes(val)) {
+          // toggle off
+          const next = base.filter((v) => v !== val);
+          setIsSurMesureSelected(false);
+          return next;
+        } else {
+          // toggle on (multi-sélection possible entre tailles ordinaires)
+          const next = [...base, val];
+          setIsSurMesureSelected(false);
+          return next;
+        }
+      });
     },
     toggleForme: toggleValue(setSelectedFormes),
     toggleCouleur: toggleValue(setSelectedColors),
     toggleMateriau: toggleValue(setSelectedMateriaux),
     toggleMonture: toggleValue(setSelectedMontures),
+    toggleMarque: toggleValue(setSelectedMarques),
     // tags
     tags,
     removeTag,
@@ -168,4 +196,3 @@ export const useFilterContext = () => {
   if (!ctx) throw new Error('useFilterContext must be used within FilterProvider');
   return ctx;
 };
-

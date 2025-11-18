@@ -1,7 +1,7 @@
 import { LuChevronLeft, LuChevronRight, LuHeart, LuShoppingCart, LuX } from 'react-icons/lu';
 import { Link } from 'react-router';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { useState, memo } from 'react';
+import { useState } from 'react';
 import useProducts from '../hooks/useProducts';
 import { useFilterContext } from '@/context/FilterContext';
 
@@ -20,6 +20,8 @@ const Products = () => {
 
   const { tags, removeTag, clearAll } = useFilterContext();
   const prefersReducedMotion = useReducedMotion();
+  const heavyTags = tags.length > 8;
+  const lightAnim = prefersReducedMotion || heavyTags;
 
   // Calculer les produits de la page actuelle
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -67,47 +69,66 @@ const Products = () => {
 
       {/* Tags actifs */}
       <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
+        initial={lightAnim ? undefined : { opacity: 0, y: -10 }}
+        animate={lightAnim ? undefined : { opacity: 1, y: 0 }}
+        transition={lightAnim ? undefined : { duration: 0.4, delay: 0.2 }}
         className="flex items-center mt-4 gap-2 flex-wrap"
+        style={{ contain: 'layout paint style' }}
       >
         {tags.length === 0 && (
           <motion.span
-            initial={{ scale: 0, opacity: 0 }}
+            initial={{ scale: 0.95, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3 }}
+            transition={{ duration: 0.2 }}
             className="px-3 py-1.5 rounded-full text-xs font-medium bg-default-100 dark:bg-default-800 text-default-500"
           >
             Aucun filtre appliqué
           </motion.span>
         )}
         {tags.map((tag, idx) => (
-          <motion.span
-            key={tag.key}
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.8, opacity: 0 }}
-            transition={{ delay: 0.3 + idx * 0.05 }}
-            whileHover={{ scale: 1.05 }}
-            className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-primary/10 border border-primary/20 text-xs font-medium text-primary shadow-sm backdrop-blur-sm"
-          >
-            <span className="truncate max-w-[140px]" title={`${tag.category}: ${tag.value}`}>{tag.value}</span>
-            <button
-              type="button"
-              onClick={() => removeTag(tag.key)}
-              className="hover:text-danger transition-colors duration-200"
-              aria-label={`Supprimer le filtre ${tag.value}`}
+          lightAnim ? (
+            <span
+              key={tag.key}
+              className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-primary/10 border border-primary/20 text-xs font-medium text-primary shadow-sm backdrop-blur-sm"
             >
-              <LuX className="size-3" />
-            </button>
-          </motion.span>
+              <span className="truncate max-w-[140px]" title={`${tag.category}: ${tag.value}`}>{tag.value}</span>
+              <button
+                type="button"
+                onClick={() => removeTag(tag.key)}
+                className="hover:text-danger transition-colors duration-200"
+                aria-label={`Supprimer le filtre ${tag.value}`}
+              >
+                <LuX className="size-3" />
+              </button>
+            </span>
+          ) : (
+            <motion.span
+              key={tag.key}
+              initial={{ scale: 0, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ delay: 0.3 + idx * 0.06 }}
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-2 rounded-full px-3 py-1.5 bg-primary/10 border border-primary/20 text-xs font-medium text-primary shadow-sm backdrop-blur-sm"
+            >
+              <span className="truncate max-w-[140px]" title={`${tag.category}: ${tag.value}`}>{tag.value}</span>
+              <button
+                type="button"
+                onClick={() => removeTag(tag.key)}
+                className="hover:text-danger transition-colors duration-200"
+                aria-label={`Supprimer le filtre ${tag.value}`}
+              >
+                <LuX className="size-3" />
+              </button>
+            </motion.span>
+          )
         ))}
+
         {tags.length > 0 && (
           <motion.span
-            initial={{ scale: 0, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            transition={{ delay: 0.3 + tags.length * 0.05 }}
+            initial={lightAnim ? undefined : { scale: 0, opacity: 0 }}
+            animate={lightAnim ? undefined : { scale: 1, opacity: 1 }}
+            transition={lightAnim ? undefined : { delay: 0.3 + tags.length * 0.06 }}
           >
             <button
               type="button"
@@ -223,7 +244,7 @@ const Products = () => {
                           className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110 will-change-transform"
                           loading="lazy"
                           decoding="async"
-                          fetchpriority="low"
+                          fetchPriority="low"
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">

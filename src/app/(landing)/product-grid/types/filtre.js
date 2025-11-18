@@ -44,6 +44,15 @@
  */
 
 /**
+ * Type de réponse pour l'API de récupération des marques
+ * @typedef {Object} GetMarqueResponse
+ * @property {number|null} id - ID (peut être null, ne pas utiliser)
+ * @property {string} name - Nom de la marque
+ * @property {boolean} isAvailable - Indique si la marque est disponible
+ * @property {string} imageUrl - URL de l'image associée à la marque
+ */
+
+/**
  * Valeurs par défaut pour les filtres en cas d'erreur
  * @type {GetFiltreResponse}
  */
