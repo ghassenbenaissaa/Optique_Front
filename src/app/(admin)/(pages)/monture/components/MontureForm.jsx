@@ -5,6 +5,50 @@ import { toast } from 'sonner';
 import { produitService, referenceDataService } from '../services/produitService';
 import { CategorieProduit, GenderProduit, TailleProduit, TypeMonture } from '../types';
 
+const ImagePreview = ({ file, onRemove, alt }) => {
+  const [preview, setPreview] = useState(null);
+
+  useEffect(() => {
+    if (file && file instanceof File) {
+      const reader = new FileReader();
+      reader.onloadend = () => setPreview(reader.result);
+      reader.readAsDataURL(file);
+
+      // Cleanup
+      return () => {
+        if (preview && preview.startsWith('blob:')) {
+          URL.revokeObjectURL(preview);
+        }
+      };
+    }
+  }, [file]);
+
+  if (!preview) {
+    return (
+      <div className="w-full h-40 bg-gray-200 rounded-lg border-2 border-gray-200 flex items-center justify-center">
+        <span className="text-gray-500">Chargement...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative group">
+      <img
+        src={preview}
+        alt={alt}
+        className="w-full h-40 object-cover rounded-lg border-2 border-gray-200"
+      />
+      <button
+        type="button"
+        onClick={onRemove}
+        className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+      >
+        <X size={16} />
+      </button>
+    </div>
+  );
+};
+
 const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -19,13 +63,9 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
   const [materiaux, setMateriaux] = useState([]);
   const [formes, setFormes] = useState([]);
 
-  // Images
-  const [images, setImages] = useState([]);
-  const [imagePreviews, setImagePreviews] = useState([]);
-
   // Variations
   const [variations, setVariations] = useState([
-    { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '' }
+    { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '', newImages: [], existingImageUrls: [], deletedImageUrls: [] }
   ]);
   // Touched state pour variations (validation dynamique)
   const [variationsTouched, setVariationsTouched] = useState([
@@ -33,9 +73,9 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
   ]);
 
   // Révélation d'erreurs par étape (pour afficher les messages inline)
-  const [showErrors, setShowErrors] = useState({ 1: false, 2: false, 3: false, 4: false });
+  const [showErrors, setShowErrors] = useState({ 1: false, 2: false, 3: false });
 
-  const { register, handleSubmit, trigger, formState: { errors, touchedFields }, setError, clearErrors } = useForm({
+  const { register, handleSubmit, trigger, formState: { errors, touchedFields } } = useForm({
     mode: 'onBlur',
     reValidateMode: 'onChange',
     defaultValues: monture ? {
@@ -53,10 +93,11 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
       hauteurVerre: monture.hauteurVerre || '',
       largeurPont: monture.largeurPont || '',
       longueurBranche: monture.longueurBranche || '',
+      isAvailable: monture.isAvailable,
     } : {}
   });
 
-  const totalSteps = 4;
+  const totalSteps = 3;
 
   // Charger les données de référence
   useEffect(() => {
@@ -64,23 +105,27 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
     if (monture) {
       // Charger les variations existantes
       if (monture.variations && monture.variations.length > 0) {
-        setVariations(monture.variations.map(v => ({
-          id: v.id,
-          // Utiliser le nom de couleur provenant de l'API (nomcouleur), fallback sur v.couleur si existant
-          couleur: v.nomcouleur || v.couleur || '',
-          // Conserver le code hex si fourni
-          hexCouleur: v.hexcouleur || '',
-          materiauProduit: v.materiauProduit,
-          quantity: v.quantity,
-          priceOverride: v.price || '',
-          solde: v.solde || '',
-        })));
+        setVariations(monture.variations.map(v => {
+          const couleurApi = v.nomcouleur || v.Nomcouleur || v.couleur || '';
+          const hexApi = v.hexcouleur || v.Hexcouleur || '';
+          // Déduplication des URLs renvoyées par le backend au cas où
+          const urls = Array.isArray(v.imageUrl) ? Array.from(new Set(v.imageUrl)) : [];
+          return ({
+            id: v.id,
+            couleur: couleurApi,
+            hexCouleur: hexApi,
+            materiauProduit: v.materiauProduit,
+            quantity: v.quantity,
+            priceOverride: v.price || '',
+            solde: v.solde || '',
+            newImages: [],
+            existingImageUrls: urls,
+            deletedImageUrls: [],
+          });
+        }));
         setVariationsTouched(monture.variations.map(() => ({ couleur: false, materiauProduit: false, quantity: false })));
       }
-      // Charger les images existantes
-      if (monture.imageUrl && monture.imageUrl.length > 0) {
-        setImagePreviews(monture.imageUrl);
-      }
+      // Ne plus charger d'images au niveau produit
     }
   }, [monture]);
 
@@ -105,35 +150,9 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
     }
   };
 
-  // Gestion des images
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages(prev => [...prev, ...files]);
-
-    // Créer les aperçus
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result]);
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Effacer l'erreur d'image si l'utilisateur ajoute des fichiers
-    if (files.length > 0) {
-      clearErrors('images');
-      setShowErrors(prev => ({ ...prev, 3: false }));
-    }
-  };
-
-  const removeImage = (index) => {
-    setImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
-  };
-
   // Gestion des variations
   const addVariation = () => {
-    setVariations([...variations, { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '' }]);
+    setVariations([...variations, { couleur: '', materiauProduit: '', quantity: 0, priceOverride: '', solde: '', newImages: [], existingImageUrls: [], deletedImageUrls: [] }]);
     setVariationsTouched([...variationsTouched, { couleur: false, materiauProduit: false, quantity: false }]);
   };
 
@@ -153,6 +172,65 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
       const next = [...prev];
       if (!next[index]) next[index] = { couleur: false, materiauProduit: false, quantity: false };
       next[index][field] = true;
+      return next;
+    });
+  };
+
+  // Gestion des images par variation
+  const handleVariationImageChange = (index, event) => {
+    const files = Array.from(event?.target?.files || []);
+    if (files.length === 0) return;
+
+    // Fabriquer une clé unique par fichier
+    const keyOf = (f) => `${f.name}|${f.size}|${f.lastModified}`;
+
+    setVariations(prev => {
+      const next = [...prev];
+      const v = { ...next[index] };
+      const existingKeys = new Set((v.newImages || []).map(keyOf));
+
+      // Conserver uniquement les fichiers non encore ajoutés
+      const uniqueNewFiles = files.filter(f => !existingKeys.has(keyOf(f)));
+      if (uniqueNewFiles.length === 0) {
+        // vider la valeur pour permettre de re-sélectionner les mêmes fichiers plus tard
+        if (event?.target) event.target.value = '';
+        return prev; // rien à ajouter
+      }
+
+      // Mettre à jour les fichiers
+      v.newImages = [...(v.newImages || []), ...uniqueNewFiles];
+      next[index] = v;
+
+      // Vider l'input pour permettre la re-sélection
+      if (event?.target) event.target.value = '';
+
+      return next;
+    });
+
+    // vider la valeur pour permettre re-upload du même fichier
+    if (event?.target) event.target.value = '';
+  };
+
+  const removeVariationNewImage = (vIndex, imgIndex) => {
+    setVariations(prev => {
+      const next = [...prev];
+      const v = { ...next[vIndex] };
+
+      // Supprimer l'image à l'index spécifié
+      v.newImages = (v.newImages || []).filter((_, i) => i !== imgIndex);
+
+      next[vIndex] = v;
+      return next;
+    });
+  };
+
+  const removeVariationExistingImage = (vIndex, url) => {
+    setVariations(prev => {
+      const next = [...prev];
+      const v = { ...next[vIndex] };
+      v.existingImageUrls = (v.existingImageUrls || []).filter(u => u !== url);
+      v.deletedImageUrls = [...(v.deletedImageUrls || []), url];
+      next[vIndex] = v;
       return next;
     });
   };
@@ -195,19 +273,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         return ok;
       }
       case 3: {
-        const hasImages = monture ? (images.length > 0 || imagePreviews.length > 0) : images.length > 0;
-        if (!hasImages) {
-          setError('images', { type: 'required', message: 'Veuillez ajouter au moins une image' });
+        const invalidCore = variations.length === 0 || variations.some(v => !v.couleur || !v.materiauProduit || Number(v.quantity) < 0);
+        const imagesInvalid = variations.some(v => {
+          const existingCount = (v.existingImageUrls || []).length;
+          const newCount = (v.newImages || []).length;
+          return monture ? (existingCount + newCount === 0) : (newCount === 0);
+        });
+        if (invalidCore || imagesInvalid) {
           setShowErrors(prev => ({ ...prev, 3: true }));
-          return false;
-        }
-        clearErrors('images');
-        return true;
-      }
-      case 4: {
-        const invalid = variations.length === 0 || variations.some(v => !v.couleur || !v.materiauProduit || Number(v.quantity) < 0);
-        if (invalid) {
-          setShowErrors(prev => ({ ...prev, 4: true }));
           return false;
         }
         return true;
@@ -256,21 +329,35 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
     try {
       setLoading(true);
 
+      const cleanVariations = variations.map(v => ({
+        id: v.id,
+        couleur: v.couleur,
+        materiauProduit: v.materiauProduit,
+        quantity: parseInt(v.quantity),
+        priceOverride: v.priceOverride ? parseFloat(v.priceOverride) : null,
+        solde: v.solde ? parseFloat(v.solde) : null,
+        images: v.newImages || [],
+        existingImageUrls: v.existingImageUrls || [],
+        deletedImageUrls: v.deletedImageUrls || [],
+      }));
+
       const formData = {
         ...data,
-        images: images,
-        variations: variations.map(v => ({
-          id: v.id,
-          couleur: v.couleur,
-          materiauProduit: v.materiauProduit,
-          quantity: parseInt(v.quantity),
-          priceOverride: v.priceOverride ? parseFloat(v.priceOverride) : null,
-          solde: v.solde ? parseFloat(v.solde) : null,
-        })),
+        // S'assurer des types numériques pour les dimensions
+        largeurTotale: data.largeurTotale !== undefined && data.largeurTotale !== '' ? parseFloat(data.largeurTotale) : undefined,
+        largeurVerre: data.largeurVerre !== undefined && data.largeurVerre !== '' ? parseFloat(data.largeurVerre) : undefined,
+        hauteurVerre: data.hauteurVerre !== undefined && data.hauteurVerre !== '' ? parseFloat(data.hauteurVerre) : undefined,
+        largeurPont: data.largeurPont !== undefined && data.largeurPont !== '' ? parseFloat(data.largeurPont) : undefined,
+        longueurBranche: data.longueurBranche !== undefined && data.longueurBranche !== '' ? parseFloat(data.longueurBranche) : undefined,
+        variations: cleanVariations,
       };
 
       if (monture) {
         formData.id = monture.id;
+        // Propage l'état de disponibilité si présent
+        if (typeof monture.isAvailable !== 'undefined') {
+          formData.isAvailable = !!monture.isAvailable;
+        }
         await produitService.updateProduit(formData);
         toast.success('Monture modifiée avec succès');
       } else {
@@ -326,7 +413,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
           <span className="text-sm text-gray-600">Étape {currentStep} sur {totalSteps}</span>
         </div>
         <div className="flex gap-2">
-          {[1, 2, 3, 4].map((step) => (
+          {[1, 2, 3].map((step) => (
             <div
               key={step}
               className={`flex-1 h-2 rounded-full transition-all ${
@@ -338,8 +425,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         <div className="flex justify-between mt-2 text-xs text-gray-600">
           <span className={currentStep === 1 ? 'text-blue-600 font-semibold' : ''}>Informations</span>
           <span className={currentStep === 2 ? 'text-blue-600 font-semibold' : ''}>Dimensions</span>
-          <span className={currentStep === 3 ? 'text-blue-600 font-semibold' : ''}>Images</span>
-          <span className={currentStep === 4 ? 'text-blue-600 font-semibold' : ''}>Variations</span>
+          <span className={currentStep === 3 ? 'text-blue-600 font-semibold' : ''}>Variations</span>
         </div>
       </div>
 
@@ -654,62 +740,8 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
           </div>
         )}
 
-        {/* Étape 3 - Images */}
+        {/* Étape 3 - Variations */}
         {currentStep === 3 && (
-          <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Images du produit</h3>
-
-            {/* Upload zone */}
-            <div className={`border-2 border-dashed rounded-lg p-8 text-center hover:border-blue-500 transition-colors ${errors.images && showErrors[3] ? 'border-red-500' : 'border-gray-300'}`}>
-              <input
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={handleImageChange}
-                className="hidden"
-                id="image-upload"
-              />
-              <label htmlFor="image-upload" className="cursor-pointer">
-                <Upload className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Cliquez pour ajouter des images</p>
-                <p className="text-sm text-gray-500">PNG, JPG, JPEG jusqu'à 10MB</p>
-              </label>
-            </div>
-            {errors.images && showErrors[3] && (
-              <p className="text-sm text-red-600">{errors.images.message}</p>
-            )}
-
-            {/* Previews */}
-            {imagePreviews.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {imagePreviews.map((preview, index) => (
-                  <div key={index} className="relative group">
-                    <img
-                      src={preview}
-                      alt={`Preview ${index + 1}`}
-                      className="w-full h-40 object-cover rounded-lg border-2 border-gray-200"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeImage(index)}
-                      className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      <X size={16} />
-                    </button>
-                    {index === 0 && (
-                      <span className="absolute bottom-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
-                        Principal
-                      </span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Étape 4 - Variations */}
-        {currentStep === 4 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Variations du produit</h3>
@@ -725,10 +757,10 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
             <div className="space-y-4">
               {variations.map((variation, index) => {
-                const colorError = (!variation.couleur) && (variationsTouched[index]?.couleur || showErrors[4]);
-                const matError = (!variation.materiauProduit) && (variationsTouched[index]?.materiauProduit || showErrors[4]);
+                const colorError = (!variation.couleur) && (variationsTouched[index]?.couleur || showErrors[3]);
+                const matError = (!variation.materiauProduit) && (variationsTouched[index]?.materiauProduit || showErrors[3]);
                 const qtyInvalid = variation.quantity === '' || Number(variation.quantity) < 0;
-                const qtyError = qtyInvalid && (variationsTouched[index]?.quantity || showErrors[4]);
+                const qtyError = qtyInvalid && (variationsTouched[index]?.quantity || showErrors[3]);
 
                 // Trouver une correspondance de couleur (insensible à la casse)
                 const colorMatch = couleurs.find(c => (c.name || '').toLowerCase().trim() === (variation.couleur || '').toLowerCase().trim());
@@ -853,6 +885,53 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                         />
                       </div>
                     </div>
+
+                    {/* Upload images par variation */}
+                    <div className={`mt-4 border-2 border-dashed rounded-lg p-6 text-center hover:border-blue-500 transition-colors`}>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={(e) => handleVariationImageChange(index, e)}
+                        className="hidden"
+                        id={`variation-image-upload-${index}`}
+                      />
+                      <label htmlFor={`variation-image-upload-${index}`} className="cursor-pointer">
+                        <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
+                        <p className="text-gray-600 mb-1">Ajouter des images pour cette variation</p>
+                        <p className="text-sm text-gray-500">PNG, JPG, JPEG jusqu'à 10MB</p>
+                      </label>
+                      {/* Erreur images requises */}
+                      {showErrors[3] && ((variation.existingImageUrls?.length || 0) + (variation.newImages?.length || 0) === 0) && (
+                        <p className="text-sm text-red-600 mt-3">Au moins une image est requise pour chaque variation.</p>
+                      )}
+                    </div>
+
+                    {/* Previews d'images de la variation */}
+                    {(variation.existingImageUrls?.length || variation.newImages?.length) ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                        {(variation.existingImageUrls || []).map((url, i) => (
+                          <div key={`exist-${i}`} className="relative group">
+                            <img src={url} alt={`Var ${index + 1} image ${i + 1}`} className="w-full h-40 object-cover rounded-lg border-2 border-gray-200" />
+                            <button
+                              type="button"
+                              onClick={() => removeVariationExistingImage(index, url)}
+                              className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X size={16} />
+                            </button>
+                          </div>
+                        ))}
+                        {(variation.newImages || []).map((file, i) => (
+                          <ImagePreview
+                            key={`new-${i}-${file.name}-${file.size}`}
+                            file={file}
+                            onRemove={() => removeVariationNewImage(index, i)}
+                            alt={`Var ${index + 1} new ${i + 1}`}
+                          />
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 );
               })}

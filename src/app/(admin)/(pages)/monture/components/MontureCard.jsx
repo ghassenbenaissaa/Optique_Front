@@ -12,6 +12,13 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
     ? Math.max(...monture.variations.map(v => v.solde || 0))
     : 0;
 
+  // Image principale: préférer imageUrl produit, sinon fallback sur première image de variation
+  const primaryImage = Array.isArray(monture.imageUrl) && monture.imageUrl.length > 0
+    ? monture.imageUrl[0]
+    : (Array.isArray(monture.variations) && monture.variations.length > 0 && Array.isArray(monture.variations[0].imageUrl) && monture.variations[0].imageUrl.length > 0
+      ? monture.variations[0].imageUrl[0]
+      : null);
+
   return (
     <div className="group relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
       {/* Badge en solde */}
@@ -32,9 +39,9 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
 
       {/* Image */}
       <div className="relative h-64 bg-gray-100 overflow-hidden cursor-pointer" onClick={() => onView(monture)}>
-        {monture.imageUrl && monture.imageUrl.length > 0 ? (
+        {primaryImage ? (
           <img
-            src={monture.imageUrl[0]}
+            src={primaryImage}
             alt={monture.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
