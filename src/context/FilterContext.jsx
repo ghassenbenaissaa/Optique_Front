@@ -11,6 +11,8 @@ export const FilterProvider = ({ children }) => {
   const [isSurMesureSelected, setIsSurMesureSelected] = useState(false);
   const [selectedFormes, setSelectedFormes] = useState([]); // names
   const [selectedColors, setSelectedColors] = useState([]); // names
+  // mapping nom -> codeHex pour envoi backend
+  const [colorHexMap, setColorHexMap] = useState({});
   const [selectedMateriaux, setSelectedMateriaux] = useState([]); // names
   const [selectedMontures, setSelectedMontures] = useState([]); // ids
   const [selectedMarques, setSelectedMarques] = useState([]); // names
@@ -23,6 +25,13 @@ export const FilterProvider = ({ children }) => {
 
   // Valeurs de prix courantes
   const [priceRange, setPriceRange] = useState({ min: null, max: null });
+
+  // Dimensions sur mesure (optionnelles)
+  const [largeurTotaleRange, setLargeurTotaleRange] = useState({ min: null, max: null });
+  const [largeurVerreRange, setLargeurVerreRange] = useState({ min: null, max: null });
+  const [hauteurVerreRange, setHauteurVerreRange] = useState({ min: null, max: null });
+  const [largeurPontRange, setLargeurPontRange] = useState({ min: null, max: null });
+  const [longueurBrancheRange, setLongueurBrancheRange] = useState({ min: null, max: null });
 
   // Fonction pour initialiser les bornes une seule fois (ou les mettre à jour)
   const initBounds = useCallback((bounds) => {
@@ -122,7 +131,14 @@ export const FilterProvider = ({ children }) => {
     setSelectedMarques([]);
     if (initialBounds.minPrix != null && initialBounds.maxPrix != null) {
       setPriceRange({ min: initialBounds.minPrix, max: initialBounds.maxPrix });
+    } else {
+      setPriceRange({ min: null, max: null });
     }
+    setLargeurTotaleRange({ min: null, max: null });
+    setLargeurVerreRange({ min: null, max: null });
+    setHauteurVerreRange({ min: null, max: null });
+    setLargeurPontRange({ min: null, max: null });
+    setLongueurBrancheRange({ min: null, max: null });
   }, [initialBounds]);
 
   const value = {
@@ -138,6 +154,14 @@ export const FilterProvider = ({ children }) => {
     selectedMarques,
     priceRange,
     initialBounds,
+    // dimensions sur mesure
+    largeurTotaleRange,
+    largeurVerreRange,
+    hauteurVerreRange,
+    largeurPontRange,
+    longueurBrancheRange,
+    // couleurs mapping
+    colorHexMap,
     // setters / toggles
     setSelectedTypeVerres,
     setSelectedGenres,
@@ -149,6 +173,12 @@ export const FilterProvider = ({ children }) => {
     setSelectedMontures,
     setSelectedMarques,
     setPriceRange,
+    setLargeurTotaleRange,
+    setLargeurVerreRange,
+    setHauteurVerreRange,
+    setLargeurPontRange,
+    setLongueurBrancheRange,
+    setColorHexMap,
     initBounds,
     toggleTypeVerre: toggleValue(setSelectedTypeVerres),
     toggleGenre: toggleValue(setSelectedGenres),

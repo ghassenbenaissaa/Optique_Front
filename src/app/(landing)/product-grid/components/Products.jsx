@@ -1,63 +1,153 @@
 import { LuChevronLeft, LuChevronRight, LuHeart, LuShoppingCart, LuX } from 'react-icons/lu';
 import { Link } from 'react-router';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
-import { useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import useProducts from '../hooks/useProducts';
 import { useFilterContext } from '@/context/FilterContext';
 
 const Products = () => {
   const [hoveredProduct, setHoveredProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
 
-  // Utilisation du hook personnalisé pour gérer les produits
+  const {
+    selectedTypeVerres,
+    selectedGenres,
+    selectedTailles,
+    selectedFormes,
+    selectedColors,
+    selectedMateriaux,
+    selectedMontures,
+    selectedMarques,
+    priceRange,
+    // nouvelles valeurs de dimensions
+    largeurTotaleRange,
+    largeurVerreRange,
+    hauteurVerreRange,
+    largeurPontRange,
+    longueurBrancheRange,
+    // mapping nom->hex
+    colorHexMap,
+  } = useFilterContext();
+
+  // Construit le payload conforme au DTO backend
+  const filtersPayload = useMemo(() => {
+    /**
+     * Mapping locaux -> DTO backend
+     */
+    const couleurs = selectedColors?.length ? selectedColors.map((name) =>
+      (colorHexMap?.[name] || name)
+    ).map((hex) => typeof hex === 'string' ? hex.toLowerCase() : hex) : undefined;
+    const formes = selectedFormes?.length ? selectedFormes : undefined;
+    const materiaux = selectedMateriaux?.length ? selectedMateriaux : undefined;
+    const typesMonture = selectedMontures?.length ? selectedMontures.map((id) => {
+      if (id === 'monture-cerclee') return 'CERCLÉE';
+      if (id === 'monture-demi-cerclee') return 'DEMI_CERCLÉE';
+      if (id === 'monture-sans') return 'SANS_MONTURE';
+      return id;
+    }) : undefined;
+    const marques = selectedMarques?.length ? selectedMarques : undefined;
+
+    const genres = selectedGenres?.length ? selectedGenres.map((g) => {
+      switch (g) {
+        case 'genre-homme': return 'HOMME';
+        case 'genre-femme': return 'FEMME';
+        case 'genre-unisex': return 'UNISEX';
+        case 'genre-enfant': return 'ENFANT';
+        default: return g;
+      }
+    }) : undefined;
+
+    const taillesEnum = selectedTailles?.length ? selectedTailles
+      .filter((t) => t !== 'taille-sur-mesure')
+      .map((t) => {
+        switch (t) {
+          case 'taille-extra-petit': return 'EXTRA_PETIT';
+          case 'taille-petit': return 'PETIT';
+          case 'taille-moyen': return 'MOYEN';
+          case 'taille-grand': return 'GRAND';
+          case 'taille-extra-grand': return 'EXTRA_GRAND';
+          default: return t;
+        }
+      }) : undefined;
+
+    // Détection Sur mesure indépendante pour les dimensions numériques
+    const hasSurMesure = selectedTailles?.includes('taille-sur-mesure');
+
+    const categories = selectedTypeVerres?.length ? selectedTypeVerres.map((t) => {
+      switch (t) {
+        case 'type-vue': return 'LUNETTE_DE_VUE';
+        case 'type-soleil': return 'LUNETTE_DE_SOLEIL';
+        case 'type-ia': return 'LUNETTE_IA';
+        default: return t;
+      }
+    }) : undefined;
+
+    const payload = {
+      categories,
+      genres,
+      marques,
+      // n'envoyer taillesEnum que si non vide
+      ...(Array.isArray(taillesEnum) && taillesEnum.length > 0 ? { taillesEnum } : {}),
+      formes,
+      couleurs,
+      materiaux,
+      typesMonture,
+      minPrix: typeof priceRange?.min === 'number' ? priceRange.min : undefined,
+      maxPrix: typeof priceRange?.max === 'number' ? priceRange.max : undefined,
+    };
+
+    // Injecter les dimensions seulement si "Sur mesure" est sélectionné
+    if (hasSurMesure) {
+      if (typeof largeurTotaleRange?.min === 'number') payload.minLargeurTotale = largeurTotaleRange.min;
+      if (typeof largeurTotaleRange?.max === 'number') payload.maxLargeurTotale = largeurTotaleRange.max;
+      if (typeof largeurVerreRange?.min === 'number') payload.minLargeurVerre = largeurVerreRange.min;
+      if (typeof largeurVerreRange?.max === 'number') payload.maxLargeurVerre = largeurVerreRange.max;
+      if (typeof hauteurVerreRange?.min === 'number') payload.minHauteurVerre = hauteurVerreRange.min;
+      if (typeof hauteurVerreRange?.max === 'number') payload.maxHauteurVerre = hauteurVerreRange.max;
+      if (typeof largeurPontRange?.min === 'number') payload.minLargeurPont = largeurPontRange.min;
+      if (typeof largeurPontRange?.max === 'number') payload.maxLargeurPont = largeurPontRange.max;
+      if (typeof longueurBrancheRange?.min === 'number') payload.minLongueurBranche = longueurBrancheRange.min;
+      if (typeof longueurBrancheRange?.max === 'number') payload.maxLongueurBranche = longueurBrancheRange.max;
+    }
+
+    // Nettoyer les clés undefined pour ne pas alourdir le body
+    return Object.fromEntries(Object.entries(payload).filter(([_, v]) => v != null));
+  }, [selectedTypeVerres, selectedGenres, selectedTailles, selectedFormes, selectedColors, selectedMateriaux, selectedMontures, selectedMarques, priceRange, largeurTotaleRange, largeurVerreRange, hauteurVerreRange, largeurPontRange, longueurBrancheRange]);
+
+  // Utilisation du hook personnalisé pour gérer les produits avec filtres
   const {
     normalizedProducts,
     loading,
     error,
-    refetch
-  } = useProducts();
+    refetch,
+    page,
+    size,
+    setPage,
+    setSize,
+  } = useProducts(filtersPayload);
+
+  // Remettre la pagination visuelle à 1 si le payload change (nouvelle recherche)
+  useEffect(() => {
+    setCurrentPage(1);
+    setPage(0);
+  }, [filtersPayload, setPage]);
+
+  // Pagination serveur: ce lot représente directement la page courante
+  const currentProducts = normalizedProducts;
+  const hasNext = (size || 12) > 0 && currentProducts.length === (size || 12);
+
+  const handlePageChange = (pageNumber) => {
+    // pageNumber ici est 1-based pour l'UI; backend 0-based
+    if (pageNumber < 1) return;
+    setCurrentPage(pageNumber);
+    setPage(pageNumber - 1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const { tags, removeTag, clearAll } = useFilterContext();
   const prefersReducedMotion = useReducedMotion();
   const heavyTags = tags.length > 8;
   const lightAnim = prefersReducedMotion || heavyTags;
-
-  // Calculer les produits de la page actuelle
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentProducts = normalizedProducts.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(normalizedProducts.length / itemsPerPage);
-
-  // Changer de page
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  // Générer les numéros de pages à afficher
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow) {
-      // Afficher toutes les pages si moins de 5
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Logique pour afficher ... si beaucoup de pages
-      if (currentPage <= 3) {
-        pages.push(1, 2, 3, 4, '...', totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1, '...', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
-      } else {
-        pages.push(1, '...', currentPage - 1, currentPage, currentPage + 1, '...', totalPages);
-      }
-    }
-
-    return pages;
-  };
 
   return <motion.div
       initial={{ opacity: 0 }}
@@ -181,6 +271,44 @@ const Products = () => {
         </motion.div>
       )}
 
+      {/* État aucun résultat */}
+      {!loading && !error && normalizedProducts.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.35 }}
+          className="flex flex-col items-center justify-center py-20 mt-6 bg-white/60 dark:bg-default-800/40 border border-default-200/60 dark:border-default-700/50 rounded-2xl"
+        >
+          <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center shadow-sm">
+            <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" />
+              <path d="M21 21l-3.5-3.5" />
+            </svg>
+          </div>
+          <h3 className="mt-6 text-xl font-semibold text-default-900 dark:text-default-100">Aucun produit trouvé</h3>
+          <p className="mt-2 text-sm text-default-600 dark:text-default-400 max-w-xl text-center">
+            Aucun produit ne correspond à vos critères actuels. Essayez d’assouplir vos filtres ou réinitialisez-les pour découvrir davantage d’articles.
+          </p>
+          <div className="mt-6 flex items-center gap-3">
+            <motion.button
+              whileHover={{ scale: 1.03 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={clearAll}
+              className="btn bg-primary text-white hover:bg-primary/90"
+            >
+              Tout effacer
+            </motion.button>
+            <button
+              type="button"
+              onClick={refetch}
+              className="btn border border-default-200 dark:border-default-700 bg-white dark:bg-default-800 text-default-700 dark:text-default-300 hover:bg-default-50 dark:hover:bg-default-800/70"
+            >
+              Actualiser
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {/* Grille de produits */}
       {!loading && !error && normalizedProducts.length > 0 && (
         <>
@@ -209,32 +337,19 @@ const Products = () => {
               onHoverEnd={() => setHoveredProduct(null)}
               className="group"
             >
-              {/* Carte produit avec design premium minimaliste */}
+              {/* Carte produit */}
               <Link to={`/product/${product.id}`} className="block">
                 <motion.div
                   className="relative bg-white/60 dark:bg-default-800/60 backdrop-blur-md rounded-3xl overflow-hidden border border-default-200/50 dark:border-default-700/50 transition-all duration-500 hover:shadow-2xl hover:border-primary/30"
                   whileHover={{ scale: 1.02, y: -8 }}
                   transition={{ duration: 0.3 }}
                 >
-                  {/* Badge Promotion en haut à gauche */}
                   {product.maxDiscount > 0 && (
-                    prefersReducedMotion ? (
-                      <div className="absolute top-4 left-4 bg-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10">
-                        -{Math.round(product.maxDiscount)}%
-                      </div>
-                    ) : (
-                      <motion.div
-                        initial={{ x: -100, opacity: 0 }}
-                        animate={{ x: 0, opacity: 1 }}
-                        transition={{ delay: 0.3 + index * 0.08 }}
-                        className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10"
-                      >
-                        -{Math.round(product.maxDiscount)}%
-                      </motion.div>
-                    )
+                    <div className="absolute top-4 left-4 bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg z-10">
+                      -{Math.round(product.maxDiscount)}%
+                    </div>
                   )}
 
-                  {/* Container image avec aspect ratio optimal */}
                   <div className="relative p-4 bg-gradient-to-br from-default-50/50 to-transparent dark:from-default-900/30">
                     <div className="relative aspect-[5/4] rounded-2xl overflow-hidden bg-white dark:bg-default-800 shadow-lg group-hover:shadow-2xl transition-shadow duration-500">
                       {product.image ? (
@@ -255,7 +370,6 @@ const Products = () => {
                       )}
                     </div>
 
-                    {/* Badge prix flottant en haut à droite */}
                     <div className="absolute top-4 right-4 bg-white/90 dark:bg-default-800/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-default-200/50 dark:border-default-700/50">
                       <div className="flex items-center gap-1.5">
                         <span className="text-lg font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
@@ -267,17 +381,7 @@ const Products = () => {
                       </div>
                     </div>
 
-                    {/* Actions rapides au survol - en bas à gauche */}
-                    {(!prefersReducedMotion) && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{
-                        opacity: hoveredProduct === product.id ? 1 : 0,
-                        y: hoveredProduct === product.id ? 0 : 20
-                      }}
-                      transition={{ duration: 0.2 }}
-                      className="absolute bottom-4 left-4 flex gap-2"
-                    >
+                    <div className="absolute bottom-4 left-4 flex gap-2">
                       <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.98 }}
@@ -294,18 +398,14 @@ const Products = () => {
                       >
                         <LuHeart className="w-4 h-4" />
                       </motion.button>
-                    </motion.div>
-                    )}
+                    </div>
                   </div>
 
-                  {/* Informations produit avec design épuré */}
                   <div className="px-6 pb-6 pt-2">
-                    {/* Nom du produit */}
                     <h3 className="text-center text-base md:text-lg font-semibold text-default-800 dark:text-default-100 mb-4 line-clamp-2 min-h-[3rem] group-hover:text-primary transition-colors duration-300">
                       {product.name}
                     </h3>
 
-                    {/* Couleurs disponibles en ligne horizontale centrée */}
                     {product.colors && product.colors.length > 0 && (
                       <div className="flex items-center justify-center gap-2 mb-4">
                         {product.colors.slice(0, 5).map((color, colorIndex) => (
@@ -321,7 +421,6 @@ const Products = () => {
                                 boxShadow: `0 2px 8px ${color.code}50`
                               }}
                             />
-                            {/* Tooltip élégant */}
                             <div className="absolute -top-9 left-1/2 -translate-x-1/2 opacity-0 group-hover/color:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
                               <div className="bg-default-900 dark:bg-default-100 text-white dark:text-default-900 px-3 py-1.5 rounded-lg text-xs font-medium shadow-xl">
                                 {color.nom}
@@ -339,7 +438,6 @@ const Products = () => {
                     )}
                   </div>
 
-                  {/* Effet de brillance circulaire au survol */}
                   <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none rounded-3xl"></div>
                 </motion.div>
               </Link>
@@ -357,7 +455,7 @@ const Products = () => {
         className="flex flex-wrap md:justify-between justify-center md:gap-0 gap-4 mt-8 p-4 bg-default-50 dark:bg-default-900/20 rounded-lg border border-default-200 dark:border-default-700"
       >
         <p className="text-default-500 dark:text-default-400 text-sm flex items-center">
-          Affichage de <b className="text-primary mx-1">{indexOfFirstItem + 1}</b> à <b className="text-primary mx-1">{Math.min(indexOfLastItem, normalizedProducts.length)}</b> sur <b className="text-primary mx-1">{normalizedProducts.length}</b> résultats
+          Page <b className="text-primary mx-1">{currentPage}</b> — <b className="text-primary mx-1">{currentProducts.length}</b> résultats affichés
         </p>
 
         <nav className="flex items-center gap-2" aria-label="Pagination">
@@ -372,33 +470,12 @@ const Products = () => {
             <LuChevronLeft className="size-4 me-1" /> Préc.
           </motion.button>
 
-          {getPageNumbers().map((page, index) => (
-            page === '...' ? (
-              <span key={`ellipsis-${index}`} className="px-2 text-default-500">...</span>
-            ) : (
-              <motion.button
-                key={page}
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                type="button"
-                onClick={() => handlePageChange(page)}
-                className={`btn size-9 transition-all duration-300 ${
-                  page === currentPage
-                    ? 'bg-primary text-white shadow-md'
-                    : 'bg-white dark:bg-default-800 border border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/20'
-                }`}
-              >
-                {page}
-              </motion.button>
-            )
-          ))}
-
           <motion.button
             whileHover={{ scale: 1.05, x: 2 }}
             whileTap={{ scale: 0.95 }}
             type="button"
             onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
+            disabled={!hasNext}
             className="btn btn-sm border bg-white dark:bg-default-800 border-default-200 text-default-600 hover:bg-primary hover:text-white hover:border-primary transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Suiv. <LuChevronRight className="size-4 ms-1" />

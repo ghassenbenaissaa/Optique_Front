@@ -115,6 +115,37 @@ class FiltreService {
       );
     }
   }
+
+  /**
+   * Recherche des produits via POST /filtre/search
+   * @param {import('../types/produitFiltre.types.js').ProduitFiltreRequest | Object} filters
+   * @param {AbortSignal=} signal
+   * @returns {Promise<any[]>}
+   */
+  async searchProduits(filters = {}, signal) {
+    try {
+      // Valeurs par défaut côté client + cap size
+      const page = Number.isInteger(filters.page) && filters.page >= 0 ? filters.page : 0;
+      const requested = typeof filters.size === 'number' && filters.size > 0 ? filters.size : 50;
+      const size = Math.min(requested, 100);
+      const sortBy = filters.sortBy || 'price';
+      const sortDir = filters.sortDir === 'DESC' ? 'DESC' : 'ASC';
+
+      const body = { ...filters, page, size, sortBy, sortDir };
+      const response = await api.post('/filtre/search', body, { signal });
+      const data = Array.isArray(response?.data) ? response.data : (response?.data?.data || []);
+      return data;
+    } catch (error) {
+      if (error.name === 'CanceledError' || error.name === 'AbortError') {
+        // Requête annulée volontairement
+        return [];
+      }
+      console.error('Erreur lors de la recherche des produits:', error);
+      throw new Error(
+        error.response?.data?.message || 'Impossible de rechercher les produits.'
+      );
+    }
+  }
 }
 
 // Export d'une instance unique (Singleton)

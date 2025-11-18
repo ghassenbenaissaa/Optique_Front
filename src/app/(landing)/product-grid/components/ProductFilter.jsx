@@ -316,6 +316,13 @@ const ProductFilter = () => {
     toggleMonture,
     toggleMarque,
     setPriceRange,
+    // nouvelles setters pour dimensions sur mesure
+    setLargeurTotaleRange,
+    setLargeurVerreRange,
+    setHauteurVerreRange,
+    setLargeurPontRange,
+    setLongueurBrancheRange,
+    setColorHexMap,
   } = useFilterContext();
 
   // État pour les couleurs dynamiques
@@ -352,16 +359,22 @@ const ProductFilter = () => {
 
         // MAJ des états locaux sliders avec valeurs normalisées
         setPriceMin(norm.minPrix); setPriceMax(norm.maxPrix); setPriceRange({ min: norm.minPrix, max: norm.maxPrix });
-        setLargeurTotaleMin(norm.minLargeurTotale); setLargeurTotaleMax(norm.maxLargeurTotale);
-        setLargeurVerreMin(norm.minLargeurVerre); setLargeurVerreMax(norm.maxLargeurVerre);
-        setHauteurVerreMin(norm.minHauteurVerre); setHauteurVerreMax(norm.maxHauteurVerre);
-        setLargeurPontMin(norm.minLargeurPont); setLargeurPontMax(norm.maxLargeurPont);
-        setLongueurBrancheMin(norm.minLongueurBranche); setLongueurBrancheMax(norm.maxLongueurBranche);
+        setLargeurTotaleMin(norm.minLargeurTotale); setLargeurTotaleMax(norm.maxLargeurTotale); setLargeurTotaleRange({ min: norm.minLargeurTotale, max: norm.maxLargeurTotale });
+        setLargeurVerreMin(norm.minLargeurVerre); setLargeurVerreMax(norm.maxLargeurVerre); setLargeurVerreRange({ min: norm.minLargeurVerre, max: norm.maxLargeurVerre });
+        setHauteurVerreMin(norm.minHauteurVerre); setHauteurVerreMax(norm.maxHauteurVerre); setHauteurVerreRange({ min: norm.minHauteurVerre, max: norm.maxHauteurVerre });
+        setLargeurPontMin(norm.minLargeurPont); setLargeurPontMax(norm.maxLargeurPont); setLargeurPontRange({ min: norm.minLargeurPont, max: norm.maxLargeurPont });
+        setLongueurBrancheMin(norm.minLongueurBranche); setLongueurBrancheMax(norm.maxLongueurBranche); setLongueurBrancheRange({ min: norm.minLongueurBranche, max: norm.maxLongueurBranche });
 
         // Couleurs
         try {
           const colorsData = await filtreService.getAllColors();
           setColors(colorsData.filter(c => c.available));
+          // Construire map nom -> codeHex
+          const map = {};
+          (colorsData || []).forEach(c => {
+            if (c?.name && c?.codeHex) map[c.name] = c.codeHex;
+          });
+          setColorHexMap(map);
         } catch (colorError) {
           console.error('Erreur lors du chargement des couleurs:', colorError);
           setColors([]);
@@ -581,7 +594,7 @@ const ProductFilter = () => {
                             step={typeof section.step === 'number' ? section.step : 1}
                             value1={val1}
                             value2={val2}
-                            onChange={(v1, v2) => { setVals?.(v1, v2); if(section.id==='prix-avance'){ setPriceRange({ min: v1, max: v2 }); } }}
+                            onChange={(v1, v2) => { setVals?.(v1, v2); if(section.id==='prix-avance'){ setPriceRange({ min: v1, max: v2 }); } else if(section.id==='largeur-totale-avance'){ setLargeurTotaleRange({ min: v1, max: v2 }); } else if(section.id==='largeur-verre-avance'){ setLargeurVerreRange({ min: v1, max: v2 }); } else if(section.id==='hauteur-verre-avance'){ setHauteurVerreRange({ min: v1, max: v2 }); } else if(section.id==='largeur-pont-avance'){ setLargeurPontRange({ min: v1, max: v2 }); } else if(section.id==='longueur-branche-avance'){ setLongueurBrancheRange({ min: v1, max: v2 }); } }}
                             formatValue={(v) => formatUnit(section.unit, v)}
                             ariaLabelFrom={`${section.title} min`}
                             ariaLabelTo={`${section.title} max`}
@@ -915,7 +928,7 @@ const ProductFilter = () => {
                                       step={typeof dim.step === 'number' ? dim.step : 1}
                                       value1={val1Dim}
                                       value2={val2Dim}
-                                      onChange={(v1,v2)=>setValsDim?.(v1,v2)}
+                                      onChange={(v1,v2)=>{ setValsDim?.(v1,v2); if(dim.id==='largeur-totale-avance'){ setLargeurTotaleRange({ min: v1, max: v2 }); } else if(dim.id==='largeur-verre-avance'){ setLargeurVerreRange({ min: v1, max: v2 }); } else if(dim.id==='hauteur-verre-avance'){ setHauteurVerreRange({ min: v1, max: v2 }); } else if(dim.id==='largeur-pont-avance'){ setLargeurPontRange({ min: v1, max: v2 }); } else if(dim.id==='longueur-branche-avance'){ setLongueurBrancheRange({ min: v1, max: v2 }); } }}
                                       formatValue={(v)=> formatUnit(dim.unit, v)}
                                       ariaLabelFrom={`${dim.title} min`}
                                       ariaLabelTo={`${dim.title} max`}
