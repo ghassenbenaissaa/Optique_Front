@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { LuSun, LuGlasses } from 'react-icons/lu';
-import { Link } from 'react-router';
+import { useNavigate } from 'react-router-dom';
+import { useFilterContext } from '@/context/FilterContext';
 
 /**
  * VisionSection - Section "Chaque vision de vous"
@@ -10,6 +11,29 @@ import { Link } from 'react-router';
 const VisionSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
+  const navigate = useNavigate();
+  const { setSelectedTypeVerres, setSelectedGenres, setSelectedTailles, setIsSurMesureSelected } = useFilterContext();
+
+  // Fonction pour naviguer vers la page produit avec filtre actif
+  const handleNavigateWithFilter = (type) => (e) => {
+    e.preventDefault();
+    // Reset des autres filtres
+    setSelectedGenres([]);
+    setSelectedTailles([]);
+    setIsSurMesureSelected(false);
+
+    // Définir le type de verre
+    if (type === 'sunglasses') {
+      setSelectedTypeVerres(['type-soleil']);
+    } else if (type === 'eyeglasses') {
+      setSelectedTypeVerres(['type-vue']);
+    }
+
+    // Naviguer vers la page produit
+    navigate('/product');
+    // Scroll vers le haut de la page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Animation d'apparition au scroll avec IntersectionObserver
   useEffect(() => {
@@ -108,32 +132,30 @@ const VisionSection = () => {
               }`}
             >
               {/* Bouton Lunettes de soleil - Style principal avec gradient */}
-              <Link to="#product">
-                <button
-                  type="button"
-                  className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-primary to-purple-600 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 overflow-hidden min-w-[240px] sm:min-w-[260px]"
-                >
-                  {/* Effet de brillance au survol */}
-                  <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
+              <button
+                type="button"
+                onClick={handleNavigateWithFilter('sunglasses')}
+                className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-primary to-purple-600 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 overflow-hidden min-w-[240px] sm:min-w-[260px]"
+              >
+                {/* Effet de brillance au survol */}
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 ease-in-out"></span>
 
-                  <LuSun className="size-5 group-hover:rotate-12 transition-transform duration-300" />
-                  <span className="relative">Acheter des lunettes de soleil</span>
-                </button>
-              </Link>
+                <LuSun className="size-5 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="relative">Acheter des lunettes de soleil</span>
+              </button>
 
               {/* Bouton Lunettes de vue - Style secondaire avec bordure */}
-              <Link to="#product">
-                <button
-                  type="button"
-                  className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-semibold text-default-900 dark:text-default-100 bg-transparent border-2 border-default-300 dark:border-default-700 rounded-xl hover:border-primary dark:hover:border-primary hover:bg-primary/5 transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 min-w-[240px] sm:min-w-[260px]"
-                >
-                  <LuGlasses className="size-5 group-hover:scale-110 transition-transform duration-300" />
-                  <span className="relative">Acheter des lunettes de vue</span>
+              <button
+                type="button"
+                onClick={handleNavigateWithFilter('eyeglasses')}
+                className="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-semibold text-default-900 dark:text-default-100 bg-transparent border-2 border-default-300 dark:border-default-700 rounded-xl hover:border-primary dark:hover:border-primary hover:bg-primary/5 transform transition-all duration-300 hover:scale-105 hover:-translate-y-1 min-w-[240px] sm:min-w-[260px]"
+              >
+                <LuGlasses className="size-5 group-hover:scale-110 transition-transform duration-300" />
+                <span className="relative">Acheter des lunettes de vue</span>
 
-                  {/* Petit indicateur animé */}
-                  <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-600 group-hover:w-3/4 transition-all duration-300"></span>
-                </button>
-              </Link>
+                {/* Petit indicateur animé */}
+                <span className="absolute -bottom-0.5 left-1/2 -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-primary to-purple-600 group-hover:w-3/4 transition-all duration-300"></span>
+              </button>
             </div>
 
             {/* Badge de confiance / Info supplémentaire */}

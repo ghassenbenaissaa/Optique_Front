@@ -58,11 +58,23 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
     if (result.isConfirmed) {
       try {
         await produitService.deleteProduit(id);
-        toast.success('Monture supprimée avec succès');
+        await Swal.fire({
+          title: 'Supprimé !',
+          text: 'La monture a été supprimée avec succès.',
+          icon: 'success',
+          confirmButtonColor: '#10b981',
+          confirmButtonText: 'OK'
+        });
         loadMontures();
       } catch (error) {
         console.error('Erreur lors de la suppression:', error);
-        toast.error('Erreur lors de la suppression');
+        await Swal.fire({
+          title: 'Erreur !',
+          text: 'Une erreur est survenue lors de la suppression.',
+          icon: 'error',
+          confirmButtonColor: '#ef4444',
+          confirmButtonText: 'OK'
+        });
       }
     }
   };

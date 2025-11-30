@@ -39,6 +39,8 @@ const CategoryDropdown = ({ variant = 'eyeglasses' }) => {
       setSelectedGenres([]);
     }
     navigate('/product');
+    // Scroll vers le haut de la page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const items = isSunglasses

@@ -166,7 +166,14 @@ const ShapeSection = () => {
 
           {/* Grille de formes - DESIGN CRÉATIF ET COMPACT */}
           {!loading && !error && shapes.length > 0 && (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
+            <div className="flex justify-center">
+              <div
+                className="grid gap-4 md:gap-6 justify-items-center w-full"
+                style={{
+                  gridTemplateColumns: `repeat(auto-fit, minmax(120px, 1fr))`,
+                  maxWidth: '1080px',
+                }}
+              >
               {shapes.map((shape, index) => {
                 const shapeName = shape.nom || shape.name || 'Forme';
                 const shapeImage = shape.imageUrl || shape.image || null;
@@ -175,7 +182,7 @@ const ShapeSection = () => {
                 return (
                   <div
                     key={shapeKey}
-                    className={`group transition-all duration-700 ease-out ${
+                    className={`group transition-all duration-700 ease-out w-full max-w-[140px] mx-auto ${
                       isVisible
                         ? 'opacity-100 translate-y-0'
                         : 'opacity-0 translate-y-8'
@@ -253,8 +260,10 @@ const ShapeSection = () => {
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
+
 
           {/* Message si aucune forme disponible */}
           {!loading && !error && shapes.length === 0 && (

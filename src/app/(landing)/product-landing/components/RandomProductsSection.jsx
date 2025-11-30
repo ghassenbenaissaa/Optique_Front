@@ -151,7 +151,15 @@ const RandomProductsSection = () => {
 
           {/* Grille de produits - NOUVEAU DESIGN CRÉATIF */}
           {!loading && !error && products.length > 0 && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 mb-10">
+            <div className="flex justify-center mb-10">
+              <div
+                className={`grid gap-6 md:gap-8 w-full ${
+                  products.length === 1 ? 'grid-cols-1 max-w-[320px]' :
+                  products.length === 2 ? 'grid-cols-1 sm:grid-cols-2 max-w-[680px]' :
+                  products.length === 3 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 max-w-[1040px]' :
+                  'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 max-w-[1400px]'
+                }`}
+              >
               {products.map((product, index) => {
                 const productName = product.nom || product.name || 'Monture';
                 const productPrice = product.price || product.prix || 0;
@@ -186,7 +194,13 @@ const RandomProductsSection = () => {
                     }}
                   >
                     {/* Carte produit avec design minimaliste et élégant */}
-                    <Link to="/product-grid" className="block">
+                    <Link
+                      to="/product"
+                      className="block"
+                      onClick={() => {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                    >
                       <div className="relative bg-white/60 dark:bg-default-800/60 backdrop-blur-md rounded-3xl overflow-hidden border border-default-200/50 dark:border-default-700/50 transition-all duration-500 hover:shadow-2xl hover:border-primary/30 hover:scale-[1.02]">
 
                         {/* Container image rectangulaire - TAILLE AUGMENTÉE */}
@@ -293,6 +307,7 @@ const RandomProductsSection = () => {
                   </div>
                 );
               })}
+              </div>
             </div>
           )}
 
@@ -303,7 +318,12 @@ const RandomProductsSection = () => {
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
-              <Link to="/product-grid">
+              <Link
+                to="/product"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+              >
                 <button
                   type="button"
                   className="group inline-flex items-center justify-center gap-3 px-8 py-4 text-base font-semibold text-white bg-gradient-to-r from-primary to-purple-600 rounded-xl shadow-lg hover:shadow-xl transform transition-all duration-300 hover:scale-105 overflow-hidden relative"

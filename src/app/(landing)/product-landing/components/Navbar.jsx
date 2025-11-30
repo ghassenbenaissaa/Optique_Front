@@ -59,7 +59,14 @@ const Navbar = () => {
           <div className="grid lg:grid-cols-12 md:grid-cols-10 grid-cols-3 items-center">
             {/* Logo */}
             <div className="lg:col-span-2 md:col-span-2 col-span-1">
-              <Link to="/">
+              <Link
+                to="/"
+                onClick={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                  setOpenMenu(null);
+                }}
+                className="inline-block"
+              >
                 <img src={logoDark} alt="logo dark" className="h-6 block dark:hidden" width={111} />
                 <img src={logoLight} alt="logo light" className="h-6 hidden dark:block" width={111} />
               </Link>
