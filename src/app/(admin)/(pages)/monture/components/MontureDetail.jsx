@@ -36,13 +36,13 @@ const MontureDetail = ({ monture, onClose }) => {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="card max-w-7xl w-full max-h-[90vh] overflow-hidden flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b bg-gradient-to-r from-gray-50 to-white">
+        <div className="flex items-center justify-between p-6 border-b border-default-200 bg-default-50">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900">{monture.name}</h2>
+            <h2 className="text-3xl font-bold text-default-900">{monture.name}</h2>
             <div className="flex items-center gap-4 mt-2">
-              <p className="text-sm text-gray-500 font-mono">{monture.reference}</p>
+              <p className="text-sm text-default-500 font-mono">{monture.reference}</p>
               <span className="px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
                 {monture.marque}
               </span>
@@ -50,7 +50,7 @@ const MontureDetail = ({ monture, onClose }) => {
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors group"
+            className="p-2 hover:bg-default-100 rounded-lg transition-colors group"
           >
             <X size={24} className="group-hover:rotate-90 transition-transform duration-200" />
           </button>
@@ -61,9 +61,9 @@ const MontureDetail = ({ monture, onClose }) => {
           <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 p-6">
             {/* Colonne 1 - Sélecteur de variations */}
             <div className="space-y-4">
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 px-6 py-4 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <div className="card overflow-hidden">
+                <div className="bg-default-50 px-6 py-4 border-b border-default-200">
+                  <h3 className="text-lg font-semibold text-default-900 flex items-center gap-2">
                     <Eye size={20} className="text-blue-600" />
                     Variations ({monture.variations?.length || 0})
                   </h3>
@@ -74,10 +74,10 @@ const MontureDetail = ({ monture, onClose }) => {
                       <div
                         key={variation.id}
                         onClick={() => handleVariationChange(index)}
-                        className={`cursor-pointer bg-gray-50 hover:bg-gray-100 rounded-lg p-3 border-2 transition-all duration-200 ${
+                        className={`cursor-pointer bg-default-50 hover:bg-default-100 rounded-lg p-3 border-2 transition-all duration-200 ${
                           index === selectedVariation
                             ? 'border-blue-500 bg-blue-50 shadow-md'
-                            : 'border-transparent hover:border-gray-300'
+                            : 'border-transparent hover:border-default-300'
                         }`}
                       >
                         <div className="flex items-center justify-between">
@@ -90,10 +90,10 @@ const MontureDetail = ({ monture, onClose }) => {
                               />
                             )}
                             <div>
-                              <p className="font-semibold text-gray-900 text-sm">
+                              <p className="font-semibold text-default-900 text-sm">
                                 {variation.nomcouleur}
                               </p>
-                              <p className="text-xs text-gray-500">{variation.materiauProduit}</p>
+                              <p className="text-xs text-default-500">{variation.materiauProduit}</p>
                             </div>
                           </div>
                           <div className={`px-2 py-1 rounded text-xs font-semibold ${
@@ -112,12 +112,12 @@ const MontureDetail = ({ monture, onClose }) => {
                                   <span className="font-bold text-red-600 text-sm">
                                     {(variation.price - (variation.price * variation.solde / 100)).toFixed(2)} TND
                                   </span>
-                                  <span className="text-xs text-gray-400 line-through">
+                                  <span className="text-xs text-default-400 line-through">
                                     {variation.price.toFixed(2)} TND
                                   </span>
                                 </div>
                               ) : (
-                                <span className="font-bold text-gray-900 text-sm">{variation.price?.toFixed(2)} TND</span>
+                                <span className="font-bold text-default-900 text-sm">{variation.price?.toFixed(2)} TND</span>
                               )}
                             </div>
                             <div className={`text-xs font-semibold ${
@@ -142,26 +142,26 @@ const MontureDetail = ({ monture, onClose }) => {
 
             {/* Colonne 2 - Galerie d'images de la variation sélectionnée */}
             <div className="space-y-4">
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-purple-50 to-pink-50 px-6 py-4 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900">
+              <div className="card overflow-hidden">
+                <div className="bg-default-50 px-6 py-4 border-b border-default-200">
+                  <h3 className="text-lg font-semibold text-default-900">
                     Images - {getCurrentVariation()?.nomcouleur || 'Variation sélectionnée'}
                   </h3>
                 </div>
                 <div className="p-4">
                   <div className="relative">
-                    <div className="relative h-80 bg-gray-100 rounded-xl overflow-hidden shadow-inner">
+                    <div className="relative h-80 bg-default-100 rounded-xl overflow-hidden shadow-inner">
                       {getCurrentImages().length > 0 ? (
                         <img
                           src={getCurrentImages()[currentImageIndex]}
                           alt={`${monture.name} - ${getCurrentVariation()?.nomcouleur}`}
-                          className="w-full h-full object-contain bg-white"
+                          className="w-full h-full object-contain"
                         />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gradient-to-br from-gray-100 to-gray-200">
+                        <div className="w-full h-full flex items-center justify-center text-default-400 bg-default-100">
                           <div className="text-center">
                             <span className="text-6xl mb-4 block">👓</span>
-                            <p className="text-sm text-gray-500">Aucune image disponible</p>
+                            <p className="text-sm text-default-500">Aucune image disponible</p>
                           </div>
                         </div>
                       )}
@@ -173,13 +173,13 @@ const MontureDetail = ({ monture, onClose }) => {
                             onClick={prevImage}
                             className="absolute left-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
                           >
-                            <ChevronLeft size={20} className="text-gray-700" />
+                            <ChevronLeft size={20} className="text-default-700" />
                           </button>
                           <button
                             onClick={nextImage}
                             className="absolute right-3 top-1/2 -translate-y-1/2 bg-white/95 hover:bg-white p-2 rounded-full shadow-lg transition-all duration-200 hover:scale-110"
                           >
-                            <ChevronRight size={20} className="text-gray-700" />
+                            <ChevronRight size={20} className="text-default-700" />
                           </button>
                           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 backdrop-blur-sm px-4 py-2 rounded-full text-white text-sm font-medium">
                             {currentImageIndex + 1} / {getCurrentImages().length}
@@ -198,7 +198,7 @@ const MontureDetail = ({ monture, onClose }) => {
                             className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-200 hover:scale-105 ${
                               index === currentImageIndex
                                 ? 'border-blue-500 ring-2 ring-blue-200 shadow-md'
-                                : 'border-gray-200 hover:border-gray-400'
+                                : 'border-default-200 hover:border-default-400'
                             }`}
                           >
                             <img
@@ -216,9 +216,9 @@ const MontureDetail = ({ monture, onClose }) => {
 
               {/* Informations sur la variation sélectionnée */}
               {getCurrentVariation() && (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-rose-50 to-pink-50 px-6 py-4 border-b">
-                    <h3 className="text-lg font-semibold text-gray-900">Variation sélectionnée</h3>
+                <div className="card overflow-hidden">
+                  <div className="bg-default-50 px-6 py-4 border-b border-default-200">
+                    <h3 className="text-lg font-semibold text-default-900">Variation sélectionnée</h3>
                   </div>
                   <div className="p-5">
                     <div className="space-y-4">
@@ -230,31 +230,31 @@ const MontureDetail = ({ monture, onClose }) => {
                           />
                         )}
                         <div>
-                          <p className="font-semibold text-gray-900">{getCurrentVariation().nomcouleur}</p>
-                          <p className="text-sm text-gray-600">{getCurrentVariation().materiauProduit}</p>
-                          <p className="text-xs text-gray-500 font-mono">{getCurrentVariation().sku}</p>
+                          <p className="font-semibold text-default-900">{getCurrentVariation().nomcouleur}</p>
+                          <p className="text-sm text-default-600">{getCurrentVariation().materiauProduit}</p>
+                          <p className="text-xs text-default-500 font-mono">{getCurrentVariation().sku}</p>
                         </div>
                       </div>
 
-                      <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="bg-default-50 rounded-lg p-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Prix</p>
+                            <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Prix</p>
                             {getCurrentVariation().solde && getCurrentVariation().solde > 0 ? (
                               <div>
                                 <p className="font-bold text-red-600 text-lg">
                                   {(getCurrentVariation().price - (getCurrentVariation().price * getCurrentVariation().solde / 100)).toFixed(2)} TND
                                 </p>
-                                <p className="text-sm text-gray-400 line-through">
+                                <p className="text-sm text-default-400 line-through">
                                   {getCurrentVariation().price.toFixed(2)} TND
                                 </p>
                               </div>
                             ) : (
-                              <p className="font-bold text-gray-900 text-lg">{getCurrentVariation().price?.toFixed(2)} TND</p>
+                              <p className="font-bold text-default-900 text-lg">{getCurrentVariation().price?.toFixed(2)} TND</p>
                             )}
                           </div>
                           <div>
-                            <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Stock</p>
+                            <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Stock</p>
                             <p className={`font-bold text-lg ${
                               getCurrentVariation().quantity > 10 ? 'text-green-600' : 
                               getCurrentVariation().quantity > 0 ? 'text-orange-600' : 'text-red-600'
@@ -280,46 +280,46 @@ const MontureDetail = ({ monture, onClose }) => {
             {/* Colonne 3 - Informations détaillées */}
             <div className="space-y-4">
               {/* Informations générales */}
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 px-6 py-4 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900">Informations générales</h3>
+              <div className="card overflow-hidden">
+                <div className="bg-default-50 px-6 py-4 border-b border-default-200">
+                  <h3 className="text-lg font-semibold text-default-900">Informations générales</h3>
                 </div>
                 <div className="p-5">
                   <div className="grid grid-cols-1 gap-4">
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Marque</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">{monture.marque}</p>
+                      <div className="bg-default-50 rounded-lg p-3">
+                        <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Marque</p>
+                        <p className="text-sm font-semibold text-default-900 mt-1">{monture.marque}</p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Genre</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">{monture.gender}</p>
+                      <div className="bg-default-50 rounded-lg p-3">
+                        <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Genre</p>
+                        <p className="text-sm font-semibold text-default-900 mt-1">{monture.gender}</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Catégorie</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1 capitalize">
+                      <div className="bg-default-50 rounded-lg p-3">
+                        <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Catégorie</p>
+                        <p className="text-sm font-semibold text-default-900 mt-1 capitalize">
                           {monture.categorie?.replace(/_/g, ' ').toLowerCase()}
                         </p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Taille</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
+                      <div className="bg-default-50 rounded-lg p-3">
+                        <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Taille</p>
+                        <p className="text-sm font-semibold text-default-900 mt-1">
                           {monture.taille?.replace(/_/g, ' ')}
                         </p>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Type</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
+                      <div className="bg-default-50 rounded-lg p-3">
+                        <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Type</p>
+                        <p className="text-sm font-semibold text-default-900 mt-1">
                           {monture.typeMonture?.replace(/_/g, ' ')}
                         </p>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium uppercase tracking-wide">Forme</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">{monture.formeProduit}</p>
+                      <div className="bg-default-50 rounded-lg p-3">
+                        <p className="text-xs text-default-600 font-medium uppercase tracking-wide">Forme</p>
+                        <p className="text-sm font-semibold text-default-900 mt-1">{monture.formeProduit}</p>
                       </div>
                     </div>
                   </div>
@@ -327,52 +327,52 @@ const MontureDetail = ({ monture, onClose }) => {
               </div>
 
               {/* Description */}
-              <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                <div className="bg-gradient-to-r from-amber-50 to-yellow-50 px-6 py-4 border-b">
-                  <h3 className="text-lg font-semibold text-gray-900">Description</h3>
+              <div className="card overflow-hidden">
+                <div className="bg-default-50 px-6 py-4 border-b border-default-200">
+                  <h3 className="text-lg font-semibold text-default-900">Description</h3>
                 </div>
                 <div className="p-5">
-                  <p className="text-gray-700 leading-relaxed text-sm">{monture.description}</p>
+                  <p className="text-default-700 leading-relaxed text-sm">{monture.description}</p>
                 </div>
               </div>
 
               {/* Dimensions */}
               {(monture.largeurTotale || monture.largeurVerre || monture.hauteurVerre ||
                 monture.largeurPont || monture.longueurBranche) && (
-                <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-                  <div className="bg-gradient-to-r from-cyan-50 to-blue-50 px-6 py-4 border-b">
-                    <h3 className="text-lg font-semibold text-gray-900">Dimensions (mm)</h3>
+                <div className="card overflow-hidden">
+                  <div className="bg-default-50 px-6 py-4 border-b border-default-200">
+                    <h3 className="text-lg font-semibold text-default-900">Dimensions (mm)</h3>
                   </div>
                   <div className="p-5">
                     <div className="grid grid-cols-1 gap-3">
                       {monture.largeurTotale && (
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                          <p className="text-sm text-gray-600">Largeur totale</p>
-                          <p className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">{monture.largeurTotale} mm</p>
+                        <div className="flex justify-between items-center py-2 border-b border-default-100 last:border-0">
+                          <p className="text-sm text-default-600">Largeur totale</p>
+                          <p className="text-sm font-bold text-default-900 bg-default-100 px-2 py-1 rounded">{monture.largeurTotale} mm</p>
                         </div>
                       )}
                       {monture.largeurVerre && (
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                          <p className="text-sm text-gray-600">Largeur verre</p>
-                          <p className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">{monture.largeurVerre} mm</p>
+                        <div className="flex justify-between items-center py-2 border-b border-default-100 last:border-0">
+                          <p className="text-sm text-default-600">Largeur verre</p>
+                          <p className="text-sm font-bold text-default-900 bg-default-100 px-2 py-1 rounded">{monture.largeurVerre} mm</p>
                         </div>
                       )}
                       {monture.hauteurVerre && (
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                          <p className="text-sm text-gray-600">Hauteur verre</p>
-                          <p className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">{monture.hauteurVerre} mm</p>
+                        <div className="flex justify-between items-center py-2 border-b border-default-100 last:border-0">
+                          <p className="text-sm text-default-600">Hauteur verre</p>
+                          <p className="text-sm font-bold text-default-900 bg-default-100 px-2 py-1 rounded">{monture.hauteurVerre} mm</p>
                         </div>
                       )}
                       {monture.largeurPont && (
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                          <p className="text-sm text-gray-600">Largeur pont</p>
-                          <p className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">{monture.largeurPont} mm</p>
+                        <div className="flex justify-between items-center py-2 border-b border-default-100 last:border-0">
+                          <p className="text-sm text-default-600">Largeur pont</p>
+                          <p className="text-sm font-bold text-default-900 bg-default-100 px-2 py-1 rounded">{monture.largeurPont} mm</p>
                         </div>
                       )}
                       {monture.longueurBranche && (
-                        <div className="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
-                          <p className="text-sm text-gray-600">Longueur branche</p>
-                          <p className="text-sm font-bold text-gray-900 bg-gray-100 px-2 py-1 rounded">{monture.longueurBranche} mm</p>
+                        <div className="flex justify-between items-center py-2 border-b border-default-100 last:border-0">
+                          <p className="text-sm text-default-600">Longueur branche</p>
+                          <p className="text-sm font-bold text-default-900 bg-default-100 px-2 py-1 rounded">{monture.longueurBranche} mm</p>
                         </div>
                       )}
                     </div>

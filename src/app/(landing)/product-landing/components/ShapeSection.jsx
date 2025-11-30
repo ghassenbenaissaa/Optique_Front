@@ -307,7 +307,7 @@ const ShapeSection = () => {
               Besoin d'aide pour choisir ? Contactez nos experts
             </p>
             <a
-              href="#contact"
+              href="/guide-form"
               className="inline-flex items-center gap-2 text-primary hover:text-purple-600 font-medium transition-colors duration-300"
             >
               <span>Guide des formes</span>

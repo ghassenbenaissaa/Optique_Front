@@ -2,6 +2,7 @@ import { createContext, use, useCallback, useEffect, useMemo, useState } from 'r
 import { useLocalStorage } from 'usehooks-ts';
 import { getSystemTheme, toggleAttribute } from '@/utils/layout';
 import { debounce } from '@/helpers/debounce';
+import { useLocation } from 'react-router-dom';
 const INIT_STATE = {
   sidenav: {
     size: 'default',
@@ -21,6 +22,8 @@ export const useLayoutContext = () => {
 const LayoutProvider = ({
   children
 }) => {
+  const location = useLocation();
+  const isAdminRoute = location.pathname.startsWith('/admin');
   const [settings, setSettings] = useLocalStorage('__TAILWICK_NEXT_CONFIG__', INIT_STATE);
   const updateSettings = useCallback(_newSettings => {
     setSettings(prevSettings => ({
@@ -35,9 +38,13 @@ const LayoutProvider = ({
   useEffect(() => {
     toggleAttribute('data-sidenav-color', settings.sidenav.color);
     toggleAttribute('data-sidenav-size', settings.sidenav.size);
-    toggleAttribute('data-theme', settings.theme === 'system' ? getSystemTheme() : settings.theme);
+    // Appliquer le thème uniquement dans la zone admin, sinon forcer 'light'
+    const themeToApply = isAdminRoute
+      ? (settings.theme === 'system' ? getSystemTheme() : settings.theme)
+      : 'light';
+    toggleAttribute('data-theme', themeToApply);
     toggleAttribute('dir', settings.dir);
-  }, [settings]);
+  }, [settings, isAdminRoute]);
   const reset = useCallback(() => {
     setSettings(INIT_STATE);
   }, [setSettings]);

@@ -20,7 +20,7 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
       : null);
 
   return (
-    <div className="group relative bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden">
+    <div className="group relative card overflow-hidden">
       {/* Badge en solde */}
       {hasDiscount && (
         <div className="absolute top-3 left-3 z-10 bg-red-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
@@ -38,7 +38,7 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
       </div>
 
       {/* Image */}
-      <div className="relative h-64 bg-gray-100 overflow-hidden cursor-pointer" onClick={() => onView(monture)}>
+      <div className="relative h-64 bg-default-100 overflow-hidden cursor-pointer" onClick={() => onView(monture)}>
         {primaryImage ? (
           <img
             src={primaryImage}
@@ -46,7 +46,7 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
           />
         ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-400">
+          <div className="w-full h-full flex items-center justify-center text-default-400">
             <span className="text-6xl">👓</span>
           </div>
         )}
@@ -55,18 +55,18 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
       {/* Contenu */}
       <div className="p-5">
         {/* Référence */}
-        <p className="text-xs text-gray-500 font-mono mb-1">{monture.reference}</p>
+        <p className="text-xs text-default-500 font-mono mb-1">{monture.reference}</p>
 
         {/* Nom */}
-        <h3 className="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+        <h3 className="text-lg font-semibold text-default-900 mb-2 line-clamp-2">
           {monture.name}
         </h3>
 
         {/* Marque et catégorie */}
         <div className="flex items-center gap-2 mb-3">
-          <span className="text-sm text-gray-600 font-medium">{monture.marque}</span>
-          <span className="text-gray-300">•</span>
-          <span className="text-xs text-gray-500 capitalize">
+          <span className="text-sm text-default-600 font-medium">{monture.marque}</span>
+          <span className="text-default-300">•</span>
+          <span className="text-xs text-default-500 capitalize">
             {monture.categorie?.replace(/_/g, ' ').toLowerCase()}
           </span>
         </div>
@@ -79,21 +79,21 @@ const MontureCard = ({ monture, onView, onEdit, onDelete }) => {
           <span className="text-xs bg-purple-50 text-purple-700 px-2 py-1 rounded">
             {monture.taille?.replace(/_/g, ' ')}
           </span>
-          <span className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+          <span className="text-xs bg-default-100 text-default-700 px-2 py-1 rounded">
             {monture.typeMonture?.replace(/_/g, ' ')}
           </span>
         </div>
 
         {/* Prix - Toujours afficher le prix de base */}
         <div className="mb-4">
-          <span className="text-2xl font-bold text-gray-900">
+          <span className="text-2xl font-bold text-default-900">
             {monture.price.toFixed(2)} TND
           </span>
         </div>
 
         {/* Stock */}
         <div className="flex items-center justify-between mb-4 text-sm">
-          <span className="text-gray-600">Stock total:</span>
+          <span className="text-default-600">Stock total:</span>
           <span className={`font-semibold ${totalStock > 10 ? 'text-green-600' : totalStock > 0 ? 'text-orange-600' : 'text-red-600'}`}>
             {totalStock} unités
           </span>

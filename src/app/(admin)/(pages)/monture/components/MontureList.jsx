@@ -94,7 +94,7 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
-          <p className="text-gray-600">Chargement des montures...</p>
+          <p className="text-default-600">Chargement des montures...</p>
         </div>
       </div>
     );
@@ -103,47 +103,49 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
   return (
     <div className="space-y-6">
       {/* Header avec recherche et bouton ajouter */}
-      <div className="bg-white rounded-2xl shadow-md p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          {/* Recherche */}
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
-            <input
-              type="text"
-              placeholder="Rechercher une monture..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+      <div className="card">
+        <div className="card-header">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            {/* Recherche */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-default-400" size={20} />
+              <input
+                type="text"
+                placeholder="Rechercher une monture..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="form-input ps-11"
+              />
+            </div>
+
+            {/* Bouton ajouter */}
+            <button
+              onClick={onAddMonture}
+              className="btn bg-primary text-white"
+            >
+              <Plus size={20} className="me-2" />
+              <span>Ajouter une monture</span>
+            </button>
           </div>
 
-          {/* Bouton ajouter */}
-          <button
-            onClick={onAddMonture}
-            className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium"
-          >
-            <Plus size={20} />
-            <span>Ajouter une monture</span>
-          </button>
-        </div>
-
-        {/* Statistiques */}
-        <div className="mt-4 flex items-center gap-4 text-sm text-gray-600">
-          <span className="font-semibold">{filteredMontures.length} monture(s) trouvée(s)</span>
-          {searchTerm && (
-            <span className="text-blue-600">• Recherche active</span>
-          )}
+          {/* Statistiques */}
+          <div className="mt-4 flex items-center gap-4 text-sm text-default-600">
+            <span className="font-semibold">{filteredMontures.length} monture(s) trouvée(s)</span>
+            {searchTerm && (
+              <span className="text-blue-600">• Recherche active</span>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Grille de cartes */}
       {filteredMontures.length === 0 ? (
-        <div className="bg-white rounded-2xl shadow-md p-12 text-center">
+        <div className="card p-12 text-center">
           <div className="text-6xl mb-4">😔</div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
+          <h3 className="text-xl font-semibold text-default-900 mb-2">
             Aucune monture trouvée
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-default-600 mb-6">
             {searchTerm
               ? 'Essayez de modifier votre recherche'
               : 'Commencez par ajouter votre première monture'}
@@ -151,9 +153,9 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
           {!searchTerm && (
             <button
               onClick={onAddMonture}
-              className="inline-flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors duration-200 font-medium"
+              className="btn bg-primary text-white"
             >
-              <Plus size={20} />
+              <Plus size={20} className="me-2" />
               <span>Ajouter une monture</span>
             </button>
           )}
@@ -177,7 +179,7 @@ const MontureList = ({ onAddMonture, onEditMonture }) => {
             <div className="flex justify-center">
               <button
                 onClick={loadMore}
-                className="bg-white hover:bg-gray-50 text-gray-700 font-medium px-8 py-3 rounded-lg border-2 border-gray-300 hover:border-blue-500 transition-all duration-200"
+                className="btn border bg-transparent border-default-200 text-default-600 hover:bg-primary/10 hover:text-primary hover:border-primary/10"
               >
                 Voir plus ({filteredMontures.length - displayCount} restant{filteredMontures.length - displayCount > 1 ? 's' : ''})
               </button>

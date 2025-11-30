@@ -42,6 +42,7 @@ const ResetPassword = lazy(() => import('@/app/(auth)/reset-password'));
 //  landing (public)
 const ProductLanding = lazy(() => import('@/app/(landing)/product-landing'));
 const ProductGrid = lazy(() => import('@/app/(landing)/product-grid'));
+const GuideForm = lazy(() => import('@/app/(landing)/guide-form'));
 
 //Other
 const Error404 = lazy(() => import('@/app/(others)/404'));
@@ -251,6 +252,10 @@ export const singlePageRoutes = [{
   path: '/product',
   name: 'ProductGrid',
   element: <ProductGrid />
+}, {
+  path: '/guide-form',
+  name: 'GuideForm',
+  element: <GuideForm />
 }, {
   path: '/login',
   name: 'LoginAlias',

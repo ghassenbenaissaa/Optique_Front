@@ -25,8 +25,8 @@ const ImagePreview = ({ file, onRemove, alt }) => {
 
   if (!preview) {
     return (
-      <div className="w-full h-40 bg-gray-200 rounded-lg border-2 border-gray-200 flex items-center justify-center">
-        <span className="text-gray-500">Chargement...</span>
+      <div className="w-full h-40 bg-default-200 rounded-lg border-2 border-default-200 flex items-center justify-center">
+        <span className="text-default-500">Chargement...</span>
       </div>
     );
   }
@@ -36,7 +36,7 @@ const ImagePreview = ({ file, onRemove, alt }) => {
       <img
         src={preview}
         alt={alt}
-        className="w-full h-40 object-cover rounded-lg border-2 border-gray-200"
+        className="w-full h-40 object-cover rounded-lg border-2 border-default-200"
       />
       <button
         type="button"
@@ -396,33 +396,33 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
-          <p className="text-gray-600">Chargement du formulaire...</p>
+          <p className="text-default-600">Chargement du formulaire...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+    <div className="card">
       {/* Progress bar */}
-      <div className="bg-gray-50 px-6 py-4 border-b">
+      <div className="bg-default-150 px-6 py-4 border-b border-default-200">
         <div className="flex items-center justify-between mb-2">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-default-900">
             {monture ? 'Modifier la monture' : 'Ajouter une monture'}
           </h2>
-          <span className="text-sm text-gray-600">Étape {currentStep} sur {totalSteps}</span>
+          <span className="text-sm text-default-600">Étape {currentStep} sur {totalSteps}</span>
         </div>
         <div className="flex gap-2">
           {[1, 2, 3].map((step) => (
             <div
               key={step}
               className={`flex-1 h-2 rounded-full transition-all ${
-                step <= currentStep ? 'bg-blue-500' : 'bg-gray-200'
+                step <= currentStep ? 'bg-blue-500' : 'bg-default-200'
               }`}
             />
           ))}
         </div>
-        <div className="flex justify-between mt-2 text-xs text-gray-600">
+        <div className="flex justify-between mt-2 text-xs text-default-600">
           <span className={currentStep === 1 ? 'text-blue-600 font-semibold' : ''}>Informations</span>
           <span className={currentStep === 2 ? 'text-blue-600 font-semibold' : ''}>Dimensions</span>
           <span className={currentStep === 3 ? 'text-blue-600 font-semibold' : ''}>Variations</span>
@@ -434,18 +434,18 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         {/* Étape 1 - Informations générales */}
         {currentStep === 1 && (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Informations générales</h3>
+            <h3 className="text-lg font-semibold text-default-900 mb-4">Informations générales</h3>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Nom */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Nom du produit <span className="text-red-500">*</span>
                 </label>
                 <input
                   {...register('name', { required: 'Le nom du produit est requis' })}
                   type="text"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.name && (touchedFields.name || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.name && (touchedFields.name || showErrors[1]) ? 'border-red-500' : ''}`}
                   placeholder="Ex: Ray-Ban Aviator Classic"
                 />
                 {errors.name && (touchedFields.name || showErrors[1]) && (
@@ -455,13 +455,13 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Description */}
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Description <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   {...register('description', { required: 'La description est requise' })}
                   rows={4}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.description && (touchedFields.description || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.description && (touchedFields.description || showErrors[1]) ? 'border-red-500' : ''}`}
                   placeholder="Décrivez le produit..."
                 />
                 {errors.description && (touchedFields.description || showErrors[1]) && (
@@ -471,7 +471,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Prix */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Prix de base (TND) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -482,7 +482,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   })}
                   type="number"
                   step="0.01"
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.price && (touchedFields.price || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.price && (touchedFields.price || showErrors[1]) ? 'border-red-500' : ''}`}
                   placeholder="0.00"
                 />
                 {errors.price && (touchedFields.price || showErrors[1]) && (
@@ -492,13 +492,13 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Marque */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Marque <span className="text-red-500">*</span>
                 </label>
                 <select
                   {...register('marque', { required: 'La marque est requise' })}
                   onBlur={() => {/* RHF gère touchedFields */}}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.marque && (touchedFields.marque || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.marque && (touchedFields.marque || showErrors[1]) ? 'border-red-500' : ''}`}
                 >
                   <option value="">Sélectionner une marque</option>
                   {marques.map((m) => (
@@ -512,12 +512,12 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Catégorie */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Catégorie <span className="text-red-500">*</span>
                 </label>
                 <select
                   {...register('categorie', { required: 'La catégorie est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.categorie && (touchedFields.categorie || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.categorie && (touchedFields.categorie || showErrors[1]) ? 'border-red-500' : ''}`}
                 >
                   <option value="">Sélectionner une catégorie</option>
                   {Object.values(CategorieProduit).map((cat) => (
@@ -531,12 +531,12 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Genre */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Genre <span className="text-red-500">*</span>
                 </label>
                 <select
                   {...register('gender', { required: 'Le genre est requis' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.gender && (touchedFields.gender || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.gender && (touchedFields.gender || showErrors[1]) ? 'border-red-500' : ''}`}
                 >
                   <option value="">Sélectionner un genre</option>
                   {Object.values(GenderProduit).map((gender) => (
@@ -550,12 +550,12 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Taille */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Taille <span className="text-red-500">*</span>
                 </label>
                 <select
                   {...register('taille', { required: 'La taille est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.taille && (touchedFields.taille || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.taille && (touchedFields.taille || showErrors[1]) ? 'border-red-500' : ''}`}
                 >
                   <option value="">Sélectionner une taille</option>
                   {Object.values(TailleProduit).map((taille) => (
@@ -569,12 +569,12 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Type de monture */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Type de monture <span className="text-red-500">*</span>
                 </label>
                 <select
                   {...register('typeMonture', { required: 'Le type de monture est requis' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.typeMonture && (touchedFields.typeMonture || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.typeMonture && (touchedFields.typeMonture || showErrors[1]) ? 'border-red-500' : ''}`}
                 >
                   <option value="">Sélectionner un type</option>
                   {Object.values(TypeMonture).map((type) => (
@@ -588,12 +588,12 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Forme */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Forme <span className="text-red-500">*</span>
                 </label>
                 <select
                   {...register('formeProduit', { required: 'La forme est requise' })}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.formeProduit && (touchedFields.formeProduit || showErrors[1]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.formeProduit && (touchedFields.formeProduit || showErrors[1]) ? 'border-red-500' : ''}`}
                 >
                   <option value="">Sélectionner une forme</option>
                   {formes.map((f) => (
@@ -611,13 +611,13 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         {/* Étape 2 - Dimensions */}
         {currentStep === 2 && (
           <div className="space-y-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Dimensions</h3>
-            <p className="text-sm text-gray-600 mb-4">Toutes les mesures sont en millimètres (mm)</p>
+            <h3 className="text-lg font-semibold text-default-900 mb-4">Dimensions</h3>
+            <p className="text-sm text-default-600 mb-4">Toutes les mesures sont en millimètres (mm)</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Largeur totale */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Largeur totale (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -630,7 +630,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurTotale && (touchedFields.largeurTotale || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.largeurTotale && (touchedFields.largeurTotale || showErrors[2]) ? 'border-red-500' : ''}`}
                   placeholder="0.0"
                 />
                 {errors.largeurTotale && (touchedFields.largeurTotale || showErrors[2]) && (
@@ -640,7 +640,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Largeur verre */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Largeur verre (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -653,7 +653,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurVerre && (touchedFields.largeurVerre || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.largeurVerre && (touchedFields.largeurVerre || showErrors[2]) ? 'border-red-500' : ''}`}
                   placeholder="0.0"
                 />
                 {errors.largeurVerre && (touchedFields.largeurVerre || showErrors[2]) && (
@@ -663,7 +663,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Hauteur verre */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Hauteur verre (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -676,7 +676,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.hauteurVerre && (touchedFields.hauteurVerre || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.hauteurVerre && (touchedFields.hauteurVerre || showErrors[2]) ? 'border-red-500' : ''}`}
                   placeholder="0.0"
                 />
                 {errors.hauteurVerre && (touchedFields.hauteurVerre || showErrors[2]) && (
@@ -686,7 +686,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Largeur pont */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Largeur pont (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -699,7 +699,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.largeurPont && (touchedFields.largeurPont || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.largeurPont && (touchedFields.largeurPont || showErrors[2]) ? 'border-red-500' : ''}`}
                   placeholder="0.0"
                 />
                 {errors.largeurPont && (touchedFields.largeurPont || showErrors[2]) && (
@@ -709,7 +709,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
               {/* Longueur branche */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-default-900 mb-2">
                   Longueur branche (mm) <span className="text-red-500">*</span>
                 </label>
                 <input
@@ -722,7 +722,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                   type="number"
                   step="0.1"
                   min={0.1}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${errors.longueurBranche && (touchedFields.longueurBranche || showErrors[2]) ? 'border-red-500' : 'border-gray-300'}`}
+                  className={`form-input ${errors.longueurBranche && (touchedFields.longueurBranche || showErrors[2]) ? 'border-red-500' : ''}`}
                   placeholder="0.0"
                 />
                 {errors.longueurBranche && (touchedFields.longueurBranche || showErrors[2]) && (
@@ -744,7 +744,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         {currentStep === 3 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Variations du produit</h3>
+              <h3 className="text-lg font-semibold text-default-900">Variations du produit</h3>
               <button
                 type="button"
                 onClick={addVariation}
@@ -771,9 +771,9 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                 const selectedMat = matMatch ? matMatch.name : (variation.materiauProduit || '');
 
                 return (
-                  <div key={index} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                  <div key={index} className="bg-default-100 rounded-lg p-4 border border-default-200">
                     <div className="flex items-center justify-between mb-4">
-                      <h4 className="font-medium text-gray-900">Variation #{index + 1}</h4>
+                      <h4 className="font-medium text-default-900">Variation #{index + 1}</h4>
                       {variations.length > 1 && (
                         <button
                           type="button"
@@ -788,14 +788,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                       {/* Couleur */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-default-900 mb-2">
                           Couleur <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={selectedColor}
                           onChange={(e) => updateVariation(index, 'couleur', e.target.value)}
                           onBlur={() => markVariationTouched(index, 'couleur')}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${colorError ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`form-input ${colorError ? 'border-red-500' : ''}`}
                         >
                           <option value="">Sélectionner</option>
                           {!colorMatch && selectedColor && (
@@ -812,14 +812,14 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
                       {/* Matériau */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-default-900 mb-2">
                           Matériau <span className="text-red-500">*</span>
                         </label>
                         <select
                           value={selectedMat}
                           onChange={(e) => updateVariation(index, 'materiauProduit', e.target.value)}
                           onBlur={() => markVariationTouched(index, 'materiauProduit')}
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${matError ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`form-input ${matError ? 'border-red-500' : ''}`}
                         >
                           <option value="">Sélectionner</option>
                           {!matMatch && selectedMat && (
@@ -836,7 +836,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
                       {/* Quantité */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-default-900 mb-2">
                           Quantité <span className="text-red-500">*</span>
                         </label>
                         <input
@@ -845,7 +845,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                           onChange={(e) => updateVariation(index, 'quantity', e.target.value)}
                           onBlur={() => markVariationTouched(index, 'quantity')}
                           min="0"
-                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${qtyError ? 'border-red-500' : 'border-gray-300'}`}
+                          className={`form-input ${qtyError ? 'border-red-500' : ''}`}
                         />
                         {qtyError && (
                           <p className="text-sm text-red-600 mt-1">La quantité doit être un nombre ≥ 0</p>
@@ -854,7 +854,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
 
                       {/* Prix override */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-default-900 mb-2">
                           Prix spécifique (TND)
                         </label>
                         <input
@@ -864,13 +864,13 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                           step="0.01"
                           min="0"
                           placeholder="Prix de base"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="form-input"
                         />
                       </div>
 
                       {/* Solde */}
                       <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="block text-sm font-medium text-default-900 mb-2">
                           Solde (%)
                         </label>
                         <input
@@ -881,13 +881,13 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                           min="0"
                           max="100"
                           placeholder="0"
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          className="form-input"
                         />
                       </div>
                     </div>
 
                     {/* Upload images par variation */}
-                    <div className={`mt-4 border-2 border-dashed rounded-lg p-6 text-center hover:border-blue-500 transition-colors`}>
+                    <div className={`mt-4 border-2 border-dashed rounded-lg p-6 text-center hover:border-blue-500 transition-colors border-default-200`}>
                       <input
                         type="file"
                         multiple
@@ -897,9 +897,9 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                         id={`variation-image-upload-${index}`}
                       />
                       <label htmlFor={`variation-image-upload-${index}`} className="cursor-pointer">
-                        <Upload className="w-10 h-10 text-gray-400 mx-auto mb-3" />
-                        <p className="text-gray-600 mb-1">Ajouter des images pour cette variation</p>
-                        <p className="text-sm text-gray-500">PNG, JPG, JPEG jusqu'à 10MB</p>
+                        <Upload className="w-10 h-10 text-default-400 mx-auto mb-3" />
+                        <p className="text-default-600 mb-1">Ajouter des images pour cette variation</p>
+                        <p className="text-sm text-default-500">PNG, JPG, JPEG jusqu'à 10MB</p>
                       </label>
                       {/* Erreur images requises */}
                       {showErrors[3] && ((variation.existingImageUrls?.length || 0) + (variation.newImages?.length || 0) === 0) && (
@@ -912,7 +912,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                         {(variation.existingImageUrls || []).map((url, i) => (
                           <div key={`exist-${i}`} className="relative group">
-                            <img src={url} alt={`Var ${index + 1} image ${i + 1}`} className="w-full h-40 object-cover rounded-lg border-2 border-gray-200" />
+                            <img src={url} alt={`Var ${index + 1} image ${i + 1}`} className="w-full h-40 object-cover rounded-lg border-2 border-default-200" />
                             <button
                               type="button"
                               onClick={() => removeVariationExistingImage(index, url)}
@@ -938,7 +938,7 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
             </div>
 
             {variations.length === 0 && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-default-500">
                 <p>Aucune variation ajoutée</p>
                 <button
                   type="button"
@@ -953,20 +953,20 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
         )}
 
         {/* Navigation buttons */}
-        <div className="flex items-center justify-between mt-8 pt-6 border-t">
+        <div className="flex items-center justify-between mt-8 pt-6 border-t border-default-200">
           <button
             type="button"
             onClick={currentStep === 1 ? onCancel : prevStep}
-            className="flex items-center gap-2 px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            className="btn bg-default-100 text-default-600 hover:bg-default-200"
           >
             {currentStep === 1 ? (
               <>
-                <X size={20} />
+                <X size={20} className="me-2" />
                 <span>Annuler</span>
               </>
             ) : (
               <>
-                <ChevronLeft size={20} />
+                <ChevronLeft size={20} className="me-2" />
                 <span>Précédent</span>
               </>
             )}
@@ -976,25 +976,25 @@ const MontureForm = ({ monture = null, onSuccess, onCancel }) => {
             <button
               type="button"
               onClick={handleNext}
-              className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg transition-colors"
+              className="btn bg-primary text-white"
             >
               <span>Suivant</span>
-              <ChevronRight size={20} />
+              <ChevronRight size={20} className="ms-2" />
             </button>
           ) : (
             <button
               type="submit"
               disabled={loading || submitGuardActive}
-              className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn bg-success text-white disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
-                  <Loader2 className="animate-spin" size={20} />
+                  <Loader2 className="animate-spin me-2" size={20} />
                   <span>Enregistrement...</span>
                 </>
               ) : (
                 <>
-                  <Check size={20} />
+                  <Check size={20} className="me-2" />
                   <span>{monture ? 'Modifier' : 'Ajouter'}</span>
                 </>
               )}
