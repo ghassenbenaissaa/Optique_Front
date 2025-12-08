@@ -132,9 +132,70 @@ const Products = () => {
     setPage(0);
   }, [filtersPayload, setPage]);
 
+  // Déterminer si un filtre de couleur est actif
+  const hasColorFilter = selectedColors && selectedColors.length > 0;
+
+  // Construire la liste d'items à afficher selon le filtre de couleur
+  const displayItems = useMemo(() => {
+    if (!hasColorFilter) {
+      // Pas de filtre couleur: afficher les produits avec l'image de la première variation
+      return normalizedProducts.map((product) => {
+        // Récupérer l'image de la première variation si disponible
+        const variationImage =
+          Array.isArray(product.variations) &&
+          product.variations.length > 0 &&
+          Array.isArray(product.variations[0].imageUrl) &&
+          product.variations[0].imageUrl.length > 0
+            ? product.variations[0].imageUrl[0]
+            : null;
+
+        return {
+          ...product,
+          displayImage: variationImage || product.image,
+        };
+      });
+    } else {
+      // Filtre couleur actif: afficher uniquement les variations correspondantes
+      const items = [];
+      const selectedColorHexes = selectedColors.map((name) =>
+        (colorHexMap?.[name] || name)?.toLowerCase()
+      );
+
+      normalizedProducts.forEach((product) => {
+        if (Array.isArray(product.variations)) {
+          product.variations.forEach((variation) => {
+            const variationHex = variation.hexcouleur?.toLowerCase();
+            if (selectedColorHexes.includes(variationHex)) {
+              // Récupérer l'image de la variation filtrée
+              const variationImage =
+                Array.isArray(variation.imageUrl) && variation.imageUrl.length > 0
+                  ? variation.imageUrl[0]
+                  : null;
+
+              items.push({
+                ...product,
+                // Clé unique pour éviter les conflits
+                id: `${product.id}-${variation.id || variation.hexcouleur}`,
+                originalProductId: product.id,
+                displayImage: variationImage || product.image,
+                // Conserver les infos de couleur de la variation
+                variationColor: {
+                  nom: variation.nomcouleur,
+                  code: variation.hexcouleur,
+                },
+              });
+            }
+          });
+        }
+      });
+
+      return items;
+    }
+  }, [normalizedProducts, hasColorFilter, selectedColors, colorHexMap]);
+
   // Pagination serveur: ce lot représente directement la page courante
-  const currentProducts = normalizedProducts;
-  const hasNext = (size || 12) > 0 && currentProducts.length === (size || 12);
+  const currentProducts = displayItems;
+  const hasNext = (size || 12) > 0 && normalizedProducts.length === (size || 12);
 
   const handlePageChange = (pageNumber) => {
     // pageNumber ici est 1-based pour l'UI; backend 0-based
@@ -338,7 +399,7 @@ const Products = () => {
               className="group"
             >
               {/* Carte produit */}
-              <Link to={`/product/${product.id}`} className="block">
+              <Link to={`/product/${product.originalProductId || product.id}`} className="block">
                 <motion.div
                   className="relative bg-white/60 dark:bg-default-800/60 backdrop-blur-md rounded-3xl overflow-hidden border border-default-200/50 dark:border-default-700/50 transition-all duration-500 hover:shadow-2xl hover:border-primary/30"
                   whileHover={{ scale: 1.02, y: -8 }}
@@ -352,9 +413,9 @@ const Products = () => {
 
                   <div className="relative p-4 bg-gradient-to-br from-default-50/50 to-transparent dark:from-default-900/30">
                     <div className="relative aspect-[5/4] rounded-2xl overflow-hidden bg-white dark:bg-default-800 shadow-lg group-hover:shadow-2xl transition-shadow duration-500">
-                      {product.image ? (
+                      {product.displayImage ? (
                         <motion.img
-                          src={product.image}
+                          src={product.displayImage}
                           alt={product.name}
                           className="w-full h-full object-contain p-4 transition-transform duration-700 group-hover:scale-110 will-change-transform"
                           loading="lazy"
@@ -406,7 +467,29 @@ const Products = () => {
                       {product.name}
                     </h3>
 
-                    {product.colors && product.colors.length > 0 && (
+                    {/* Affichage des couleurs: soit la couleur de variation filtrée, soit toutes les couleurs du produit */}
+                    {product.variationColor ? (
+                      // Filtre couleur actif: afficher uniquement la couleur de la variation
+                      <div className="flex items-center justify-center gap-2 mb-4">
+                        <div className="relative group/color">
+                          <motion.div
+                            whileHover={{ scale: 1.3 }}
+                            className="w-6 h-6 rounded-full cursor-pointer transition-all duration-300 border-2 border-white dark:border-default-700 shadow-md"
+                            style={{
+                              backgroundColor: product.variationColor.code,
+                              boxShadow: `0 2px 8px ${product.variationColor.code}50`
+                            }}
+                          />
+                          <div className="absolute -top-9 left-1/2 -translate-x-1/2 opacity-0 group-hover/color:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-20">
+                            <div className="bg-default-900 dark:bg-default-100 text-white dark:text-default-900 px-3 py-1.5 rounded-lg text-xs font-medium shadow-xl">
+                              {product.variationColor.nom}
+                              <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-default-900 dark:bg-default-100"></div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : product.colors && product.colors.length > 0 && (
+                      // Pas de filtre couleur: afficher toutes les couleurs du produit
                       <div className="flex items-center justify-center gap-2 mb-4">
                         {product.colors.slice(0, 5).map((color, colorIndex) => (
                           <div
