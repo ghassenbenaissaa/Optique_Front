@@ -399,7 +399,7 @@ const Products = () => {
               className="group"
             >
               {/* Carte produit */}
-              <Link to={`/product/${product.originalProductId || product.id}`} className="block">
+              <Link to={`/product/${encodeURIComponent(product.reference)}`} className="block">
                 <motion.div
                   className="relative bg-white/60 dark:bg-default-800/60 backdrop-blur-md rounded-3xl overflow-hidden border border-default-200/50 dark:border-default-700/50 transition-all duration-500 hover:shadow-2xl hover:border-primary/30"
                   whileHover={{ scale: 1.02, y: -8 }}
