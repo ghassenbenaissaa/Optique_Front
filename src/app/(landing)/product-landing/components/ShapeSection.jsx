@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '@/lib/axios';
+import { useFilterContext } from '@/context/FilterContext';
 
 /**
  * ShapeSection - Section "Achetez selon la forme"
@@ -12,6 +14,19 @@ const ShapeSection = () => {
   const [error, setError] = useState(null);
   const [isVisible, setIsVisible] = useState(false);
   const sectionRef = useRef(null);
+  const navigate = useNavigate();
+  const { setSelectedFormes, setSelectedGenres, setSelectedTypeVerres, setSelectedTailles, setIsSurMesureSelected } = useFilterContext();
+
+  const handleShapeClick = (shapeName) => (e) => {
+    e.preventDefault();
+    setSelectedGenres([]);
+    setSelectedTailles([]);
+    setSelectedTypeVerres([]);
+    setIsSurMesureSelected(false);
+    setSelectedFormes([shapeName]);
+    navigate('/product');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   // Récupération des formes depuis l'API
   useEffect(() => {
@@ -193,7 +208,8 @@ const ShapeSection = () => {
                   >
                     {/* Carte de forme - DESIGN CIRCULAIRE MODERNE */}
                     <a
-                      href="#product"
+                      href="/product"
+                      onClick={handleShapeClick(shapeName)}
                       className="block relative"
                     >
                       {/* Container principal avec effet glassmorphism */}

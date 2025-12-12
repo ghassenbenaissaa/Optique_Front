@@ -163,8 +163,13 @@ const RandomProductsSection = () => {
               {products.map((product, index) => {
                 const productName = product.nom || product.name || 'Monture';
                 const productPrice = product.price || product.prix || 0;
-                const productImages = product.imageUrl || product.images || [];
-                const productImage = Array.isArray(productImages) ? productImages[0] : productImages;
+                const productImage =
+                  Array.isArray(product.variations) &&
+                  product.variations.length > 0 &&
+                  Array.isArray(product.variations[0].imageUrl) &&
+                  product.variations[0].imageUrl.length > 0
+                    ? product.variations[0].imageUrl[0]
+                    : null;
 
                 // Extraire les couleurs uniques depuis les variations (backend retourne nomcouleur et hexcouleur)
                 const variations = product.variations || [];
@@ -193,9 +198,8 @@ const RandomProductsSection = () => {
                       transitionDelay: `${index * 150}ms`,
                     }}
                   >
-                    {/* Carte produit avec design minimaliste et élégant */}
                     <Link
-                      to="/product"
+                      to={`/product/${encodeURIComponent(product.reference)}`}
                       className="block"
                       onClick={() => {
                         window.scrollTo({ top: 0, behavior: 'smooth' });
